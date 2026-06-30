@@ -303,9 +303,9 @@ void CarScene::update(uint64_t deltatime)
 	Vector3 right = worldup.Cross(forward);		// up × forward = right
 	right.Normalize();
 
-	// deltatime[ms] に応じた移動量
+	// deltatime[μs（マイクロ秒）] に応じた移動量。秒へ変換するため 1,000,000 で割る
 	constexpr float SPEED = 300.0f;				// 1秒あたりの移動距離（要調整）
-	float move = SPEED * (static_cast<float>(deltatime) / 1000.0f);
+	float move = SPEED * (static_cast<float>(deltatime) / 1000000.0f);
 
 	Vector3 delta(0, 0, 0);
 	if (di.CheckKeyBuffer(DIK_W))    delta += forward * move;	// 前進
