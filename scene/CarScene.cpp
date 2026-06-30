@@ -296,6 +296,12 @@ void CarScene::draw(uint64_t deltatime)
 {
 	m_camera.Draw();
 
+	// 地面（板ポリ）を描画：X軸90°で寝かせ、大きくスケール
+	m_ground->Draw(
+		Vector3(4000.0f, 4000.0f, 1.0f),		// scale：地面の広さ
+		Vector3(-PI / 2.0f, 0.0f, 0.0f),		// rotation：X軸90°で水平に寝かせる
+		Vector3(0.0f, -50.0f, 0.0f));			// pos：モデルの足元に配置（要調整）
+
 	// 3軸カラー
 	Color axiscol[3] = {
 		Color(1, 0, 0, 1), 
@@ -366,6 +372,19 @@ void CarScene::init()
 
 	MeshManager::RegisterMesh<CStaticMesh>(m_meshid, std::move(mesh));
 	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>(m_meshid, std::move(meshrenderer));
+
+	// 地面（板ポリ）を生成。サイズはスケールで決めるので 1x1 で作る
+	m_ground = std::make_unique<CSprite>(
+		1, 1, "assets/texture/UI64x64.png");	// ダミーテクスチャ（後で無効化）
+
+	// テクスチャを使わず単色にするマテリアルを設定
+	MATERIAL groundmtrl{};
+	groundmtrl.Diffuse  = Color(0.3f, 0.5f, 0.3f, 1.0f);	// 地面色（任意）
+	groundmtrl.Ambient  = Color(0, 0, 0, 0);
+	groundmtrl.Emission = Color(0, 0, 0, 0);
+	groundmtrl.Specular = Color(0, 0, 0, 0);
+	groundmtrl.TextureEnable = FALSE;						// テクスチャOFF＝単色
+	m_ground->ModifyMtrl(groundmtrl);
 
 
 	// クオータニオンから回転行列

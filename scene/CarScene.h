@@ -10,6 +10,7 @@
 #include "../system/Camera.h"
 #include "../system/CStaticMesh.h"
 #include "../system/CStaticMeshRenderer.h"
+#include "../system/CSprite.h"
 
 class CarScene : public IScene 
 {
@@ -38,6 +39,7 @@ private:
 	Camera m_camera;									// 固定カメラ
 	std::unique_ptr<Box> m_shapecube;					// 立方体
 	std::array<std::unique_ptr<Segment>,3> m_segments;	// ローカル軸表示用線分
+	std::unique_ptr<CSprite> m_ground;					// 地面（板ポリ）
 
 	// 今表示しているメッシュのID
 	std::string m_meshid{};
