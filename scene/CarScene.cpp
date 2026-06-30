@@ -13,6 +13,7 @@
 #include	"../system/CStaticMeshRenderer.h"
 #include	"../system/renderer.h"
 #include	"../system/meshmanager.h"
+#include	"../system/CDirectInput.h"
 #include	<filesystem>
 #include	<string_view>
 
@@ -289,7 +290,76 @@ CarScene::CarScene()
 
 void CarScene::update(uint64_t deltatime)
 {
+	// マイクロ秒 → 秒
+	float dt = deltatime / 1'000'000.0f;
 
+	CDirectInput& in = CDirectInput::GetInstance();
+
+	// --- マウス右ドラッグで視点回転 ---
+	// ImGuiがマウスを使っている間（UI操作中）は回転しない
+	bool uiCapturingMouse = ImGui::GetIO().WantCaptureMouse;
+
+	if (in.GetMouseRButtonCheck() && !uiCapturingMouse)
+	{
+		int curX = in.GetMousePosX();
+		int curY = in.GetMousePosY();
+
+		if (!m_dragging)
+		{
+			// 押し始めは基準座標をセット（飛び防止）
+			m_prevMouseX = curX;
+			m_prevMouseY = curY;
+			m_dragging = true;
+		}
+		else
+		{
+			int dx = curX - m_prevMouseX;
+			int dy = curY - m_prevMouseY;
+
+			m_yaw   += dx * m_lookSpeed;
+			m_pitch -= dy * m_lookSpeed;
+
+			m_prevMouseX = curX;
+			m_prevMouseY = curY;
+		}
+	}
+	else
+	{
+		m_dragging = false;
+	}
+
+	// ピッチを真上・真下手前でクランプ（破綻防止）
+	const float pitchLimit = PI / 2.0f - 0.01f;
+	if (m_pitch >  pitchLimit) m_pitch =  pitchLimit;
+	if (m_pitch < -pitchLimit) m_pitch = -pitchLimit;
+
+	// --- 前方／右ベクトル算出（左手座標系、yaw=Y軸回り・pitch=X軸回り） ---
+	Vector3 forward{
+		cosf(m_pitch) * sinf(m_yaw),
+		sinf(m_pitch),
+		cosf(m_pitch) * cosf(m_yaw)
+	};
+	forward.Normalize();
+
+	Vector3 worldUp{ 0, 1, 0 };
+	Vector3 right = worldUp.Cross(forward);	// LH: up × forward = right
+	right.Normalize();
+
+	// --- WASDで移動、Q/E(Space)で上下移動 ---
+	float speed = m_moveSpeed;
+	if (in.CheckKeyBuffer(DIK_LSHIFT)) speed *= 3.0f;	// Shiftで増速
+	float dist = speed * dt;
+
+	if (in.CheckKeyBuffer(DIK_W)) m_camPos += forward * dist;
+	if (in.CheckKeyBuffer(DIK_S)) m_camPos -= forward * dist;
+	if (in.CheckKeyBuffer(DIK_D)) m_camPos += right * dist;
+	if (in.CheckKeyBuffer(DIK_A)) m_camPos -= right * dist;
+	if (in.CheckKeyBuffer(DIK_E) || in.CheckKeyBuffer(DIK_SPACE)) m_camPos += worldUp * dist;
+	if (in.CheckKeyBuffer(DIK_Q)) m_camPos -= worldUp * dist;
+
+	// --- カメラへ反映（draw()内のm_camera.Draw()が使用する） ---
+	m_camera.SetPosition(m_camPos);
+	m_camera.SetLookat(m_camPos + forward);
 }
 
 void CarScene::draw(uint64_t deltatime)
@@ -323,6 +393,15 @@ void CarScene::draw(uint64_t deltatime)
 
 	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
 	MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid)->Draw();
+
+	// 板ポリ（草の地面）を描画（現在の3Dカメラのview/projを使用してワールド空間に配置）
+	// 1枚ポリゴンはどちらの面からでも見えるようカリングを無効化（両面描画）してから描く
+	if (m_sprite) {
+		Renderer::DisableCulling(false);	// カリングOFF（両面）
+		// X軸90度回転で水平化、モデル足元(y=-100)へ配置
+		m_sprite->Draw(Vector3(1, 1, 1), Vector3(PI / 2.0f, 0, 0), Vector3(0, -100, 0));
+		Renderer::DisableCulling(true);		// カリングON（通常）に戻す
+	}
 
 }
 
@@ -366,6 +445,13 @@ void CarScene::init()
 
 	MeshManager::RegisterMesh<CStaticMesh>(m_meshid, std::move(mesh));
 	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>(m_meshid, std::move(meshrenderer));
+
+	// 板ポリ（草の地面）を生成：大きめサイズ＋UVを繰り返してタイリング
+	const float tile = 10.0f;	// 草を10×10回繰り返す
+	std::array<Vector2, 4> grounduv = {
+		Vector2(0, 0), Vector2(tile, 0), Vector2(0, tile), Vector2(tile, tile)
+	};
+	m_sprite = std::make_unique<CSprite>(2000, 2000, "assets/texture/Grass01.jpg", grounduv);
 
 
 	// クオータニオンから回転行列
