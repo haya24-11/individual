@@ -13,6 +13,7 @@
 #include	"../system/CStaticMeshRenderer.h"
 #include	"../system/renderer.h"
 #include	"../system/meshmanager.h"
+#include	"../system/CDirectInput.h"
 #include	<filesystem>
 #include	<string_view>
 
@@ -289,7 +290,36 @@ CarScene::CarScene()
 
 void CarScene::update(uint64_t deltatime)
 {
+	CDirectInput& di = CDirectInput::GetInstance();
 
+	// 現在のカメラ状態を取得
+	Vector3 pos     = m_camera.GetPosition();
+	Vector3 lookat  = m_camera.GetLookat();
+	Vector3 worldup = m_camera.GetUP();			// {0,1,0}
+
+	// カメラ基準の前方向・右方向を算出（左手座標系）
+	Vector3 forward = lookat - pos;
+	forward.Normalize();
+	Vector3 right = worldup.Cross(forward);		// up × forward = right
+	right.Normalize();
+
+	// deltatime[ms] に応じた移動量
+	constexpr float SPEED = 300.0f;				// 1秒あたりの移動距離（要調整）
+	float move = SPEED * (static_cast<float>(deltatime) / 1000.0f);
+
+	Vector3 delta(0, 0, 0);
+	if (di.CheckKeyBuffer(DIK_W))    delta += forward * move;	// 前進
+	if (di.CheckKeyBuffer(DIK_S))    delta -= forward * move;	// 後退
+	if (di.CheckKeyBuffer(DIK_D))    delta += right   * move;	// 右
+	if (di.CheckKeyBuffer(DIK_A))    delta -= right   * move;	// 左
+	if (di.CheckKeyBuffer(DIK_UP))   delta += worldup * move;	// 上昇
+	if (di.CheckKeyBuffer(DIK_DOWN)) delta -= worldup * move;	// 下降
+
+	// 位置と注視点を同じだけ平行移動（視線方向は維持）
+	pos    += delta;
+	lookat += delta;
+	m_camera.SetPosition(pos);
+	m_camera.SetLookat(lookat);
 }
 
 void CarScene::draw(uint64_t deltatime)
