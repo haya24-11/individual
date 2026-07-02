@@ -33,7 +33,7 @@ namespace {
 		return { reinterpret_cast<const char*>(u8name.data()), u8name.size() };
 	}
 
-	std::array<Load3DInfo, 14> g_loadmodel =
+	std::array<Load3DInfo, 15> g_loadmodel =
 	{
 			Load3DInfo(
 				"assets/model/car000.x",			// モデル名
@@ -89,7 +89,11 @@ namespace {
 
 			Load3DInfo(
 				"assets/model/jack1/JACK式ポプ子1.1.pmx",	// モデル名
-				"assets/model/jack1/")						// テクスチャのパス
+				"assets/model/jack1/"),						// テクスチャのパス
+
+			Load3DInfo(
+				"assets/motion/X Bot.fbx",	// モデル名
+				"assets/motion/")			// テクスチャのパス
 	};
 
 	// for debug
