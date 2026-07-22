@@ -4,11 +4,11 @@
 #include	"stb_image.h"
 #include	"renderer.h"
 
-// u8‘Î‰
+// u8ï¿½Î‰ï¿½
 bool CTexture::Load(const std::u8string& filename)
 {
 	std::filesystem::path filepath = filename;
-	m_texname = filepath.string();  // UTF-8‚Æ‚µ‚Ä•Û
+	m_texname.assign(filename.begin(), filename.end());  // UTF-8ï¿½Æ‚ï¿½ï¿½Ä•Ûï¿½
 
 	std::ifstream ifs(filepath, std::ios::binary | std::ios::ate);
 	if (!ifs) {
@@ -61,18 +61,18 @@ bool CTexture::Load(const std::u8string& filename)
 	return SUCCEEDED(hr);
 }
 
-// ƒeƒNƒXƒ`ƒƒ‚ğƒ[ƒh
+// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
 bool CTexture::Load(const std::string& filename)
 {
 	bool sts = true;
 
 
-	// ‰æ‘œ“Ç‚İ‚İ
+	// ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½
 //	pixels = stbi_load(filename.c_str(), &m_width, &m_height, &m_bpp, 4);
 //	if (pixels == nullptr) {
 //		std::cout << filename.c_str() << " Load error " << std::endl;
 
-		// u8•¶š•¶š—ñ‚É@2025/7/12 by suzuki.tomoki
+		// u8ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É@2025/7/12 by suzuki.tomoki
 		std::u8string u8s(filename.begin(),filename.end());
 		sts =Load(u8s);
 		if (sts == false) {
@@ -82,7 +82,7 @@ bool CTexture::Load(const std::string& filename)
 //	}
 
 /*
-// ƒeƒNƒXƒ`ƒƒ2DƒŠƒ\[ƒX¶¬
+// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½2Dï¿½ï¿½ï¿½\ï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½
 	ComPtr<ID3D11Texture2D> pTexture;
 
 	D3D11_TEXTURE2D_DESC desc;
@@ -111,14 +111,14 @@ bool CTexture::Load(const std::string& filename)
 		return false;
 	}
 
-	// SRV¶¬
+	// SRVï¿½ï¿½ï¿½ï¿½
 	hr = device->CreateShaderResourceView(pTexture.Get(), nullptr, m_srv.GetAddressOf());
 	if (FAILED(hr)) {
 		stbi_image_free(pixels);
 		return false;
 	}
 
-	// ƒsƒNƒZƒ‹ƒCƒ[ƒW‰ğ•ú
+	// ï¿½sï¿½Nï¿½Zï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½
 	stbi_image_free(pixels);
 
 	return true;
@@ -127,13 +127,13 @@ bool CTexture::Load(const std::string& filename)
 */
 }
 
-// ƒeƒNƒXƒ`ƒƒ‚ğƒƒ‚ƒŠ‚©‚çƒ[ƒh
+// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½çƒï¿½[ï¿½h
 bool CTexture::LoadFromFemory(const unsigned char* Data,int len) {
 
 	bool sts = true;
 	unsigned char* pixels;
 
-	// ‰æ‘œ“Ç‚İ‚İ
+	// ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½
 	pixels = stbi_load_from_memory(Data, 
 		len, 
 		&m_width, 
@@ -141,7 +141,7 @@ bool CTexture::LoadFromFemory(const unsigned char* Data,int len) {
 		&m_bpp, 
 		STBI_rgb_alpha);
 
-	// ƒeƒNƒXƒ`ƒƒ2DƒŠƒ\[ƒX¶¬
+	// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½2Dï¿½ï¿½ï¿½\ï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½
 	ComPtr<ID3D11Texture2D> pTexture;
 
 	D3D11_TEXTURE2D_DESC desc;
@@ -170,20 +170,20 @@ bool CTexture::LoadFromFemory(const unsigned char* Data,int len) {
 		return false;
 	}
 
-	// SRV¶¬
+	// SRVï¿½ï¿½ï¿½ï¿½
 	hr = device->CreateShaderResourceView(pTexture.Get(), nullptr, m_srv.GetAddressOf());
 	if (FAILED(hr)) {
 		stbi_image_free(pixels);
 		return false;
 	}
 
-	// ƒsƒNƒZƒ‹ƒCƒ[ƒW‰ğ•ú
+	// ï¿½sï¿½Nï¿½Zï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½
 	stbi_image_free(pixels);
 
 	return true;
 }
 
-// ƒeƒNƒXƒ`ƒƒ‚ğGPU‚ÉƒZƒbƒg
+// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½ï¿½GPUï¿½ÉƒZï¿½bï¿½g
 void CTexture::SetGPU()
 {
 	ID3D11DeviceContext* devicecontext = Renderer::GetDeviceContext();

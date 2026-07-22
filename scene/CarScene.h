@@ -12,6 +12,11 @@
 #include "../system/CStaticMesh.h"
 #include "../system/CStaticMeshRenderer.h"
 #include "../system/CSprite.h"
+#include "../system/CAnimationMeshBlender.h"
+#include "../system/CAnimationData.h"
+#include "../system/BoneCombMatrix.h"
+#include "FreeFlyCamera.h"
+#include "SplineCamera.h"
 
 class CarScene : public IScene
 {
@@ -37,11 +42,6 @@ public:
 	void debugModelSelect(const char* title, int& selectedIndex, std::string& meshId);
 	std::string ensureModelLoaded(int index);	// 未ロードならLoad+Registerしてmeshidを返す
 
-	// スプラインカメラ
-	Vector3 evalSpline(float u) const;			// u位置のカメラ座標（loop/open対応）
-	void    resetSplineDefault();				// 既定の制御点をセット
-	void    debugSplineCamera();				// ImGui編集UI
-
 	// 制御点・注視点を動かす軸ギズモ
 	enum class GizmoAxis { None, X, Y, Z };
 	enum class PickKind  { None, ControlPoint, Lookat };
@@ -59,40 +59,22 @@ private:
 	// 板ポリ（テクスチャ付き矩形ポリゴン）
 	std::unique_ptr<CSprite> m_sprite;
 
-	// フリーフライ(FPS)カメラ用の状態
-	float   m_yaw   = 0.0f;			// 水平回転（ラジアン）
-	float   m_pitch = 0.0f;			// 垂直回転（ラジアン）
-	Vector3 m_camPos{ 0, 0, -300 };	// カメラ位置
-	int     m_prevMouseX = 0;		// 前フレームのマウスX座標
-	int     m_prevMouseY = 0;		// 前フレームのマウスY座標
-	bool    m_dragging = false;		// 右ドラッグ中か
-	float   m_moveSpeed = 200.0f;	// 移動速度（単位/秒）
-	float   m_lookSpeed = 0.005f;	// 回転感度（ラジアン/ピクセル）
+	// カメラ（フリーフライ／スプラインを切り替えて使う）
+	FreeFlyCamera m_freeCam;
+	SplineCamera  m_splineCam;
 
 	// 今表示しているメッシュのID
 	std::string m_meshid{};		// player1 の表示メッシュID
 	std::string m_meshid2{};	// player2 の表示メッシュID
-	int m_p1Select = 0;			// Player1 のコンボ選択index
+	int m_p1Select = 15;			// Player1 のコンボ選択index（初期表示: suzu.pmx）
 	int m_p2Select = 0;			// Player2 のコンボ選択index
+	float m_p1Scale = 9.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
 
 	// 各プレイヤーの配置（向かい合わせ。値は実機で微調整）
 	Vector3 m_p1Pos{ -150, 0, 0 };	// player1 は左
 	Vector3 m_p2Pos{  150, 0, 0 };	// player2 は右
 	float   m_p1FaceY = -PI / 2.0f;	// 相手(+X方向)を向く ※モデルの正面軸により要調整
 	float   m_p2FaceY =  PI / 2.0f;	// 相手(-X方向)を向く ※同上
-
-	// スプラインカメラ用の状態
-	std::vector<Vector3> m_splinePoints;	// 制御点（ImGuiで編集）
-	Vector3 m_splineLookat{ 0, 0, 0 };		// 固定注視点（ImGuiで編集）
-	bool    m_splineActive = false;			// スプライン再生中か（キー/UIでトグル）
-	bool    m_splineLoop   = true;			// 経路をループ（閉曲線）
-	bool    m_showSplinePath = true;		// 経路を可視化
-	float   m_splineT      = 0.0f;			// 進行パラメータ（0〜区間数）
-	float   m_splineSpeed  = 0.5f;			// 進行速度（区間/秒）
-
-	std::unique_ptr<Sphere> m_splineMarker;	// 現在地点を示す赤い球体
-	std::unique_ptr<Sphere> m_lookatMarker;	// 注視点を示す青い球体
-	std::unique_ptr<Sphere> m_pointMarker;	// 制御点を示す緑の球体
 
 	// 軸ギズモ（制御点・注視点をマウスで移動）
 	PickKind  m_selectedKind = PickKind::None;	// 現在選択中の対象種別
@@ -107,6 +89,15 @@ private:
 	float m_gizmoHeadLen    = 20.0f;
 	float m_gizmoHeadRad    = 8.0f;
 	float m_gizmoPickThresh = 8.0f;	// 軸ドラッグの当たり判定しきい値（ワールド単位）
+
+	// Player1 アニメーション（アッパーカット試作）
+	std::unique_ptr<CAnimationMeshBlender> m_p1AnimMesh;	// X Bot スキンメッシュ
+	std::unique_ptr<CAnimationData>        m_uppercutData;	// モーションFBX保持
+	BoneCombMatrix m_p1BoneComb;		// ボーン行列定数バッファ(b5)
+	float m_p1AnimFrame  = 0.0f;		// 再生フレーム
+	bool  m_p1Attacking  = false;		// 攻撃モーション再生中か
+	int   m_uppercutFrames = 0;			// モーションの総キー数
+	float m_animFps = 30.0f;			// 再生速度（キー/秒）
 
 };
 

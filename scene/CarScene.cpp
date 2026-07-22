@@ -37,7 +37,7 @@ namespace {
 		return { reinterpret_cast<const char*>(u8name.data()), u8name.size() };
 	}
 
-	std::array<Load3DInfo, 15> g_loadmodel =
+	std::array<Load3DInfo, 16> g_loadmodel =
 	{
 			Load3DInfo(
 				"assets/model/car000.x",			// モデル名
@@ -97,7 +97,11 @@ namespace {
 
 			Load3DInfo(
 				"assets/motion/X Bot.fbx",	// モデル名
-				"assets/motion/")			// テクスチャのパス
+				"assets/motion/"),			// テクスチャのパス
+
+			Load3DInfo(
+				"assets/model/o1kaensO5D/suzu.pmx",	// モデル名（铃：本体キャラ）
+				"assets/model/o1kaensO5D/")			// テクスチャのパス
 	};
 
 	// for debug
@@ -292,87 +296,15 @@ void CarScene::debugRubikCubeLocalRotation()
 
 	m_ScaleMtx = Matrix4x4::CreateScale(scale);
 
+	// Player1(suzu/PMX) 専用スケール（Player2やX Botには影響しない）
+	ImGui::SliderFloat("P1(suzu) scale", &m_p1Scale, 1.0f, 30.0f);
+
 	ImGui::End();
 }
 
 CarScene::CarScene()
 {
 
-}
-
-// 既定の制御点をセット（原点を囲むXZ平面・高さ150・半径400の4点）
-void CarScene::resetSplineDefault()
-{
-	m_splinePoints = {
-		Vector3( 400, 150,    0), Vector3(   0, 150,  400),
-		Vector3(-400, 150,    0), Vector3(   0, 150, -400)
-	};
-	m_splineT = 0.0f;
-}
-
-// u（連続パラメータ）位置のカメラ座標を Catmull-Rom で評価
-Vector3 CarScene::evalSpline(float u) const
-{
-	int n = (int)m_splinePoints.size();
-	if (n < 4) return m_camPos;
-
-	int   seg = (int)floorf(u);
-	float t   = u - seg;
-
-	auto idx = [&](int k) -> int {
-		if (m_splineLoop) return ((k % n) + n) % n;	// 閉曲線：巡回
-		return std::clamp(k, 0, n - 1);				// 開曲線：端をクランプ
-	};
-
-	const Vector3& p0 = m_splinePoints[idx(seg - 1)];
-	const Vector3& p1 = m_splinePoints[idx(seg)];
-	const Vector3& p2 = m_splinePoints[idx(seg + 1)];
-	const Vector3& p3 = m_splinePoints[idx(seg + 2)];
-
-	return Vector3::CatmullRom(p0, p1, p2, p3, t);
-}
-
-// スプラインカメラのデバッグUI
-void CarScene::debugSplineCamera()
-{
-	ImGui::Begin("Spline Camera");
-
-	ImGui::Checkbox("Active (C key)", &m_splineActive);
-	ImGui::SameLine();
-	ImGui::Checkbox("Loop", &m_splineLoop);
-	ImGui::SameLine();
-	ImGui::Checkbox("Show Path", &m_showSplinePath);
-
-	ImGui::SliderFloat("Speed", &m_splineSpeed, 0.05f, 3.0f);
-	ImGui::Text("t = %.2f", m_splineT);
-
-	ImGui::DragFloat3("Lookat", &m_splineLookat.x, 1.0f);
-
-	ImGui::Separator();
-	ImGui::Text("Control Points (%d)", (int)m_splinePoints.size());
-
-	for (int i = 0; i < (int)m_splinePoints.size(); ++i)
-	{
-		std::string label = "P" + std::to_string(i);
-		ImGui::DragFloat3(label.c_str(), &m_splinePoints[i].x, 1.0f);
-	}
-
-	if (ImGui::Button("Add")) {
-		// 末尾に、最後の点の近くへ新しい点を追加
-		Vector3 p = m_splinePoints.empty() ? Vector3(0, 150, 0) : m_splinePoints.back() + Vector3(50, 0, 50);
-		m_splinePoints.push_back(p);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Remove")) {
-		// 最低4点は維持
-		if (m_splinePoints.size() > 4) m_splinePoints.pop_back();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reset")) {
-		resetSplineDefault();
-	}
-
-	ImGui::End();
 }
 
 // マウス位置からワールド空間のレイ（始点・方向）を計算する
@@ -405,12 +337,12 @@ Vector3* CarScene::getPickTarget(PickKind kind, int index)
 {
 	if (kind == PickKind::ControlPoint)
 	{
-		if (index >= 0 && index < (int)m_splinePoints.size()) return &m_splinePoints[index];
+		if (index >= 0 && index < m_splineCam.PointCount()) return &m_splineCam.Points()[index];
 		return nullptr;
 	}
 	if (kind == PickKind::Lookat)
 	{
-		return &m_splineLookat;
+		return &m_splineCam.Lookat();
 	}
 	return nullptr;
 }
@@ -512,10 +444,11 @@ void CarScene::updateGizmoPicking()
 	int      bestIndex = -1;
 	float    bestT     = 2.0f;	// t∈[0,1]の外側を初期値に
 
-	for (int i = 0; i < (int)m_splinePoints.size(); ++i)
+	std::vector<Vector3>& points = m_splineCam.Points();
+	for (int i = 0; i < (int)points.size(); ++i)
 	{
 		Vector3 hit; float t;
-		float dist = Collision::calcPointLineDist(m_splinePoints[i], raySeg, hit, t);
+		float dist = Collision::calcPointLineDist(points[i], raySeg, hit, t);
 		if (dist <= 12.0f && t >= 0.0f && t <= 1.0f && t < bestT)
 		{
 			bestT = t;
@@ -525,7 +458,7 @@ void CarScene::updateGizmoPicking()
 	}
 	{
 		Vector3 hit; float t;
-		float dist = Collision::calcPointLineDist(m_splineLookat, raySeg, hit, t);
+		float dist = Collision::calcPointLineDist(m_splineCam.Lookat(), raySeg, hit, t);
 		if (dist <= 15.0f && t >= 0.0f && t <= 1.0f && t < bestT)
 		{
 			bestT = t;
@@ -576,110 +509,50 @@ void CarScene::update(uint64_t deltatime)
 	// 制御点・注視点のギズモ操作（スプラインカメラの再生状態に関わらず動作させる）
 	updateGizmoPicking();
 
+	// --- Player1 アッパーカットモーション（J キーで再生開始、終了で構えに戻る） ---
+	if (in.CheckKeyBufferTrigger(DIK_J) && !m_p1Attacking)
+	{
+		m_p1Attacking = true;
+		m_p1AnimFrame = 0.0f;
+	}
+	if (m_p1Attacking)
+	{
+		m_p1AnimFrame += m_animFps * dt;
+		if (m_p1AnimFrame >= (float)(m_uppercutFrames - 1))
+		{
+			// 最終キーまで再生したら終了して構え（先頭フレーム）へ戻す
+			m_p1Attacking = false;
+			m_p1AnimFrame = 0.0f;
+		}
+	}
+	// 姿勢を毎フレーム計算（非再生時はフレーム0の構えを維持）
+	if (m_p1AnimMesh)
+	{
+		int frame = (int)m_p1AnimFrame;
+		m_p1AnimMesh->Update(m_p1BoneComb, frame);
+	}
+
 	// --- C キーでスプラインカメラ ⇔ フリーカメラ を切替（再生開始/停止） ---
 	if (in.CheckKeyBufferTrigger(DIK_C))
 	{
-		m_splineActive = !m_splineActive;
-		if (!m_splineActive)
+		bool now = !m_splineCam.IsActive();
+		m_splineCam.SetActive(now);
+		if (!now)
 		{
-			// フリーへ戻る時、現在の向きから yaw/pitch を引き継ぐ
-			Vector3 f = m_splineLookat - m_camPos;
-			f.Normalize();
-			m_yaw   = atan2f(f.x, f.z);
-			m_pitch = asinf(f.y);
+			// フリーへ戻る時、現在の位置・向きをフリーカメラへ引き継ぐ
+			m_freeCam.AdoptFromLookAt(m_splineCam.CurrentPos(), m_splineCam.Lookat());
 		}
 	}
 
-	if (m_splineActive && m_splinePoints.size() >= 4)
+	// --- カメラ更新（アクティブな方が m_camera に反映する） ---
+	if (m_splineCam.IsActive())
 	{
-		// --- スプライン曲線に沿ってカメラを進める ---
-		int   n    = (int)m_splinePoints.size();
-		float uMax = m_splineLoop ? (float)n : (float)(n - 1);
-
-		m_splineT += m_splineSpeed * dt;
-		if (m_splineLoop)
-		{
-			while (m_splineT >= uMax) m_splineT -= uMax;	// ループ
-		}
-		else if (m_splineT > uMax)
-		{
-			m_splineT = uMax;			// 端で停止
-			m_splineActive = false;
-		}
-
-		m_camPos = evalSpline(m_splineT);		// 位置は経路上
-		m_camera.SetPosition(m_camPos);
-		m_camera.SetLookat(m_splineLookat);		// 常に固定の注視点を見る
-		return;
-	}
-
-	// ===== 以下、フリーフライ（WASD＋マウス右ドラッグ）=====
-
-	// --- マウス右ドラッグで視点回転 ---
-	// ImGuiがマウスを使っている間（UI操作中）は回転しない
-	bool uiCapturingMouse = ImGui::GetIO().WantCaptureMouse;
-
-	if (in.GetMouseRButtonCheck() && !uiCapturingMouse)
-	{
-		int curX = in.GetMousePosX();
-		int curY = in.GetMousePosY();
-
-		if (!m_dragging)
-		{
-			// 押し始めは基準座標をセット（飛び防止）
-			m_prevMouseX = curX;
-			m_prevMouseY = curY;
-			m_dragging = true;
-		}
-		else
-		{
-			int dx = curX - m_prevMouseX;
-			int dy = curY - m_prevMouseY;
-
-			m_yaw   += dx * m_lookSpeed;
-			m_pitch -= dy * m_lookSpeed;
-
-			m_prevMouseX = curX;
-			m_prevMouseY = curY;
-		}
+		m_splineCam.Update(dt, m_camera);
 	}
 	else
 	{
-		m_dragging = false;
+		m_freeCam.Update(dt, m_camera);
 	}
-
-	// ピッチを真上・真下手前でクランプ（破綻防止）
-	const float pitchLimit = PI / 2.0f - 0.01f;
-	if (m_pitch >  pitchLimit) m_pitch =  pitchLimit;
-	if (m_pitch < -pitchLimit) m_pitch = -pitchLimit;
-
-	// --- 前方／右ベクトル算出（左手座標系、yaw=Y軸回り・pitch=X軸回り） ---
-	Vector3 forward{
-		cosf(m_pitch) * sinf(m_yaw),
-		sinf(m_pitch),
-		cosf(m_pitch) * cosf(m_yaw)
-	};
-	forward.Normalize();
-
-	Vector3 worldUp{ 0, 1, 0 };
-	Vector3 right = worldUp.Cross(forward);	// LH: up × forward = right
-	right.Normalize();
-
-	// --- WASDで移動、Q/E(Space)で上下移動 ---
-	float speed = m_moveSpeed;
-	if (in.CheckKeyBuffer(DIK_LSHIFT)) speed *= 3.0f;	// Shiftで増速
-	float dist = speed * dt;
-
-	if (in.CheckKeyBuffer(DIK_W)) m_camPos += forward * dist;
-	if (in.CheckKeyBuffer(DIK_S)) m_camPos -= forward * dist;
-	if (in.CheckKeyBuffer(DIK_D)) m_camPos += right * dist;
-	if (in.CheckKeyBuffer(DIK_A)) m_camPos -= right * dist;
-	if (in.CheckKeyBuffer(DIK_E) || in.CheckKeyBuffer(DIK_SPACE)) m_camPos += worldUp * dist;
-	if (in.CheckKeyBuffer(DIK_Q)) m_camPos -= worldUp * dist;
-
-	// --- カメラへ反映（draw()内のm_camera.Draw()が使用する） ---
-	m_camera.SetPosition(m_camPos);
-	m_camera.SetLookat(m_camPos + forward);
 }
 
 void CarScene::draw(uint64_t deltatime)
@@ -708,53 +581,21 @@ void CarScene::draw(uint64_t deltatime)
 		m_segments[cnt]->Draw(m_RotationMtx, axiscol[cnt]);
 	}
 
-	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
-
-	// player1 を描画（左・相手を向く）
-	Matrix4x4 w1 = m_ScaleMtx * Matrix4x4::CreateRotationY(m_p1FaceY) * Matrix4x4::CreateTranslation(m_p1Pos);
+	// player1 を描画（左・相手を向く）: suzu（静的PMX）。アッパーカットのアニメは一旦停止。
+	// PMXはMMDスケール（約20単位）なので m_p1Scale（既定9倍）で拡大して表示する。
+	Matrix4x4 w1 = Matrix4x4::CreateScale(m_p1Scale) * Matrix4x4::CreateRotationY(m_p1FaceY) * Matrix4x4::CreateTranslation(m_p1Pos);
 	Renderer::SetWorldMatrix(&w1);
-	if (auto* r1 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid))  r1->Draw();
+	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
+	if (auto* r1 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid)) r1->Draw();
 
-	// player2 を描画（右・相手を向く）
+	// player2 を描画（右・相手を向く）: 従来どおり静的描画（シェーダを戻す）
+	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
 	Matrix4x4 w2 = m_ScaleMtx * Matrix4x4::CreateRotationY(m_p2FaceY) * Matrix4x4::CreateTranslation(m_p2Pos);
 	Renderer::SetWorldMatrix(&w2);
 	if (auto* r2 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid2)) r2->Draw();
 
-	// スプライン経路の可視化（黄色線）
-	if (m_showSplinePath && m_splinePoints.size() >= 4) {
-		int   n    = (int)m_splinePoints.size();
-		float uMax = m_splineLoop ? (float)n : (float)(n - 1);
-		int   samples = (int)(uMax * 24);
-		Vector3 prev = evalSpline(0);
-		SetLineWidth(2);
-		for (int i = 1; i <= samples; ++i) {
-			Vector3 cur = evalSpline(uMax * i / samples);
-			Vector3 dir = cur - prev;
-			LineDrawerDraw(dir.Length(), prev, dir, Color(1, 1, 0, 1));
-			prev = cur;
-		}
-
-		// 現在のスプラインカメラ位置に赤い球体を表示
-		if (m_splineMarker) {
-			Vector3 p = evalSpline(m_splineT);
-			Matrix4x4 m = Matrix4x4::CreateTranslation(p);
-			m_splineMarker->Draw(m, Color(1, 0, 0, 1));
-		}
-
-		// 注視点に青い球体を表示
-		if (m_lookatMarker) {
-			Matrix4x4 m = Matrix4x4::CreateTranslation(m_splineLookat);
-			m_lookatMarker->Draw(m, Color(0, 0.4f, 1, 1));
-		}
-
-		// 各制御点に緑の球体を表示
-		if (m_pointMarker) {
-			for (const Vector3& cp : m_splinePoints) {
-				Matrix4x4 m = Matrix4x4::CreateTranslation(cp);
-				m_pointMarker->Draw(m, Color(0, 1, 0, 1));
-			}
-		}
-	}
+	// スプライン経路・マーカーの可視化
+	m_splineCam.DrawVisualization();
 
 	// 選択中の制御点・注視点に軸ギズモ（矢印）を描画
 	drawGizmo();
@@ -778,6 +619,9 @@ void CarScene::init()
 	m_camera.SetLookat(Vector3(0, 0, 0));
 	m_camera.SetUP(Vector3(0, 1, 0));
 
+	// フリーカメラの初期姿勢（従来の固定カメラと同じ見え方）
+	m_freeCam.AdoptFromLookAt(Vector3(0, 0, -300), Vector3(0, 0, 0));
+
 
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
@@ -800,6 +644,34 @@ void CarScene::init()
 	m_meshid  = ensureModelLoaded(m_p1Select);
 	m_meshid2 = ensureModelLoaded(m_p2Select);
 
+	// --- Player1 アニメーション（アッパーカット試作） ---
+
+	// スキニング用シェーダ（PSは静的と共通）
+	std::unique_ptr<CShader> skinShader = std::make_unique<CShader>();
+	skinShader->Create(
+		"shader/vertexLightingOneSkinVS.hlsl",	// スキニング頂点シェーダー
+		"shader/vertexLightingPS.hlsl"			// ピクセルシェーダー（静的と共通）
+	);
+	ShaderManager::Register<CShader>("Skin3D", std::move(skinShader));
+
+	// X Bot（スキン+ボーン）を読み込み
+	m_p1AnimMesh = std::make_unique<CAnimationMeshBlender>();
+	m_p1AnimMesh->Load("assets/motion/X Bot.fbx", "assets/motion/");
+
+	// アッパーカットモーションを別FBXから読み込み、モデルに結合
+	m_uppercutData = std::make_unique<CAnimationData>();
+	m_uppercutData->LoadAnimation("assets/motion/Uppercut Jab.fbx", "uppercut");
+	aiAnimation* upper = m_uppercutData->GetAnimation("uppercut", 0);
+	m_p1AnimMesh->SetCurentAnimation(upper);
+
+	// 総キー数（全チャンネルの最大キー数）→ ワンショット終了判定に使用
+	for (unsigned int c = 0; c < upper->mNumChannels; ++c) {
+		m_uppercutFrames = std::max(m_uppercutFrames, (int)upper->mChannels[c]->mNumRotationKeys);
+	}
+
+	// ボーン行列定数バッファ(b5)を生成
+	m_p1BoneComb.Create();
+
 	// 板ポリ（草の地面）を生成：大きめサイズ＋UVを繰り返してタイリング
 	const float tile = 10.0f;	// 草を10×10回繰り返す
 	std::array<Vector2, 4> grounduv = {
@@ -821,18 +693,15 @@ void CarScene::init()
 		debugModelSelect("Player2 Model", m_p2Select, m_meshid2);
 		});
 
-	// スプラインカメラ：既定の制御点をセットし、編集UIを登録
-	resetSplineDefault();
-	m_splineMarker = std::make_unique<Sphere>(15.0f);	// 現在地点マーカー（赤）
-	m_lookatMarker = std::make_unique<Sphere>(15.0f);	// 注視点マーカー（青）
-	m_pointMarker  = std::make_unique<Sphere>(12.0f);	// 制御点マーカー（緑）
+	// スプラインカメラ：既定の制御点・マーカーを生成し、編集UIを登録
+	m_splineCam.Init();
+	DebugUI::RedistDebugFunction([this]() {
+		m_splineCam.DebugUI();
+		});
 
 	// 軸ギズモ（矢印＝円柱の軸＋円錐の先端）
 	m_gizmoShaft = std::make_unique<Cylinder>(m_gizmoShaftRad, m_gizmoShaftLen);
 	m_gizmoHead  = std::make_unique<Cone>(m_gizmoHeadRad, m_gizmoHeadLen);
-	DebugUI::RedistDebugFunction([this]() {
-		debugSplineCamera();
-		});
 
 
 }
@@ -842,3 +711,4 @@ void CarScene::dispose()
 {
 
 }
+
