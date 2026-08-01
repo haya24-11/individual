@@ -242,28 +242,6 @@ void CarScene::debugModelSelect(const char* title, int& selectedIndex, std::stri
 	ImGui::End();
 }
 
-// 角度から姿勢行列をつくる
-void CarScene::debugRubikCubeRotation()
-{
-
-	ImGui::Begin("DebugRubikCube Rotation");
-
-	ImGui::SliderFloat("X Rotation", &m_Rotation.x, 0.0f, PI);
-	ImGui::SliderFloat("Y Rotation", &m_Rotation.y, 0.0f, PI);
-	ImGui::SliderFloat("Z Rotation", &m_Rotation.z, 0.0f, PI);
-
-	// 回転角度から回転行列を作成
-	Matrix4x4 rotmtxX = Matrix4x4::CreateRotationX(m_Rotation.x);
-	Matrix4x4 rotmtxY = Matrix4x4::CreateRotationY(m_Rotation.y);
-	Matrix4x4 rotmtxZ = Matrix4x4::CreateRotationZ(m_Rotation.z);
-
-	// 合成
-	m_RotationMtx = rotmtxX * rotmtxY * rotmtxZ;
-
-	// カメラの位置を極座標からデカルト座標に変換
-	ImGui::End();
-}
-
 // ローカル軸回転
 void CarScene::debugRubikCubeLocalRotation()
 {
@@ -532,33 +510,55 @@ void CarScene::update(uint64_t deltatime)
 		m_p1AnimMesh->Update(m_p1BoneComb, frame);
 	}
 
-	// --- C キーでスプラインカメラ ⇔ フリーカメラ を切替（再生開始/停止） ---
+	// --- C キー: メインカメラを 基本 ⇔ スプライン でトグル ---
 	if (in.CheckKeyBufferTrigger(DIK_C))
 	{
-		bool now = !m_splineCam.IsActive();
-		m_splineCam.SetActive(now);
-		if (!now)
-		{
-			// フリーへ戻る時、現在の位置・向きをフリーカメラへ引き継ぐ
-			m_freeCam.AdoptFromLookAt(m_splineCam.CurrentPos(), m_splineCam.Lookat());
-		}
+		m_camMode = (m_camMode == CamMode::Spline) ? CamMode::Fighting : CamMode::Spline;
+		m_splineCam.SetActive(m_camMode == CamMode::Spline);	// スプライン時のみ再生
+		if (m_camMode == CamMode::Fighting) m_fightCam.ResetSnap();	// 復帰時は即スナップ
 	}
 
-	// --- カメラ更新（アクティブな方が m_camera に反映する） ---
-	if (m_splineCam.IsActive())
+	// デバッグ第2ビューのカメラ操作はビュー窓のImGuiラムダ内で行う（別OSウィンドウでも効くように）
+
+	// --- メインカメラを m_camera に反映する ---
+	if (m_recorder.IsPlaying())
 	{
-		m_splineCam.Update(dt, m_camera);
+		m_recorder.ApplyPlayback(m_camera, dt);				// 録画テイクで上書き（最優先）
+	}
+	else if (m_manualCam)
+	{
+		if (!m_prevManualCam)								// 手動ON開始時は現在姿勢を引き継ぐ
+			m_manualFly.AdoptFromLookAt(m_camera.GetPosition(), m_camera.GetLookat());
+		m_manualFly.Update(dt, m_camera);					// 手動フリー操作（WASD/右ドラッグ）
+	}
+	else if (m_camMode == CamMode::Spline)
+	{
+		m_splineCam.Update(dt, m_camera);					// 曲線カメラ
 	}
 	else
 	{
-		m_freeCam.Update(dt, m_camera);
+		m_fightCam.Update(dt, m_camera, m_p1Pos, m_p2Pos);	// 格ゲー基本カメラ
 	}
+	m_prevManualCam = m_manualCam;
+
+	// 録画中（再生中を除く）は、確定した姿勢を1フレーム分記録
+	if (m_recorder.IsRecording() && !m_recorder.IsPlaying())
+		m_recorder.Sample(m_camera, dt);
 }
 
 void CarScene::draw(uint64_t deltatime)
 {
+	// メインパス（従来どおり main RT へ）
 	m_camera.Draw();
+	drawSceneGeometry();
 
+	// デバッグ第2ビュー（開いている時だけ free-fly 視点でオフスクリーンへ再描画）
+	if (m_debugViewOpen && m_dbgRTV) renderDebugView();
+}
+
+// シーンの3D描画本体（メイン／第2ビュー共通。view/projは呼び出し前に設定済み前提）
+void CarScene::drawSceneGeometry()
+{
 	// 3軸カラー
 	Color axiscol[3] = {
 		Color(1, 0, 0, 1), 
@@ -611,6 +611,67 @@ void CarScene::draw(uint64_t deltatime)
 
 }
 
+// デバッグ第2ビュー用のオフスクリーンRT（カラー＋深度）を生成
+void CarScene::createDebugTarget()
+{
+	m_dbgW = (UINT)Application::GetWidth();	// フル解像度（アプリと同アスペクト・拡大に強い）
+	m_dbgH = (UINT)Application::GetHeight();
+	if (m_dbgW < 1 || m_dbgH < 1) return;
+
+	ID3D11Device* dev = Renderer::GetDevice();
+
+	// カラー（RT兼SRV）
+	D3D11_TEXTURE2D_DESC cd{};
+	cd.Width = m_dbgW; cd.Height = m_dbgH; cd.MipLevels = 1; cd.ArraySize = 1;
+	cd.Format = DXGI_FORMAT_R8G8B8A8_UNORM; cd.SampleDesc.Count = 1;
+	cd.Usage = D3D11_USAGE_DEFAULT;
+	cd.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	if (FAILED(dev->CreateTexture2D(&cd, nullptr, m_dbgColorTex.GetAddressOf()))) return;
+	if (FAILED(dev->CreateRenderTargetView(m_dbgColorTex.Get(), nullptr, m_dbgRTV.GetAddressOf()))) return;
+	if (FAILED(dev->CreateShaderResourceView(m_dbgColorTex.Get(), nullptr, m_dbgSRV.GetAddressOf()))) return;
+
+	// 深度
+	D3D11_TEXTURE2D_DESC dd{};
+	dd.Width = m_dbgW; dd.Height = m_dbgH; dd.MipLevels = 1; dd.ArraySize = 1;
+	dd.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; dd.SampleDesc.Count = 1;
+	dd.Usage = D3D11_USAGE_DEFAULT; dd.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	if (FAILED(dev->CreateTexture2D(&dd, nullptr, m_dbgDepthTex.GetAddressOf()))) return;
+	if (FAILED(dev->CreateDepthStencilView(m_dbgDepthTex.Get(), nullptr, m_dbgDSV.GetAddressOf()))) return;
+}
+
+// free-fly 視点でシーンをオフスクリーンへ再描画する（第2パス）
+void CarScene::renderDebugView()
+{
+	ID3D11DeviceContext* ctx = Renderer::GetDeviceContext();
+
+	// 現在の RT／ビューポートを保存（OMGetRenderTargets は参照を返すので後で Release）
+	ID3D11RenderTargetView* sRTV = nullptr;
+	ID3D11DepthStencilView* sDSV = nullptr;
+	ctx->OMGetRenderTargets(1, &sRTV, &sDSV);
+	UINT nvp = 1; D3D11_VIEWPORT sVP{};
+	ctx->RSGetViewports(&nvp, &sVP);
+
+	// オフスクリーンへ切替＋クリア
+	ID3D11RenderTargetView* rtv = m_dbgRTV.Get();
+	ctx->OMSetRenderTargets(1, &rtv, m_dbgDSV.Get());
+	D3D11_VIEWPORT vp{};
+	vp.Width = (float)m_dbgW; vp.Height = (float)m_dbgH; vp.MaxDepth = 1.0f;
+	ctx->RSSetViewports(1, &vp);
+	const float clr[4] = { 0.10f, 0.10f, 0.12f, 1.0f };
+	ctx->ClearRenderTargetView(rtv, clr);
+	ctx->ClearDepthStencilView(m_dbgDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	// free-fly 視点で再描画
+	m_debugCam.Draw();			// view/proj を設定（アスペクトは App w/h＝オフスクリーンと同一）
+	drawSceneGeometry();
+
+	// メイン RT／ビューポートを復元（戻さないと後段の ImGui 描画・present が壊れる）
+	ctx->OMSetRenderTargets(1, &sRTV, sDSV);
+	ctx->RSSetViewports(1, &sVP);
+	if (sRTV) sRTV->Release();
+	if (sDSV) sDSV->Release();
+}
+
 void CarScene::init()
 {
 	// カメラ(3D)の初期化
@@ -619,8 +680,15 @@ void CarScene::init()
 	m_camera.SetLookat(Vector3(0, 0, 0));
 	m_camera.SetUP(Vector3(0, 1, 0));
 
-	// フリーカメラの初期姿勢（従来の固定カメラと同じ見え方）
+	// フリーカメラの初期姿勢（デバッグ第2ビューの初期視点）
 	m_freeCam.AdoptFromLookAt(Vector3(0, 0, -300), Vector3(0, 0, 0));
+	m_debugCam.Init();
+	m_debugCam.SetPosition(Vector3(0, 0, -300));	// 初回フレーム描画用の初期姿勢
+	m_debugCam.SetLookat(Vector3(0, 0, 0));
+	m_debugCam.SetUP(Vector3(0, 1, 0));
+
+	// デバッグ第2ビュー用オフスクリーンRTを生成
+	createDebugTarget();
 
 
 	// ローカル軸表示用線分の初期化
@@ -697,6 +765,55 @@ void CarScene::init()
 	m_splineCam.Init();
 	DebugUI::RedistDebugFunction([this]() {
 		m_splineCam.DebugUI();
+		});
+
+	// カメラモード切替UI（メイン: 基本⇔スプライン、Free-flyはデバッグ専用）＋基本カメラのパラメータ
+	DebugUI::RedistDebugFunction([this]() {
+		ImGui::Begin("Camera");
+		int mode = (int)m_camMode;
+		if (ImGui::RadioButton("Fighting (basic)", &mode, (int)CamMode::Fighting)) {
+			m_camMode = CamMode::Fighting;
+			m_splineCam.SetActive(false);
+			m_fightCam.ResetSnap();
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Spline (curve)", &mode, (int)CamMode::Spline)) {
+			m_camMode = CamMode::Spline;
+			m_splineCam.SetActive(true);
+		}
+		ImGui::Text("C key: toggle Fighting <-> Spline");
+		ImGui::Separator();
+		ImGui::Checkbox("Manual free-fly (main view)", &m_manualCam);	// 手動でメイン画面を飛ばす（録画用）
+		ImGui::Checkbox("Debug view (free-fly window)", &m_debugViewOpen);
+		ImGui::End();
+
+		m_fightCam.DebugUI();	// 基本カメラのパラメータ
+		});
+
+	// カメラワーク録画・再生UI
+	DebugUI::RedistDebugFunction([this]() {
+		m_recorder.DebugUI();
+		});
+
+	// デバッグ第2ビュー窓（free-fly視点のオフスクリーンをImGuiに表示）
+	DebugUI::RedistDebugFunction([this]() {
+		if (!m_debugViewOpen || !m_dbgSRV) return;
+		ImGui::SetNextWindowSize(ImVec2(720, 460), ImGuiCond_FirstUseEver);	// 初回の既定サイズ
+		ImGui::Begin("Debug Free-fly View");
+		ImGui::TextDisabled("focus/hover: WASD move, Right-drag look, Q/E up-down, Shift x3");
+
+		// 映像をウィンドウのサイズに合わせて拡大（アスペクト維持で歪ませない）
+		ImVec2 avail = ImGui::GetContentRegionAvail();
+		if (avail.x < 1) avail.x = 1;
+		if (avail.y < 1) avail.y = 1;
+		float aspect = (m_dbgH > 0) ? (float)m_dbgW / (float)m_dbgH : 1.0f;
+		float w = avail.x, h = w / aspect;			// 幅基準、はみ出たら高さ基準に
+		if (h > avail.y) { h = avail.y; w = h * aspect; }
+		ImGui::Image((ImTextureID)(size_t)m_dbgSRV.Get(), ImVec2(w, h));
+		// この窓を操作中(フォーカス/ホバー)のときだけ free-fly を動かす＝窓にカメラが付く
+		bool active = ImGui::IsWindowFocused() || ImGui::IsWindowHovered();
+		m_freeCam.UpdateImGui(m_debugCam, active);
+		ImGui::End();
 		});
 
 	// 軸ギズモ（矢印＝円柱の軸＋円錐の先端）

@@ -13,6 +13,10 @@ public:
 	// CDirectInput を読み、移動・視点を更新して cam に反映する
 	void Update(float dt, Camera& cam);
 
+	// ImGui入力でカメラを操作する（デバッグビュー窓用・多ビューポート対応）
+	// active=その窓を操作中(フォーカス/ホバー)のときだけ移動・回転する
+	void UpdateImGui(Camera& cam, bool active);
+
 	Vector3 GetPosition() const { return m_pos; }
 
 private:

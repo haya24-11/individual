@@ -146,6 +146,8 @@
     <ClInclude Include="scene\CarScene.h" />
     <ClInclude Include="scene\FreeFlyCamera.h" />
     <ClInclude Include="scene\SplineCamera.h" />
+    <ClInclude Include="scene\FightingCamera.h" />
+    <ClInclude Include="scene\CameraRecorder.h" />
     <ClInclude Include="system\AimOrientation.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -216,6 +218,8 @@
     <ClCompile Include="scene\CarScene.cpp" />
     <ClCompile Include="scene\FreeFlyCamera.cpp" />
     <ClCompile Include="scene\SplineCamera.cpp" />
+    <ClCompile Include="scene\FightingCamera.cpp" />
+    <ClCompile Include="scene\CameraRecorder.cpp" />
     <ClCompile Include="system\AssimpPerse.cpp" />
     <ClCompile Include="system\BoneCombMatrix.cpp" />
     <ClCompile Include="system\BoxDrawer.cpp" />

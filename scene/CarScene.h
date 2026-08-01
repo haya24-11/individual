@@ -17,12 +17,11 @@
 #include "../system/BoneCombMatrix.h"
 #include "FreeFlyCamera.h"
 #include "SplineCamera.h"
+#include "FightingCamera.h"
+#include "CameraRecorder.h"
 
 class CarScene : public IScene
 {
-	// 回転角度
-	Vector3 m_Rotation{};
-
 	// 現在の姿勢を表すクォータニオン
 	Quaternion m_RotationQ{};
 
@@ -36,7 +35,6 @@ public:
 	void draw(uint64_t deltatime) override;
 	void init() override;
 	void dispose() override;
-	void debugRubikCubeRotation();
 	void debugRubikCubeLocalRotation();
 
 	void debugModelSelect(const char* title, int& selectedIndex, std::string& meshId);
@@ -53,15 +51,37 @@ public:
 
 private:
 	Camera m_camera;									// 固定カメラ
-	std::unique_ptr<Box> m_shapecube;					// 立方体
 	std::array<std::unique_ptr<Segment>,3> m_segments;	// ローカル軸表示用線分
 
 	// 板ポリ（テクスチャ付き矩形ポリゴン）
 	std::unique_ptr<CSprite> m_sprite;
 
-	// カメラ（フリーフライ／スプラインを切り替えて使う）
-	FreeFlyCamera m_freeCam;
-	SplineCamera  m_splineCam;
+	// カメラ（メイン: 格ゲー基本⇔スプライン。Free-flyはデバッグ用の別ビュー）
+	enum class CamMode { Fighting, Spline };
+	CamMode        m_camMode = CamMode::Fighting;	// 既定は基本カメラ
+	FreeFlyCamera  m_freeCam;						// デバッグ第2ビューを操作する
+	SplineCamera   m_splineCam;						// 曲線カメラ
+	FightingCamera m_fightCam;						// 格ゲー基本カメラ
+
+	// カメラワークの録画・再生／手動フリー操作（メイン画面）
+	CameraRecorder m_recorder;						// テイク録画・再生
+	FreeFlyCamera  m_manualFly;						// 手動フリー操作（メイン・DirectInput）
+	bool m_manualCam     = false;					// 手動でメインカメラを飛ばす
+	bool m_prevManualCam = false;					// 立ち上がり検出
+
+	// デバッグ第2ビュー（free-flyの映像を別ウィンドウにオフスクリーン描画して表示）
+	Camera m_debugCam;								// free-flyが反映する専用カメラ
+	bool   m_debugViewOpen = false;					// 別ウィンドウ表示 ON/OFF（ImGui）
+	UINT   m_dbgW = 0, m_dbgH = 0;					// オフスクリーン解像度
+	ComPtr<ID3D11Texture2D>          m_dbgColorTex;
+	ComPtr<ID3D11RenderTargetView>   m_dbgRTV;
+	ComPtr<ID3D11ShaderResourceView> m_dbgSRV;
+	ComPtr<ID3D11Texture2D>          m_dbgDepthTex;
+	ComPtr<ID3D11DepthStencilView>   m_dbgDSV;
+
+	void createDebugTarget();	// オフスクリーンRT生成（init）
+	void drawSceneGeometry();	// 3D描画本体（メイン/第2ビュー共通）
+	void renderDebugView();		// free-fly視点でオフスクリーンへ再描画
 
 	// 今表示しているメッシュのID
 	std::string m_meshid{};		// player1 の表示メッシュID
@@ -71,7 +91,7 @@ private:
 	float m_p1Scale = 9.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
 
 	// 各プレイヤーの配置（向かい合わせ。値は実機で微調整）
-	Vector3 m_p1Pos{ -150, 0, 0 };	// player1 は左
+	Vector3 m_p1Pos{ -150, -100, 0 };	// player1 は左（suzuは原点が足元→地面Y=-100に接地）
 	Vector3 m_p2Pos{  150, 0, 0 };	// player2 は右
 	float   m_p1FaceY = -PI / 2.0f;	// 相手(+X方向)を向く ※モデルの正面軸により要調整
 	float   m_p2FaceY =  PI / 2.0f;	// 相手(-X方向)を向く ※同上

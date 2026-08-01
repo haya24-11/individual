@@ -91,3 +91,43 @@ void FreeFlyCamera::Update(float dt, Camera& cam)
 	cam.SetPosition(m_pos);
 	cam.SetLookat(m_pos + fwd);
 }
+
+// ImGuiの入力でカメラを操作する（別OSウィンドウでも効く。DirectInputのフォアグラウンド問題を回避）
+void FreeFlyCamera::UpdateImGui(Camera& cam, bool active)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	float dt = io.DeltaTime;
+
+	if (active)
+	{
+		// 右ドラッグで視点回転（ImGuiのマウスデルタを使用）
+		if (ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+		{
+			m_yaw   += io.MouseDelta.x * m_lookSpeed;
+			m_pitch -= io.MouseDelta.y * m_lookSpeed;
+		}
+
+		// ピッチをクランプ
+		const float pitchLimit = PI / 2.0f - 0.01f;
+		if (m_pitch >  pitchLimit) m_pitch =  pitchLimit;
+		if (m_pitch < -pitchLimit) m_pitch = -pitchLimit;
+
+		Vector3 fwd = forward();
+		Vector3 worldUp{ 0, 1, 0 };
+		Vector3 right = worldUp.Cross(fwd);
+		right.Normalize();
+
+		float speed = m_moveSpeed * (ImGui::IsKeyDown(ImGuiKey_LeftShift) ? 3.0f : 1.0f);
+		float dist = speed * dt;
+
+		if (ImGui::IsKeyDown(ImGuiKey_W)) m_pos += fwd   * dist;
+		if (ImGui::IsKeyDown(ImGuiKey_S)) m_pos -= fwd   * dist;
+		if (ImGui::IsKeyDown(ImGuiKey_D)) m_pos += right * dist;
+		if (ImGui::IsKeyDown(ImGuiKey_A)) m_pos -= right * dist;
+		if (ImGui::IsKeyDown(ImGuiKey_E) || ImGui::IsKeyDown(ImGuiKey_Space)) m_pos += worldUp * dist;
+		if (ImGui::IsKeyDown(ImGuiKey_Q)) m_pos -= worldUp * dist;
+	}
+
+	cam.SetPosition(m_pos);
+	cam.SetLookat(m_pos + forward());
+}

@@ -26,6 +26,7 @@ public:
 	// スプラインの数学
 	Vector3 Eval(float u) const;		// u位置のカメラ座標（Catmull-Rom）
 	float   SpeedAt(float u) const;		// u位置の速度倍率（隣接点間を線形補間）
+	float   RollAt(float u) const;		// u位置の roll[度]（隣接4点をCatmull-Rom補間）
 	void    BuildArcTable();			// 弧長テーブル構築
 	float   ArcLengthToU(float s) const;// 距離→u 逆引き
 
@@ -36,6 +37,7 @@ private:
 
 	std::vector<Vector3> m_points;		// 制御点
 	std::vector<float>   m_speeds;		// 制御点ごとの速度倍率
+	std::vector<float>   m_rolls;		// 制御点ごとの roll（度）。ダッチアングル
 	Vector3 m_lookat{ 0, 0, 0 };		// 固定注視点
 
 	bool  m_active   = false;			// 再生中か
@@ -53,6 +55,7 @@ private:
 	float m_editViewHalf = 600.0f;		// キャンバスに映すワールド半径（±600）
 	int   m_canvasDrag   = -1;			// ドラッグ中の制御点index（-1=なし）
 	int   m_canvasDragView = -1;		// ドラッグ中キャンバスの縦軸(axisV)。どちらの面がドラッグ中か区別する
+	int   m_speedDrag    = -1;			// 速度グラフでドラッグ中の制御点index（-1=なし）
 
 	std::unique_ptr<Sphere> m_marker;		// 現在地点（赤）
 	std::unique_ptr<Sphere> m_lookatMarker;	// 注視点（青）

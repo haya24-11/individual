@@ -93,6 +93,14 @@ void DebugUI::Render() {
         ID3D11DepthStencilView* dsv = nullptr;
         ctx->OMGetRenderTargets(1, &rtv, &dsv);
 
+        // 実行画面外へ出た全サブウィンドウを常に最前面(TopMost)にする
+        // （ImGui::Render後・UpdatePlatformWindows前に立てると win32 backend が HWND_TOPMOST を適用）
+        ImGuiViewport* mainVp = ImGui::GetMainViewport();
+        for (ImGuiViewport* vp : ImGui::GetPlatformIO().Viewports)
+        {
+            if (vp != mainVp) vp->Flags |= ImGuiViewportFlags_TopMost;
+        }
+
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
 

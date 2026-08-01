@@ -15,6 +15,7 @@ void SplineCamera::ResetDefault()
 		Vector3(-400, 150,    0), Vector3(   0, 150, -400)
 	};
 	m_speeds.assign(m_points.size(), 1.0f);	// 速度倍率は全点1.0（等速）
+	m_rolls.assign(m_points.size(), 0.0f);	// roll は全点0（水平）
 	m_t = 0.0f;
 	m_dist = 0.0f;
 }
@@ -74,6 +75,31 @@ float SplineCamera::SpeedAt(float u) const
 
 	// Catmull-Romは近傍値をオーバーシュートし得る→0以下だと停止・逆走するのでUI下限に合わせてクランプ
 	return std::max(r.x, 0.05f);
+}
+
+// u位置の roll[度] を求める（速度と同じ4点ステンシルをCatmull-Rom補間。roll は負もあり得るのでクランプ無し）
+float SplineCamera::RollAt(float u) const
+{
+	int n = (int)m_points.size();
+	if (n < 4 || m_rolls.size() != m_points.size()) return 0.0f;
+
+	int   seg = (int)floorf(u);
+	float t   = u - seg;
+
+	auto idx = [&](int k) -> int {
+		if (m_loop) return ((k % n) + n) % n;
+		return std::clamp(k, 0, n - 1);
+	};
+
+	float r0 = m_rolls[idx(seg - 1)];
+	float r1 = m_rolls[idx(seg)];
+	float r2 = m_rolls[idx(seg + 1)];
+	float r3 = m_rolls[idx(seg + 2)];
+
+	Vector3 r = Vector3::CatmullRom(
+		Vector3(r0, 0, 0), Vector3(r1, 0, 0), Vector3(r2, 0, 0), Vector3(r3, 0, 0), t);
+
+	return r.x;	// 度
 }
 
 // 弧長テーブルを構築する
@@ -160,10 +186,23 @@ void SplineCamera::Update(float dt, Camera& cam)
 		m_active = false;
 	}
 
+	m_rolls.resize(m_points.size(), 0.0f);	// サイズ同期（保険）
 	m_t = ArcLengthToU(m_dist);	// 距離 → u（弧長パラメータ化の核心）
 
-	cam.SetPosition(Eval(m_t));		// 位置は経路上
-	cam.SetLookat(m_lookat);		// 常に固定の注視点を見る
+	// 前方軸まわりに world-up を roll だけ回してダッチアングルを作る
+	Vector3 pos = Eval(m_t);
+	Vector3 fwd = m_lookat - pos;
+	Vector3 up(0, 1, 0);
+	if (fwd.LengthSquared() > 1e-8f) {
+		fwd.Normalize();
+		float rollRad = RollAt(m_t) * 0.01745329252f;	// 度→ラジアン
+		Matrix4x4 rollM = Matrix4x4::CreateFromAxisAngle(fwd, rollRad);
+		up = Vector3::Transform(Vector3(0, 1, 0), rollM);
+	}
+
+	cam.SetPosition(pos);		// 位置は経路上
+	cam.SetLookat(m_lookat);	// 常に固定の注視点を見る
+	cam.SetUP(up);				// 傾いた up でダッチアングル
 }
 
 void SplineCamera::DrawVisualization()
@@ -414,7 +453,7 @@ void SplineCamera::DebugUI()
 
 	// --- 速度グラフ（横=経路パラメータ / 縦=実効速度倍率） ---
 	ImGui::Separator();
-	ImGui::Text("Effective speed along path");
+	ImGui::Text("Effective speed along path  (drag knobs to adjust)");
 
 	if (m_points.size() >= 4)
 	{
@@ -433,10 +472,8 @@ void SplineCamera::DebugUI()
 		dl->AddRectFilled(g0, g1, IM_COL32(25, 25, 30, 255));
 		dl->AddRect(g0, g1, IM_COL32(90, 90, 100, 255));
 
-		// 縦軸スケール：倍率の最大値（最低でも 1.0 は確保、少し余白）
-		float vmax = 1.0f;
-		for (float s : m_speeds) vmax = (s > vmax) ? s : vmax;
-		vmax *= 1.15f;
+		// 縦軸スケール：固定レンジ（DragFloatの上限と一致→ノブ位置と1:1対応でドラッグが安定）
+		const float vmax = 5.0f;
 
 		// 座標変換：u(0..uMax) → x、倍率(0..vmax) → y（下向き反転）
 		auto toX = [&](float u)   { return g0.x + (u / uMax) * gsize.x; };
@@ -477,6 +514,52 @@ void SplineCamera::DebugUI()
 			float px = toX(m_t);
 			dl->AddLine(ImVec2(px, g0.y), ImVec2(px, g1.y), IM_COL32(255, 60, 60, 255), 2.0f);
 		}
+
+		// --- 各制御点のノブを直接ドラッグして倍率を調整 ---
+		ImVec2 mouse = ImGui::GetIO().MousePos;
+		bool   hovered = ImGui::IsItemHovered();	// InvisibleButton("##speedGraph") 領域
+		float  colW = gsize.x / uMax;				// 制御点1つ分の横幅
+
+		// クリックで最寄りの制御点列を掴む（列幅の45%以内＝縦ストリップをフェーダー的に掴める）
+		if (hovered && ImGui::IsMouseClicked(0))
+		{
+			int   best = -1;
+			float bestdx = colW * 0.45f;
+			for (int i = 0; i < n; ++i)
+			{
+				float dx = fabsf(mouse.x - toX((float)i));
+				if (dx < bestdx) { bestdx = dx; best = i; }
+			}
+			m_speedDrag = best;
+		}
+
+		// ドラッグ中：マウスYを倍率へ変換して反映
+		if (m_speedDrag >= 0 && m_speedDrag < (int)m_speeds.size() && ImGui::IsMouseDown(0))
+		{
+			float spd = (g1.y - mouse.y) / gsize.y * vmax;	// screen→倍率（下向き反転の逆）
+			m_speeds[m_speedDrag] = std::clamp(spd, 0.05f, 5.0f);
+		}
+		if (ImGui::IsMouseReleased(0)) m_speedDrag = -1;
+
+		// ノブ本体（制御点ごとに円。u=整数で SpeedAt は m_speeds[i] を通るので曲線上に乗る）
+		for (int i = 0; i < n; ++i)
+		{
+			ImVec2 c(toX((float)i), toY(std::clamp(m_speeds[i], 0.0f, vmax)));
+			bool  activeKnob = (i == m_speedDrag);
+			ImU32 col = activeKnob ? IM_COL32(255, 230, 120, 255) : IM_COL32(230, 180, 40, 255);
+			float rad = activeKnob ? 7.0f : 5.5f;
+			dl->AddCircleFilled(c, rad, col);
+			dl->AddCircle(c, rad, IM_COL32(30, 30, 30, 255));
+		}
+
+		// ドラッグ中は数値ラベルを表示
+		if (m_speedDrag >= 0 && m_speedDrag < (int)m_speeds.size())
+		{
+			char buf[16];
+			snprintf(buf, sizeof(buf), "%.2f x", m_speeds[m_speedDrag]);
+			dl->AddText(ImVec2(toX((float)m_speedDrag) + 8, toY(m_speeds[m_speedDrag]) - 16),
+				IM_COL32(255, 255, 255, 255), buf);
+		}
 	}
 	else
 	{
@@ -484,4 +567,20 @@ void SplineCamera::DebugUI()
 	}
 
 	ImGui::End();	// Spline Speed ウィンドウ終了
+
+	// ===== ダッチアングル（制御点ごとの roll・別ウィンドウ） =====
+	ImGui::Begin("Spline Roll");
+	ImGui::TextDisabled("Dutch angle per control point (degrees)");
+
+	m_rolls.resize(m_points.size(), 0.0f);	// サイズ同期（保険）
+
+	for (int i = 0; i < (int)m_rolls.size(); ++i)
+	{
+		std::string label = "P" + std::to_string(i) + " roll";
+		ImGui::SliderFloat(label.c_str(), &m_rolls[i], -90.0f, 90.0f, "%.0f deg");
+	}
+
+	if (ImGui::Button("Reset roll")) std::fill(m_rolls.begin(), m_rolls.end(), 0.0f);
+
+	ImGui::End();	// Spline Roll ウィンドウ終了
 }
