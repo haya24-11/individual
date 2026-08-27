@@ -67,9 +67,9 @@ void DebugUI::Render() {
     ImGui::NewFrame();
 
     // �E�B���h�E�ƃf�o�b�O���̕`��
-    ImGui::Begin("Debug Information");
+    ImGui::Begin("デバッグ情報###Debug Information");
     ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::Text("平均フレーム時間 %.3f ms（%.1f FPS）", 1000.0f / io.Framerate, io.Framerate);
 
     ImGui::End();
 

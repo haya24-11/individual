@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "transform.h"
 #include "CStaticMesh.h"
@@ -12,19 +12,19 @@
 class CAnimationMesh : public CStaticMesh
 {
 protected:
-	// ƒ{[ƒ“«‘
-	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX‰»
+	// ãƒœãƒ¼ãƒ³è¾æ›¸
+	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DXåŒ–
 
-	// ƒJƒŒƒ“ƒg‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^
+	// ã‚«ãƒ¬ãƒ³ãƒˆã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿
 	aiAnimation* m_CurrentAnimation{};
 
-	// assimp ƒm[ƒh–¼ƒcƒŠ[ieqŠÖŒW‚ª‚í‚©‚éj
+	// assimp ãƒãƒ¼ãƒ‰åãƒ„ãƒªãƒ¼ï¼ˆè¦ªå­é–¢ä¿‚ãŒã‚ã‹ã‚‹ï¼‰
 	CTreeNode<std::string>	m_AssimpNodeNameTree{};
 
-	// ƒŒƒ“ƒ_ƒ‰
+	// ãƒ¬ãƒ³ãƒ€ãƒ©
 	CStaticMeshRenderer m_StaticMeshRenderer{};
 
-	// ƒ[ƒJƒ‹ƒ|[ƒY¶¬
+	// ãƒ­ãƒ¼ã‚«ãƒ«ãƒãƒ¼ã‚ºç”Ÿæˆ
 	void BuildLocalPoseMap(
 		const aiAnimation* animationdata,
 		int& CurrentFrame,
@@ -35,12 +35,12 @@ public:
 
 	void Load(std::string filename, std::string texturedirectory = "");
 
-	// ŠK‘w\‘¢‚ğl—¶‚µ‚½ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“s—ñ‚ğXV
-	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, Matrix4x4 matrix);		// 20240714 DX‰»	
+	// éšå±¤æ§‹é€ ã‚’è€ƒæ…®ã—ãŸãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’æ›´æ–°
+	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, Matrix4x4 matrix);		// 20240714 DXåŒ–	
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌXV
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®æ›´æ–°
 	void Update(BoneCombMatrix& bonecombarray, int& CurrentFrame);
 
-	// •`‰æ
+	// æç”»
 	void Draw();
 };

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <memory>
 #include <unordered_map>
 #include <string>
@@ -7,32 +7,32 @@
 #include "CShader.h"
 #include "noncopyable.h"
 
-// ‹¤’Ê‚ÌƒŠƒ\[ƒXŠÇ——pƒeƒ“ƒvƒŒ[ƒgƒNƒ‰ƒX
+// å…±é€šã®ãƒªã‚½ãƒ¼ã‚¹ç®¡ç†ç”¨ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆã‚¯ãƒ©ã‚¹
 template <typename ResourceType>
 class ResourceManager : NonCopyable {
     static inline std::unordered_map<std::string, std::unique_ptr<ResourceType>> m_container{};
 public:
     template<class T>
     static bool Register(const std::string& key, std::unique_ptr<T> data) {
-        // ‘¶İ‚µ‚Ä‚éê‡‚Í‰½‚à‚µ‚È‚¢
+        // å­˜åœ¨ã—ã¦ã‚‹å ´åˆã¯ä½•ã‚‚ã—ãªã„
         if (m_container.contains(key)) return false;
 
-        // ‘¶İ‚µ‚Ä‚¢‚È‚¯‚ê‚Îƒ€[ƒu‚µ‚Ä“o˜^ (emplace‚ğg—p‚·‚é‚ÆŒø—¦“I‚Å‚·)
+        // å­˜åœ¨ã—ã¦ã„ãªã‘ã‚Œã°ãƒ ãƒ¼ãƒ–ã—ã¦ç™»éŒ² (emplaceã‚’ä½¿ç”¨ã™ã‚‹ã¨åŠ¹ç‡çš„ã§ã™)
         m_container.emplace(key, std::move(data));
         return true;
     }
 
     template<class T = ResourceType>
     static T* Get(const std::string& key) {
-        // [d—v] operator[] ‚ÍƒL[‚ª‘¶İ‚µ‚È‚¢ê‡‚É‹ó‚Ì—v‘f‚ğV‹Kì¬‚µ‚Ä‚µ‚Ü‚¤‚½‚ß find ‚ğg—p‚·‚é
+        // [é‡è¦] operator[] ã¯ã‚­ãƒ¼ãŒå­˜åœ¨ã—ãªã„å ´åˆã«ç©ºã®è¦ç´ ã‚’æ–°è¦ä½œæˆã—ã¦ã—ã¾ã†ãŸã‚ find ã‚’ä½¿ç”¨ã™ã‚‹
         auto it = m_container.find(key);
         if (it != m_container.end()) {
             return static_cast<T*>(it->second.get());
         }
-        return nullptr; // Œ©‚Â‚©‚ç‚È‚¢ê‡‚Í nullptr ‚ğ•Ô‚·
+        return nullptr; // è¦‹ã¤ã‹ã‚‰ãªã„å ´åˆã¯ nullptr ã‚’è¿”ã™
     }
 
-    // ƒRƒ“ƒeƒi‚Éw’è‚³‚ê‚½ƒL[‚ÌƒŠƒ\[ƒX‚ª‘¶İ‚·‚é‚©ƒ`ƒFƒbƒN‚·‚é
+    // ã‚³ãƒ³ãƒ†ãƒŠã«æŒ‡å®šã•ã‚ŒãŸã‚­ãƒ¼ã®ãƒªã‚½ãƒ¼ã‚¹ãŒå­˜åœ¨ã™ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ã™ã‚‹
     static bool Contains(const std::string& key) {
         return m_container.contains(key);
     }
@@ -53,7 +53,7 @@ public:
         return ResourceManager<CMesh>::Get<T>(key);
     }
 
-    // ¥ ’Ç‰Á: Mesh‚Ì‘¶İƒ`ƒFƒbƒN
+    // â–¼ è¿½åŠ : Meshã®å­˜åœ¨ãƒã‚§ãƒƒã‚¯
     static bool ContainsMesh(const std::string& key) {
         return ResourceManager<CMesh>::Contains(key);
     }
@@ -69,7 +69,7 @@ public:
         return ResourceManager<CMeshRenderer>::Get<T>(key);
     }
 
-    // ¥ ’Ç‰Á: MeshRenderer‚Ì‘¶İƒ`ƒFƒbƒN
+    // â–¼ è¿½åŠ : MeshRendererã®å­˜åœ¨ãƒã‚§ãƒƒã‚¯
     static bool ContainsRenderer(const std::string& key) {
         return ResourceManager<CMeshRenderer>::Contains(key);
     }

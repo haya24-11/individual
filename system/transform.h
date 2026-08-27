@@ -1,37 +1,37 @@
-#pragma once
+ï»¿#pragma once
 #include	"CommonTypes.h"
 
 /**
  * @struct SRT
- * @brief ƒXƒP[ƒ‹A‰ñ“]A•½sˆÚ“®iTranslationjî•ñ‚ğŠi”[‚·‚é\‘¢‘Ì
+ * @brief ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã€å¹³è¡Œç§»å‹•ï¼ˆTranslationï¼‰æƒ…å ±ã‚’æ ¼ç´ã™ã‚‹æ§‹é€ ä½“
  */
 struct SRT {
-	Vector3 scale = { 1.0f,1.0f,1.0f };  ///< ƒXƒP[ƒ‹î•ñ
-	Vector3 rot = { 0.0f,0.0f,0.0f };    ///< ‰ñ“]î•ñ
-	Vector3 pos = { 0.0f,0.0f,0.0f };    ///< •½sˆÚ“®iˆÊ’ujî•ñ
-	Vector3 pivot = { 0.0f,0.0f,0.0f };	 ///< ‰ñ“]PIVOTî•ñ
+	Vector3 scale = { 1.0f,1.0f,1.0f };  ///< ã‚¹ã‚±ãƒ¼ãƒ«æƒ…å ±
+	Vector3 rot = { 0.0f,0.0f,0.0f };    ///< å›è»¢æƒ…å ±
+	Vector3 pos = { 0.0f,0.0f,0.0f };    ///< å¹³è¡Œç§»å‹•ï¼ˆä½ç½®ï¼‰æƒ…å ±
+	Vector3 pivot = { 0.0f,0.0f,0.0f };	 ///< å›è»¢PIVOTæƒ…å ±
 
 
 	Matrix4x4 GetMatrix() const {
-		// •½sˆÚ“®
+		// å¹³è¡Œç§»å‹•
 		Matrix4x4 tmtx;
 		tmtx = Matrix4x4::CreateTranslation(pos.x, pos.y, pos.z);
 
-		// ‰ñ“]
+		// å›è»¢
 		Matrix4x4 rmtx;
 		rmtx = Matrix4x4::CreateFromYawPitchRoll(rot.y,rot.x,rot.z);
 
-		// ƒsƒ{ƒbƒgˆ—
+		// ãƒ”ãƒœãƒƒãƒˆå‡¦ç†
 		Matrix4x4 pivotmtx1;
 		Matrix4x4 pivotmtx2;
 		pivotmtx1 = Matrix4x4::CreateTranslation(-pivot.x, -pivot.y, -pivot.z);
 		pivotmtx2 = Matrix4x4::CreateTranslation(pivot.x, pivot.y, pivot.z);
 
-		// Šg‘åk¬
+		// æ‹¡å¤§ç¸®å°
 		Matrix4x4 smtx;
 		smtx = Matrix4x4::CreateScale(scale.x, scale.y, scale.z);
 
-		// ‡¬
+		// åˆæˆ
 		Matrix4x4 mtx = smtx * pivotmtx1 * rmtx * pivotmtx2 * tmtx;
 
 		return mtx;
@@ -40,7 +40,7 @@ struct SRT {
 
 /**
  * @struct SRTQ
- * @brief ƒXƒP[ƒ‹A‰ñ“]A•½sˆÚ“®iTranslationjî•ñ‚ğŠi”[‚·‚é\‘¢‘Ì‚ÌŠg’£iQUATERNION’Ç‰Áj
+ * @brief ã‚¹ã‚±ãƒ¼ãƒ«ã€å›è»¢ã€å¹³è¡Œç§»å‹•ï¼ˆTranslationï¼‰æƒ…å ±ã‚’æ ¼ç´ã™ã‚‹æ§‹é€ ä½“ã®æ‹¡å¼µï¼ˆQUATERNIONè¿½åŠ ï¼‰
  */
 struct SRTQ :public SRT{
 	Quaternion	quat = { 0.0f,0.0f,0.0f,1.0f };

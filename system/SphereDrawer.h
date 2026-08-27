@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include	"CommonTypes.h"
 #include	"transform.h"
@@ -8,9 +8,9 @@ void SphereDrawerDraw(float radius, Color col, float ex, float ey, float ez);
 void SphereDrawerDraw(SRT rts, Color col);
 void SphereDrawerDraw(Matrix4x4 mtx, Color col);
 void SphereDrawerDrawShadow(
-	float radius,       // ‹…‚Ì”¼Œa‚É‡‚í‚¹‚½‰eƒTƒCƒY
-	float groundY,      // ’n–Ê‚Ì Y ‚‚³
-	float ex, float ez, // ‰e‚Ì XZ ˆÊ’ui‹…‚ÌˆÊ’u‚É‡‚í‚¹‚éj
-	Color shadowColor   // Œ¸Z‚·‚é‰eFi—á: Color(0.3f,0.3f,0.3f,1)j
+	float radius,       // çƒã®åŠå¾„ã«åˆã‚ã›ãŸå½±ã‚µã‚¤ã‚º
+	float groundY,      // åœ°é¢ã® Y é«˜ã•
+	float ex, float ez, // å½±ã® XZ ä½ç½®ï¼ˆçƒã®ä½ç½®ã«åˆã‚ã›ã‚‹ï¼‰
+	Color shadowColor   // æ¸›ç®—ã™ã‚‹å½±è‰²ï¼ˆä¾‹: Color(0.3f,0.3f,0.3f,1)ï¼‰
 );
 

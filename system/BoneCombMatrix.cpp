@@ -1,37 +1,37 @@
-#pragma once
+ï»¿#pragma once
 
 #include	"BoneCombMatrix.h"
 #include	"dx11helper.h"
 
-// ’è”ƒoƒbƒtƒ@¶¬‚µ“à—e‚ðXV‚·‚é
+// å®šæ•°ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã—å†…å®¹ã‚’æ›´æ–°ã™ã‚‹
 bool BoneCombMatrix::Create() {
 
 	ID3D11Device* dev;
 	dev = Renderer::GetDevice();
 
-	// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@ì¬
+	// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡ä½œæˆ
 	bool sts = CreateConstantBufferWrite(
-		dev,								// ƒfƒoƒCƒX
-		sizeof(CBBoneCombMatrix),			// ƒTƒCƒY
-		ConstantBuffer.GetAddressOf());		// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@
+		dev,								// ãƒ‡ãƒã‚¤ã‚¹
+		sizeof(CBBoneCombMatrix),			// ã‚µã‚¤ã‚º
+		ConstantBuffer.GetAddressOf());		// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡
 	if (!sts) {
 		MessageBox(NULL, L"CreateBuffer(constant buffer BoneMatrices) error", L"Error", MB_OK);
 		return false;
 	}
 
-	// s—ñŒQ‚ð’è”ƒoƒbƒtƒ@‚ÖƒZƒbƒg
+	// è¡Œåˆ—ç¾¤ã‚’å®šæ•°ãƒãƒƒãƒ•ã‚¡ã¸ã‚»ãƒƒãƒˆ
 	Update();
 
 	return true;
 }
 
-// ’è”ƒoƒbƒtƒ@‚ðXV‚·‚é
+// å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’æ›´æ–°ã™ã‚‹
 void BoneCombMatrix::Update()
 {
 	ID3D11DeviceContext* devcontext;
 	devcontext = Renderer::GetDeviceContext();
 
-	//’è”ƒoƒbƒtƒ@‘‚«Š·‚¦
+	//å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›¸ãæ›ãˆ
 	D3D11_MAPPED_SUBRESOURCE msr;
 
 	HRESULT hr = devcontext->Map(
@@ -46,12 +46,12 @@ void BoneCombMatrix::Update()
 	}
 }
 
-// GPU‚ÉƒZƒbƒg
+// GPUã«ã‚»ãƒƒãƒˆ
 void BoneCombMatrix::SetGPU() {
 
 	ID3D11DeviceContext* devcontext;
 	devcontext = Renderer::GetDeviceContext();
 
-	// ƒRƒ“ƒXƒ^ƒ“ƒgƒoƒbƒtƒ@‚ð‚‚‚TƒŒƒWƒXƒ^‚ÖƒZƒbƒgi’¸“_ƒVƒF[ƒ_[—pj
+	// ã‚³ãƒ³ã‚¹ã‚¿ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡ã‚’ï½‚ï¼•ãƒ¬ã‚¸ã‚¹ã‚¿ã¸ã‚»ãƒƒãƒˆï¼ˆé ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç”¨ï¼‰
 	devcontext->VSSetConstantBuffers(5, 1, ConstantBuffer.GetAddressOf());
 }

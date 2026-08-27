@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include	"commontypes.h"
 #include	"renderer.h"
@@ -7,12 +7,12 @@
 
 class Camera {
 protected:
-	Vector3	m_position = Vector3(0.0f, 0.0f, -100.0f);	// ƒJƒƒ‰ˆÊ’u
+	Vector3	m_position = Vector3(0.0f, 0.0f, -100.0f);	// ã‚«ãƒ¡ãƒ©ä½ç½®
 
-	Vector3		m_lookat{0,0,0};				// ’‹“_
-	Vector3		m_up = { 0,1,0 };		// ƒAƒbƒvƒxƒNƒgƒ‹			
-	Matrix4x4	m_viewmtx{};			// ƒrƒ…[•ÏŠ·s—ñ
-	Matrix4x4   m_projmtx{};			// ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ
+	Vector3		m_lookat{0,0,0};				// æ³¨è¦–ç‚¹
+	Vector3		m_up = { 0,1,0 };		// ã‚¢ãƒƒãƒ—ãƒ™ã‚¯ãƒˆãƒ«			
+	Matrix4x4	m_viewmtx{};			// ãƒ“ãƒ¥ãƒ¼å¤‰æ›è¡Œåˆ—
+	Matrix4x4   m_projmtx{};			// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—
 
 public:
 	virtual ~Camera(){}

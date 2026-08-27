@@ -1,4 +1,4 @@
-#include	<iostream>
+ï»¿#include	<iostream>
 #include	"CAnimationMesh.h"
 #include	"utility.h"
 
@@ -6,7 +6,7 @@ void CAnimationMesh::SetCurentAnimation(aiAnimation * currentanimation) {
 	m_CurrentAnimation = currentanimation;
 }
 
-// ƒm[ƒhƒcƒŠ[•\¦(debug—p)
+// ãƒãƒ¼ãƒ‰ãƒ„ãƒªãƒ¼è¡¨ç¤º(debugç”¨)
 static void DispNodeTree(CTreeNode<std::string>* ptree) 
 {
 	std::cout << ptree->m_nodedata << std::endl;
@@ -19,111 +19,111 @@ static void DispNodeTree(CTreeNode<std::string>* ptree)
 
 void CAnimationMesh::Draw()
 {
-	// ƒƒbƒVƒ…•`‰æ
+	// ãƒ¡ãƒƒã‚·ãƒ¥æç”»
 	m_StaticMeshRenderer.Draw();
 }
 
 
 void CAnimationMesh::Load(std::string filename, std::string texturedirectory) 
 {
-	// ƒƒbƒVƒ…“Ç‚İ‚İ
+	// ãƒ¡ãƒƒã‚·ãƒ¥èª­ã¿è¾¼ã¿
 	CStaticMesh::Load(filename, texturedirectory);
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^(ASSIMP—pj
-	std::unordered_map<std::string, GM31::GE::myAssimp::BONE> assimp_BoneDictionary{};	// 20240714 DX‰»
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿(ASSIMPç”¨ï¼‰
+	std::unordered_map<std::string, GM31::GE::myAssimp::BONE> assimp_BoneDictionary{};	// 20240714 DXåŒ–
 
-	// ƒ{[ƒ“«‘æ“¾iƒ{[ƒ“–¼‚ğƒL[‚É‚µ‚Äƒ{[ƒ“î•ñ‚ªæ‚ê‚éj
-	assimp_BoneDictionary = GM31::GE::myAssimp::GetBoneDictionary();					// 20240714 DX‰»
+	// ãƒœãƒ¼ãƒ³è¾æ›¸å–å¾—ï¼ˆãƒœãƒ¼ãƒ³åã‚’ã‚­ãƒ¼ã«ã—ã¦ãƒœãƒ¼ãƒ³æƒ…å ±ãŒå–ã‚Œã‚‹ï¼‰
+	assimp_BoneDictionary = GM31::GE::myAssimp::GetBoneDictionary();					// 20240714 DXåŒ–
 
-	for (auto& asimpbone : assimp_BoneDictionary) {										// 20240714 DX‰»
-		BONE dxbone;																	// 20240714 DX‰»	
+	for (auto& asimpbone : assimp_BoneDictionary) {										// 20240714 DXåŒ–
+		BONE dxbone;																	// 20240714 DXåŒ–	
 
-		dxbone.meshname = asimpbone.second.meshname;									// 20240714 DX‰»
-		dxbone.armaturename = asimpbone.second.armaturename;							// 20240714 DX‰»
-		dxbone.bonename = asimpbone.second.bonename;									// 20240714 DX‰»
-		dxbone.idx = asimpbone.second.idx;												// 20240714 DX‰»
+		dxbone.meshname = asimpbone.second.meshname;									// 20240714 DXåŒ–
+		dxbone.armaturename = asimpbone.second.armaturename;							// 20240714 DXåŒ–
+		dxbone.bonename = asimpbone.second.bonename;									// 20240714 DXåŒ–
+		dxbone.idx = asimpbone.second.idx;												// 20240714 DXåŒ–
 
 		dxbone.OffsetMatrix = utility::aiMtxToDxMtx(asimpbone.second.OffsetMatrix);
-		dxbone.AnimationMatrix = Matrix4x4::Identity;										// 20240714 DX‰»
-		dxbone.Matrix = Matrix4x4::Identity;												// 20240714 DX‰»
+		dxbone.AnimationMatrix = Matrix4x4::Identity;										// 20240714 DXåŒ–
+		dxbone.Matrix = Matrix4x4::Identity;												// 20240714 DXåŒ–
 
-		dxbone.weights.clear();															// 20240714 DX‰»
-		for (auto& asimpweight : asimpbone.second.weights)								// 20240714 DX‰»	
+		dxbone.weights.clear();															// 20240714 DXåŒ–
+		for (auto& asimpweight : asimpbone.second.weights)								// 20240714 DXåŒ–	
 		{
-			WEIGHT dxweight;															// 20240714 DX‰»			
-			dxweight.bonename = asimpweight.bonename;									// 20240714 DX‰»
-			dxweight.meshname = asimpweight.meshname;									// 20240714 DX‰»
-			dxweight.vertexindex = asimpweight.vertexindex;								// 20240714 DX‰»
-			dxweight.weight = asimpweight.weight;										// 20240714 DX‰»
-			dxbone.weights.push_back(dxweight);											// 20240714 DX‰»		
-		}																				// 20240714 DX‰»
+			WEIGHT dxweight;															// 20240714 DXåŒ–			
+			dxweight.bonename = asimpweight.bonename;									// 20240714 DXåŒ–
+			dxweight.meshname = asimpweight.meshname;									// 20240714 DXåŒ–
+			dxweight.vertexindex = asimpweight.vertexindex;								// 20240714 DXåŒ–
+			dxweight.weight = asimpweight.weight;										// 20240714 DXåŒ–
+			dxbone.weights.push_back(dxweight);											// 20240714 DXåŒ–		
+		}																				// 20240714 DXåŒ–
 
-		m_BoneDictionary[asimpbone.first] = dxbone;										// 20240714 DX‰»
+		m_BoneDictionary[asimpbone.first] = dxbone;										// 20240714 DXåŒ–
 	}																	
 
-	// ƒ{[ƒ“–¼ƒcƒŠ[æ“¾
+	// ãƒœãƒ¼ãƒ³åãƒ„ãƒªãƒ¼å–å¾—
 	m_AssimpNodeNameTree = GM31::GE::myAssimp::GetBoneNameTree();
 
-	// ƒŒƒ“ƒ_ƒ‰‰Šú‰»
+	// ãƒ¬ãƒ³ãƒ€ãƒ©åˆæœŸåŒ–
 	m_StaticMeshRenderer.Init(*this);
 
 }
 
-// ŠK‘w\‘¢‚ğl—¶‚µ‚½ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“s—ñ‚ğXV
+// éšå±¤æ§‹é€ ã‚’è€ƒæ…®ã—ãŸãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’æ›´æ–°
 void CAnimationMesh::UpdateBoneMatrix(
 	CTreeNode<std::string>* ptree, 
-	Matrix4x4 matrix)														// 20240714 DX‰»	
+	Matrix4x4 matrix)														// 20240714 DXåŒ–	
 {
-	// ƒm[ƒh–¼‚©‚çƒ{[ƒ“«‘‚ğg‚Á‚Äƒ{[ƒ“î•ñ‚ğæ“¾
-	BONE* bone = &m_BoneDictionary[ptree->m_nodedata];						// 20240714 DX‰»		
+	// ãƒãƒ¼ãƒ‰åã‹ã‚‰ãƒœãƒ¼ãƒ³è¾æ›¸ã‚’ä½¿ã£ã¦ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—
+	BONE* bone = &m_BoneDictionary[ptree->m_nodedata];						// 20240714 DXåŒ–		
 
-	Matrix4x4 bonecombination;												// 20240714 DX‰»G
+	Matrix4x4 bonecombination;												// 20240714 DXåŒ–ï¼›
 
-	// ƒ{[ƒ“ƒIƒtƒZƒbƒgs—ñ~ƒ{[ƒ“ƒAƒjƒƒ[ƒVƒ‡ƒ“s—ñ~‹tƒ{[ƒ“ƒIƒtƒZƒbƒgs—ñ
-	bonecombination = bone->OffsetMatrix * bone->AnimationMatrix * matrix;	// 20240714 DX‰»
-	bone->Matrix = bonecombination;											// 20240714 DX‰»
+	// ãƒœãƒ¼ãƒ³ã‚ªãƒ•ã‚»ãƒƒãƒˆè¡Œåˆ—Ã—ãƒœãƒ¼ãƒ³ã‚¢ãƒ‹ãƒ¡ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—Ã—é€†ãƒœãƒ¼ãƒ³ã‚ªãƒ•ã‚»ãƒƒãƒˆè¡Œåˆ—
+	bonecombination = bone->OffsetMatrix * bone->AnimationMatrix * matrix;	// 20240714 DXåŒ–
+	bone->Matrix = bonecombination;											// 20240714 DXåŒ–
 
-	// ©•ª‚Ìp¨‚ğ•\‚·s—ñ‚ğì¬
-	Matrix4x4 mybonemtx;													// 20240714 DX‰»
-	mybonemtx = bone->AnimationMatrix * matrix;								// 20240714 DX‰»
-	// qƒm[ƒh‚É‘Î‚µ‚ÄÄ‹A“I‚Éˆ—											// 20240714 DX‰»
-	for (unsigned int n = 0; n < ptree->m_children.size(); n++)				// 20240714 DX‰»
-	{																		// 20240714 DX‰»
-		UpdateBoneMatrix(ptree->m_children[n].get(), mybonemtx);			// 20240714 DX‰»
-	}																		// 20240714 DX‰»
+	// è‡ªåˆ†ã®å§¿å‹¢ã‚’è¡¨ã™è¡Œåˆ—ã‚’ä½œæˆ
+	Matrix4x4 mybonemtx;													// 20240714 DXåŒ–
+	mybonemtx = bone->AnimationMatrix * matrix;								// 20240714 DXåŒ–
+	// å­ãƒãƒ¼ãƒ‰ã«å¯¾ã—ã¦å†å¸°çš„ã«å‡¦ç†											// 20240714 DXåŒ–
+	for (unsigned int n = 0; n < ptree->m_children.size(); n++)				// 20240714 DXåŒ–
+	{																		// 20240714 DXåŒ–
+		UpdateBoneMatrix(ptree->m_children[n].get(), mybonemtx);			// 20240714 DXåŒ–
+	}																		// 20240714 DXåŒ–
 }
 
-// ƒ[ƒJƒ‹ƒ|[ƒY¶¬
+// ãƒ­ãƒ¼ã‚«ãƒ«ãƒãƒ¼ã‚ºç”Ÿæˆ
 void CAnimationMesh::BuildLocalPoseMap(
 	const aiAnimation* animationdata,
 	int& CurrentFrame,
 	std::unordered_map<std::string, SRTQ>& localposemap)
 {
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^æ“¾
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿å–å¾—
 	const aiAnimation* animation = animationdata;
 
-	// ƒ{[ƒ“”•ªƒ‹[ƒv‚µ‚Äƒ{[ƒ“s—ñ‚ğì¬
+	// ãƒœãƒ¼ãƒ³æ•°åˆ†ãƒ«ãƒ¼ãƒ—ã—ã¦ãƒœãƒ¼ãƒ³è¡Œåˆ—ã‚’ä½œæˆ
 	for (unsigned int c = 0; c < animation->mNumChannels; c++)
 	{
 		aiNodeAnim* nodeAnim = animation->mChannels[c];
 
 		int f;
 
-		f = CurrentFrame % nodeAnim->mNumRotationKeys;				//ŠÈˆÕÀ‘•
+		f = CurrentFrame % nodeAnim->mNumRotationKeys;				//ç°¡æ˜“å®Ÿè£…
 		aiQuaternion rot = nodeAnim->mRotationKeys[f].mValue;
 
-		f = CurrentFrame % nodeAnim->mNumPositionKeys;				//ŠÈˆÕÀ‘•
+		f = CurrentFrame % nodeAnim->mNumPositionKeys;				//ç°¡æ˜“å®Ÿè£…
 		aiVector3D pos = nodeAnim->mPositionKeys[f].mValue;
 
-		// assimp SRT=>DX”Å@SRT
-		Vector3 s = { 1.0f,1.0f,1.0f };		// 20240714 DX‰»
-		Vector3 t = { pos.x,pos.y,pos.z };	// 20240714 DX‰»
-		Quaternion r{};						// 20240714 DX‰»
+		// assimp SRT=>DXç‰ˆã€€SRT
+		Vector3 s = { 1.0f,1.0f,1.0f };		// 20240714 DXåŒ–
+		Vector3 t = { pos.x,pos.y,pos.z };	// 20240714 DXåŒ–
+		Quaternion r{};						// 20240714 DXåŒ–
 
-		r.x = rot.x;						// 20240714 DX‰»
-		r.y = rot.y;						// 20240714 DX‰»
-		r.z = rot.z;						// 20240714 DX‰»
-		r.w = rot.w;						// 20240714 DX‰»
+		r.x = rot.x;						// 20240714 DXåŒ–
+		r.y = rot.y;						// 20240714 DXåŒ–
+		r.z = rot.z;						// 20240714 DXåŒ–
+		r.w = rot.w;						// 20240714 DXåŒ–
 
 		SRTQ srtq;
 		srtq.scale = s;
@@ -135,42 +135,42 @@ void CAnimationMesh::BuildLocalPoseMap(
 	}
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌXV
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®æ›´æ–°
 void CAnimationMesh::Update(BoneCombMatrix& bonecombarray,int& CurrentFrame)
 {
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^æ“¾
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿å–å¾—
 	aiAnimation* animation = m_CurrentAnimation;
 
-	// ƒ[ƒJƒ‹ƒ|[ƒY‚ğ¶¬
+	// ãƒ­ãƒ¼ã‚«ãƒ«ãƒãƒ¼ã‚ºã‚’ç”Ÿæˆ
 	std::unordered_map<std::string, SRTQ> localpose;
 	BuildLocalPoseMap(
 		m_CurrentAnimation,
 		CurrentFrame,
 		localpose);
 
-	// localpose ‚Ì’†g‚ğ 1 Œ‚¸‚Âæ‚èo‚·
+	// localpose ã®ä¸­èº«ã‚’ 1 ä»¶ãšã¤å–ã‚Šå‡ºã™
 	for (auto& pair : localpose) {
-		// map ‚ÌuƒL[iƒ{[ƒ“–¼jv‚Æu’liSRTQƒf[ƒ^jv‚ğ–¾¦“I‚Éæ‚èo‚·
-		const std::string& bonename = pair.first;   // ƒ{[ƒ“‚Ì–¼‘O
-		SRTQ& srtq = pair.second;                   // ˆÊ’uE‰ñ“]EƒXƒP[ƒ‹‚Ìî•ñ
+		// map ã®ã€Œã‚­ãƒ¼ï¼ˆãƒœãƒ¼ãƒ³åï¼‰ã€ã¨ã€Œå€¤ï¼ˆSRTQãƒ‡ãƒ¼ã‚¿ï¼‰ã€ã‚’æ˜ç¤ºçš„ã«å–ã‚Šå‡ºã™
+		const std::string& bonename = pair.first;   // ãƒœãƒ¼ãƒ³ã®åå‰
+		SRTQ& srtq = pair.second;                   // ä½ç½®ãƒ»å›è»¢ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«ã®æƒ…å ±
 
-		// ƒm[ƒh–¼‚©‚çƒ{[ƒ“«‘‚ğg‚Á‚Äassimp‚Ìƒ{[ƒ“î•ñ‚ğæ“¾
+		// ãƒãƒ¼ãƒ‰åã‹ã‚‰ãƒœãƒ¼ãƒ³è¾æ›¸ã‚’ä½¿ã£ã¦assimpã®ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—
 		BONE* bone = &m_BoneDictionary[bonename];
 
 		Matrix4x4 scalemtx = Matrix4x4::CreateScale(srtq.scale);
 		Matrix4x4 rotmtx = Matrix4x4::CreateFromQuaternion(srtq.quat);
 		Matrix4x4 transmtx = Matrix4x4::CreateTranslation(srtq.pos);
 
-		// ƒ[ƒJƒ‹À•W‚©‚çƒ{[ƒ“‚ÌƒAƒjƒ[ƒVƒ‡ƒ“s—ñ‚ğì¬
+		// ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã‹ã‚‰ãƒœãƒ¼ãƒ³ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’ä½œæˆ
 		bone->AnimationMatrix = scalemtx * rotmtx * transmtx;
 	}
 
 
-	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);		// 20240714 DX‰»	
+	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);		// 20240714 DXåŒ–	
 
-	// ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“s—ñ‚Ì”z—ñ‚ğƒZƒbƒg
+	// ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—ã®é…åˆ—ã‚’ã‚»ãƒƒãƒˆ
 	for (const auto& bone : m_BoneDictionary)
 	{
-		bonecombarray.ConstantBufferMemory.BoneCombMtx[bone.second.idx] = bone.second.Matrix.Transpose();	// 20240714 DX‰»
+		bonecombarray.ConstantBufferMemory.BoneCombMtx[bone.second.idx] = bone.second.Matrix.Transpose();	// 20240714 DXåŒ–
 	}
 }

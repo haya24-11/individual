@@ -1,10 +1,10 @@
-#include	"scenemanager.h"
+ï»¿#include	"scenemanager.h"
 #include	"SceneClassFactory.h"
 
-// “o˜^‚³‚ê‚Ä‚¢‚éƒV[ƒ“‚ğ‘S‚Ä”jŠü‚·‚é
+// ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚·ãƒ¼ãƒ³ã‚’å…¨ã¦ç ´æ£„ã™ã‚‹
 void SceneManager::Dispose() 
 {
-	// “o˜^‚³‚ê‚Ä‚¢‚é‚·‚×‚ÄƒV[ƒ“‚ÌI—¹ˆ—
+	// ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã™ã¹ã¦ã‚·ãƒ¼ãƒ³ã®çµ‚äº†å‡¦ç†
 	for (auto& s : m_scenes) 
 	{
 		s.second->dispose();
@@ -29,12 +29,12 @@ void SceneManager::Init()
 void SceneManager::Draw(uint64_t deltatime)
 {
 
-	// Œ»İ‚ÌƒV[ƒ“‚ğ•`‰æ
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã‚’æç”»
 	m_scenes[m_currentSceneName]->draw(deltatime);
 }
 
 void SceneManager::Update(uint64_t deltatime)
 {
-	// Œ»İ‚ÌƒV[ƒ“‚ğXV
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã‚’æ›´æ–°
 	m_scenes[m_currentSceneName]->update(deltatime);
 }

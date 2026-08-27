@@ -1,10 +1,10 @@
-#include	<cassert>
+ï»¿#include	<cassert>
 #include	<iostream>
 #include	"CAnimationData.h"
 
 const aiScene* CAnimationData::LoadAnimation(const std::string filename, const std::string name)
 {
-	// ƒV[ƒ“î•ñ‚ð\’z
+	// ã‚·ãƒ¼ãƒ³æƒ…å ±ã‚’æ§‹ç¯‰
 	m_Animation[name] = m_importer.ReadFile(
 		filename.c_str(),
 		aiProcess_ConvertToLeftHanded);
@@ -17,7 +17,7 @@ const aiScene* CAnimationData::LoadAnimation(const std::string filename, const s
 	return m_Animation[name];
 }
 
-// Žw’è‚µ‚½–¼‘O‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^‚ðŽæ“¾‚·‚é
+// æŒ‡å®šã—ãŸåå‰ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹
 aiAnimation* CAnimationData::GetAnimation(const char* name, int idx) {
 
 	aiAnimation* animation = m_Animation[name]->mAnimations[idx];

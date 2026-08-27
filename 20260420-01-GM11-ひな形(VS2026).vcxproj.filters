@@ -231,6 +231,27 @@
     <ClInclude Include="fpscontrol.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="scene\FreeFlyCamera.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\SplineCamera.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\FightingCamera.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\CameraRecorder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraPose.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBlend.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSyncServer.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -368,15 +389,30 @@
     <ClCompile Include="scene\CarScene.cpp">
       <Filter>ソース ファイル\scene</Filter>
     </ClCompile>
+    <ClCompile Include="scene\FreeFlyCamera.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\SplineCamera.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\FightingCamera.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\CameraRecorder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraBlend.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSyncServer.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\common.hlsl">
       <Filter>ソース ファイル\shader</Filter>
     </FxCompile>
     <FxCompile Include="shader\GeometryShader.hlsl">
-      <Filter>ソース ファイル\shader</Filter>
-    </FxCompile>
-    <FxCompile Include="shader\unlitTexturePS.hlsl">
       <Filter>ソース ファイル\shader</Filter>
     </FxCompile>
     <FxCompile Include="shader\unlitTextureVS.hlsl">
@@ -389,6 +425,9 @@
       <Filter>ソース ファイル\shader</Filter>
     </FxCompile>
     <FxCompile Include="shader\vertexLightingVS.hlsl">
+      <Filter>ソース ファイル\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\unlitTexturePS.hlsl">
       <Filter>ソース ファイル\shader</Filter>
     </FxCompile>
   </ItemGroup>

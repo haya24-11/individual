@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include	"CAnimationMesh.h"
 #include    "transform.h"
@@ -7,12 +7,12 @@ class CAnimationMeshBlender : public CAnimationMesh
 {
 public:
 
-    // ƒ‚[ƒVƒ‡ƒ“ƒuƒŒƒ“ƒhƒXƒe[ƒg
+    // ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆ
     struct blendanimstate {
-        const aiAnimation* animatiodata = nullptr;  // ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^
-        double             timeSec = 0.0;           // ‚±‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ÌÄ¶ˆÊ’u
-        float              speed = 1.0f;            // ƒXƒs[ƒh
-        bool               loop = true;             // ƒ‹[ƒvÄ¶‚·‚é‚©”Û‚©
+        const aiAnimation* animatiodata = nullptr;  // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿
+        double             timeSec = 0.0;           // ã“ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”Ÿä½ç½®
+        float              speed = 1.0f;            // ã‚¹ãƒ”ãƒ¼ãƒ‰
+        bool               loop = true;             // ãƒ«ãƒ¼ãƒ—å†ç”Ÿã™ã‚‹ã‹å¦ã‹
     };
 
     void SetFromAnimation(
@@ -35,17 +35,17 @@ public:
 
 private:
 
-    // ƒ[ƒJƒ‹ƒ|[ƒY‚ÌƒuƒŒƒ“ƒh
+    // ãƒ­ãƒ¼ã‚«ãƒ«ãƒãƒ¼ã‚ºã®ãƒ–ãƒ¬ãƒ³ãƒ‰
     void BlendLocalPose(
         const std::unordered_map<std::string, SRTQ>& localposefrom,
         const std::unordered_map<std::string, SRTQ>& localposeto,
         float rate,
         std::unordered_map<std::string, SRTQ>& blendedlocalpose);
 
-	// cross fade—p
-	float	m_blendrate = 1.0f;    // ƒuƒŒƒ“ƒhŠ„‡ from * (1-m_blendarate) + to*m_blendarate
+	// cross fadeç”¨
+	float	m_blendrate = 1.0f;    // ãƒ–ãƒ¬ãƒ³ãƒ‰å‰²åˆ from * (1-m_blendarate) + to*m_blendarate
 
-	// ƒuƒŒƒ“ƒh‚·‚éƒAƒjƒ[ƒVƒ‡ƒ“‚Ìİ’è
+	// ãƒ–ãƒ¬ãƒ³ãƒ‰ã™ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®è¨­å®š
     blendanimstate    m_fromblendstate;
     blendanimstate    m_toblendstate;
 

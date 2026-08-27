@@ -1,4 +1,4 @@
-#include "renderer.h"
+ï»¿#include "renderer.h"
 #include "camera.h"
 #include "../application.h"
 
@@ -19,38 +19,38 @@ void Camera::Update()
 
 void Camera::Draw()
 {
-	// ƒrƒ…[•ÏŠ·Œã—ñì¬
+	// ãƒ“ãƒ¥ãƒ¼å¤‰æ›å¾Œåˆ—ä½œæˆ
 	m_viewmtx = 
 		DirectX::XMMatrixLookAtLH(
 			m_position, 
 			m_lookat, 
-			m_up);				// ¶èŒn‚É‚µ‚½@20230511 by suzuki.tomoki
+			m_up);				// å·¦æ‰‹ç³»ã«ã—ãŸã€€20230511 by suzuki.tomoki
 
-	// DIRECTXTK‚Ìƒƒ\ƒbƒh‚Í‰EèŒn@20230511 by suzuki.tomoki
-	// ‰EèŒn‚É‚·‚é‚Æ‚RŠpŒ`’¸“_‚ª”½Œv‰ñ‚è‚É‚È‚é‚Ì‚Å•`‰æ‚³‚ê‚È‚­‚È‚é‚Ì‚Å’ˆÓ
-	// ‚±‚ÌƒR[ƒh‚ÍŠm”FƒeƒXƒg‚Ì‚½‚ß‚Éc‚·
+	// DIRECTXTKã®ãƒ¡ã‚½ãƒƒãƒ‰ã¯å³æ‰‹ç³»ã€€20230511 by suzuki.tomoki
+	// å³æ‰‹ç³»ã«ã™ã‚‹ã¨ï¼“è§’å½¢é ‚ç‚¹ãŒåæ™‚è¨ˆå›ã‚Šã«ãªã‚‹ã®ã§æç”»ã•ã‚Œãªããªã‚‹ã®ã§æ³¨æ„
+	// ã“ã®ã‚³ãƒ¼ãƒ‰ã¯ç¢ºèªãƒ†ã‚¹ãƒˆã®ãŸã‚ã«æ®‹ã™
 	//	m_ViewMatrix = m_ViewMatrix.CreateLookAt(m_Position, m_Target, up);					
 
 	Renderer::SetViewMatrix(&m_viewmtx);
 
-	//ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚Ì¶¬
-	constexpr float fieldOfView = DirectX::XMConvertToRadians(45.0f);    // ‹–ìŠp
+	//ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã®ç”Ÿæˆ
+	constexpr float fieldOfView = DirectX::XMConvertToRadians(45.0f);    // è¦–é‡è§’
 	
-	float aspectRatio = static_cast<float>(Application::GetWidth()) / static_cast<float>(Application::GetHeight());	// ƒAƒXƒyƒNƒg”ä	
-	float nearPlane = 1.0f;       // ƒjƒAƒNƒŠƒbƒv
-	float farPlane = 10000.0f;      // ƒtƒ@[ƒNƒŠƒbƒv
+	float aspectRatio = static_cast<float>(Application::GetWidth()) / static_cast<float>(Application::GetHeight());	// ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”	
+	float nearPlane = 1.0f;       // ãƒ‹ã‚¢ã‚¯ãƒªãƒƒãƒ—
+	float farPlane = 10000.0f;      // ãƒ•ã‚¡ãƒ¼ã‚¯ãƒªãƒƒãƒ—
 
-	//ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚Ì¶¬
+	//ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã®ç”Ÿæˆ
 	m_projmtx =
 		DirectX::XMMatrixPerspectiveFovLH(
 			fieldOfView, 
 			aspectRatio, 
 			nearPlane, 
-			farPlane);	// ¶èŒn‚É‚µ‚½@20230511 by suzuki.tomoki
+			farPlane);	// å·¦æ‰‹ç³»ã«ã—ãŸã€€20230511 by suzuki.tomoki
 
-	// DIRECTXTK‚Ìƒƒ\ƒbƒh‚Í‰EèŒn@20230511 by suzuki.tomoki
-	// ‰EèŒn‚É‚·‚é‚Æ‚RŠpŒ`’¸“_‚ª”½Œv‰ñ‚è‚É‚È‚é‚Ì‚Å•`‰æ‚³‚ê‚È‚­‚È‚é‚Ì‚Å’ˆÓ
-	// ‚±‚ÌƒR[ƒh‚ÍŠm”FƒeƒXƒg‚Ì‚½‚ß‚Éc‚·
+	// DIRECTXTKã®ãƒ¡ã‚½ãƒƒãƒ‰ã¯å³æ‰‹ç³»ã€€20230511 by suzuki.tomoki
+	// å³æ‰‹ç³»ã«ã™ã‚‹ã¨ï¼“è§’å½¢é ‚ç‚¹ãŒåæ™‚è¨ˆå›ã‚Šã«ãªã‚‹ã®ã§æç”»ã•ã‚Œãªããªã‚‹ã®ã§æ³¨æ„
+	// ã“ã®ã‚³ãƒ¼ãƒ‰ã¯ç¢ºèªãƒ†ã‚¹ãƒˆã®ãŸã‚ã«æ®‹ã™
 //	projectionMatrix = DirectX::SimpleMath::Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio, nearPlane, farPlane);
 
 	Renderer::SetProjectionMatrix(&m_projmtx);

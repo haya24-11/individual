@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include    "CommonTypes.h"
 #include	<string>
 #include	<filesystem>
@@ -17,12 +17,12 @@ namespace utility
 
 	Matrix4x4 CaliculateBillBoardMtx(Matrix4x4 mtxView);
 
-	// ƒ^[ƒQƒbƒg‚Ì•ûŒü‚ğŒü‚­ƒNƒI[ƒ^ƒjƒIƒ“‚ğì¬‚·‚éŠÖ”(ãŒÅ’è‚È‚µ)
+	// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®æ–¹å‘ã‚’å‘ãã‚¯ã‚ªãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ä½œæˆã™ã‚‹é–¢æ•°(ä¸Šå›ºå®šãªã—)
 	Quaternion CreateTargetQuaternion(
 		const Vector3 start,
 		const Vector3 end);
 
-	// ƒ^[ƒQƒbƒg‚Ì•ûŒü‚ğŒü‚­ƒNƒI[ƒ^ƒjƒIƒ“‚ğì¬‚·‚éŠÖ”(ãŒÅ’è‚ ‚è)
+	// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®æ–¹å‘ã‚’å‘ãã‚¯ã‚ªãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ä½œæˆã™ã‚‹é–¢æ•°(ä¸Šå›ºå®šã‚ã‚Š)
 	Quaternion CreateLookatQuaternion(
 		Vector3 start,
 		Vector3 end,
@@ -39,14 +39,14 @@ namespace utility
 		const Matrix4x4& world);
 
 	std::vector<Vector3> GeneratePointsInsideCone(
-		float radius,					// ”¼Œa
-		float height,					// ‚‚³
-		unsigned int num				// ŒÂ”
+		float radius,					// åŠå¾„
+		float height,					// é«˜ã•
+		unsigned int num				// å€‹æ•°
 	);
 
 	std::vector<Vector3> GenerateRandomPointInCircle(
-		float radius,						// ”¼Œa	
-		unsigned int num);					// ”­¶‚³‚¹‚éŒÂ”
+		float radius,						// åŠå¾„	
+		unsigned int num);					// ç™ºç”Ÿã•ã›ã‚‹å€‹æ•°
 
 	std::string WideToUtf8(const std::wstring& ws);
 	std::string PathToUtf8String(const fs::path& p);

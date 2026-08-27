@@ -372,36 +372,33 @@ void SplineCamera::DrawEditCanvas(const char* id, int axisH, int axisV, bool all
 	}
 }
 
-void SplineCamera::DebugUI()
+void SplineCamera::DrawPlaybackUI()
 {
-	ImGui::Begin("Spline Camera");
-
-	ImGui::Checkbox("Active (C key)", &m_active);
+	ImGui::Checkbox("有効（Cキー）##Active (C key)", &m_active);
 	ImGui::SameLine();
-	ImGui::Checkbox("Loop", &m_loop);
+	ImGui::Checkbox("ループ##Loop", &m_loop);
 	ImGui::SameLine();
-	ImGui::Checkbox("Show Path", &m_showPath);
+	ImGui::Checkbox("経路を表示##Show Path", &m_showPath);
 
-	ImGui::Text("t = %.2f   len = %.0f   dist = %.0f", m_t, m_totalLen, m_dist);
+	ImGui::Text("パラメータ = %.2f   全長 = %.0f   移動距離 = %.0f", m_t, m_totalLen, m_dist);
 
-	ImGui::DragFloat3("Lookat", &m_lookat.x, 1.0f);
+	ImGui::DragFloat3("注視点##Lookat", &m_lookat.x, 1.0f);
 
-	ImGui::End();	// Spline Camera ウィンドウ終了
+}
 
-	// ===== 曲線パラメータ（別ウィンドウ） =====
-	ImGui::Begin("Curve Editor");
-
+void SplineCamera::DrawCurveEditorUI()
+{
 	// --- 2Dキャンバスで曲線を編集 ---
-	ImGui::SliderFloat("View", &m_editViewHalf, 200.0f, 2000.0f, "range %.0f");
+	ImGui::SliderFloat("表示範囲##View", &m_editViewHalf, 200.0f, 2000.0f, "範囲 %.0f");
 
-	ImGui::Text("Top view (X-Z):  left drag=move / left click=add / right click=remove");
+	ImGui::Text("上面図（X-Z）: 左ドラッグ=移動／左クリック=追加／右クリック=削除");
 	DrawEditCanvas("##topXZ", 0, 2, true);	// 俯瞰：X横・Z縦、追加削除あり
 
-	ImGui::Text("Side view (X-Y):  left drag=height");
+	ImGui::Text("側面図（X-Y）: 左ドラッグ=高さ変更");
 	DrawEditCanvas("##sideXY", 0, 1, false);	// 側面：X横・Y縦、高さ編集
 
 	ImGui::Separator();
-	ImGui::Text("Control Points (%d)", (int)m_points.size());
+	ImGui::Text("制御点（%d個）", (int)m_points.size());
 
 	// 速度配列のサイズを制御点数に常に同期（保険）
 	m_speeds.resize(m_points.size(), 1.0f);
@@ -413,33 +410,32 @@ void SplineCamera::DebugUI()
 		ImGui::DragFloat3(label.c_str(), &m_points[i].x, 1.0f);
 	}
 
-	if (ImGui::Button("Add")) {
+	if (ImGui::Button("追加##Add")) {
 		Vector3 p = m_points.empty() ? Vector3(0, 150, 0) : m_points.back() + Vector3(50, 0, 50);
 		m_points.push_back(p);
 		m_speeds.push_back(m_speeds.empty() ? 1.0f : m_speeds.back());
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Remove")) {
+	if (ImGui::Button("削除##Remove")) {
 		if (m_points.size() > 4) {
 			m_points.pop_back();
 			m_speeds.pop_back();
 		}
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Reset")) {
+	if (ImGui::Button("初期化##Reset")) {
 		ResetDefault();
 	}
 
-	ImGui::End();	// Curve Editor ウィンドウ終了
+}
 
-	// ===== 速度パラメータ（別ウィンドウ） =====
-	ImGui::Begin("Spline Speed");
-
+void SplineCamera::DrawSpeedUI()
+{
 	// マスター速度（経路全体の基準速度：ワールド単位/秒）
-	ImGui::SliderFloat("Master Speed", &m_speed, 10.0f, 1500.0f);
+	ImGui::SliderFloat("基準速度##Master Speed", &m_speed, 10.0f, 1500.0f);
 
 	ImGui::Separator();
-	ImGui::Text("Per-point speed multiplier");
+	ImGui::Text("制御点ごとの速度倍率");
 
 	// 速度配列を制御点数に同期（保険）
 	m_speeds.resize(m_points.size(), 1.0f);
@@ -447,13 +443,13 @@ void SplineCamera::DebugUI()
 	// 制御点ごとの速度倍率（区間は隣接点間を SpeedAt() が線形補間）
 	for (int i = 0; i < (int)m_speeds.size(); ++i)
 	{
-		std::string label = "P" + std::to_string(i) + " speed";
+		std::string label = "P" + std::to_string(i) + " 速度##P" + std::to_string(i) + " speed";
 		ImGui::DragFloat(label.c_str(), &m_speeds[i], 0.05f, 0.05f, 5.0f, "%.2f x");
 	}
 
 	// --- 速度グラフ（横=経路パラメータ / 縦=実効速度倍率） ---
 	ImGui::Separator();
-	ImGui::Text("Effective speed along path  (drag knobs to adjust)");
+	ImGui::Text("経路上の実効速度（ノブをドラッグして調整）");
 
 	if (m_points.size() >= 4)
 	{
@@ -563,24 +559,22 @@ void SplineCamera::DebugUI()
 	}
 	else
 	{
-		ImGui::TextDisabled("(need >= 4 control points)");
+		ImGui::TextDisabled("（制御点が4個以上必要です）");
 	}
 
-	ImGui::End();	// Spline Speed ウィンドウ終了
+}
 
-	// ===== ダッチアングル（制御点ごとの roll・別ウィンドウ） =====
-	ImGui::Begin("Spline Roll");
-	ImGui::TextDisabled("Dutch angle per control point (degrees)");
+void SplineCamera::DrawRollUI()
+{
+	ImGui::TextDisabled("制御点ごとのダッチアングル（度）");
 
 	m_rolls.resize(m_points.size(), 0.0f);	// サイズ同期（保険）
 
 	for (int i = 0; i < (int)m_rolls.size(); ++i)
 	{
-		std::string label = "P" + std::to_string(i) + " roll";
-		ImGui::SliderFloat(label.c_str(), &m_rolls[i], -90.0f, 90.0f, "%.0f deg");
+		std::string label = "P" + std::to_string(i) + " ロール##P" + std::to_string(i) + " roll";
+		ImGui::SliderFloat(label.c_str(), &m_rolls[i], -90.0f, 90.0f, "%.0f 度");
 	}
 
-	if (ImGui::Button("Reset roll")) std::fill(m_rolls.begin(), m_rolls.end(), 0.0f);
-
-	ImGui::End();	// Spline Roll ウィンドウ終了
+	if (ImGui::Button("ロールを初期化##Reset roll")) std::fill(m_rolls.begin(), m_rolls.end(), 0.0f);
 }

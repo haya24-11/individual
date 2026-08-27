@@ -107,41 +107,37 @@ void CameraRecorder::Load(const char* path)
 	}
 }
 
-void CameraRecorder::DebugUI()
+void CameraRecorder::DrawUI()
 {
-	ImGui::Begin("Camera Recorder");
-
 	float dur = m_keys.empty() ? 0.0f : m_keys.back().t;
-	ImGui::Text("keys: %d   length: %.2f s", (int)m_keys.size(), dur);
+	ImGui::Text("キー数: %d   長さ: %.2f 秒", (int)m_keys.size(), dur);
 
 	// 録画ボタン（トグル）
 	if (!m_recording) {
-		if (ImGui::Button("Record")) StartRecord();
+		if (ImGui::Button("録画##Record")) StartRecord();
 	} else {
-		if (ImGui::Button("Stop Rec")) m_recording = false;
+		if (ImGui::Button("録画停止##Stop Rec")) m_recording = false;
 	}
 	ImGui::SameLine();
 
 	// 再生ボタン（トグル）
 	if (!m_playing) {
-		if (ImGui::Button("Play")) StartPlay();
+		if (ImGui::Button("再生##Play")) StartPlay();
 	} else {
-		if (ImGui::Button("Stop Play")) m_playing = false;
+		if (ImGui::Button("再生停止##Stop Play")) m_playing = false;
 	}
 	ImGui::SameLine();
-	ImGui::Checkbox("Loop", &m_loop);
+	ImGui::Checkbox("ループ##Loop", &m_loop);
 
-	if (ImGui::Button("Clear")) { m_keys.clear(); m_playing = m_recording = false; }
+	if (ImGui::Button("クリア##Clear")) { m_keys.clear(); m_playing = m_recording = false; }
 	ImGui::SameLine();
-	if (ImGui::Button("Save")) Save("camera_take.txt");
+	if (ImGui::Button("保存##Save")) Save("camera_take.txt");
 	ImGui::SameLine();
-	if (ImGui::Button("Load")) Load("camera_take.txt");
+	if (ImGui::Button("読み込み##Load")) Load("camera_take.txt");
 
 	if (m_playing && dur > 1e-6f) {
 		ImGui::ProgressBar(m_playTime / dur, ImVec2(-1, 0));
 	}
 
-	ImGui::TextDisabled("Record: 誰がカメラを動かしても記録。Manual free-fly で手動録画。");
-
-	ImGui::End();
+	ImGui::TextDisabled("録画: どのカメラ操作でも記録します。手動フリーカメラで手動録画できます。");
 }

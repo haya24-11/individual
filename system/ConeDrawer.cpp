@@ -1,4 +1,4 @@
-
+ï»¿
 #include	<iostream>
 #include	"CommonTypes.h"
 
@@ -16,16 +16,16 @@ static CShader g_shader;
 void ConeDrawerInit(bool topdownflag)
 {
 	g_mesh.Init(
-		50,						// •ªŠ„”
-		1,						// ”¼Œa
-		1,						// ‚‚³
-		Color(1, 1, 1, 1),		// ’¸“_ƒJƒ‰[
-		topdownflag);			// ƒtƒ‰ƒO
+		50,						// åˆ†å‰²æ•°
+		1,						// åŠå¾„
+		1,						// é«˜ã•
+		Color(1, 1, 1, 1),		// é ‚ç‚¹ã‚«ãƒ©ãƒ¼
+		topdownflag);			// ãƒ•ãƒ©ã‚°
 
 	g_renderer.Init(g_mesh);
 
 	MATERIAL mtrl;
-	// ƒ}ƒeƒŠƒAƒ‹¶¬
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ç”Ÿæˆ
 	mtrl.Ambient = Color(0, 0, 0, 0);
 	mtrl.Diffuse = Color(1, 1, 0, 1);
 	mtrl.Emission = Color(0, 0, 0, 0);
@@ -35,10 +35,10 @@ void ConeDrawerInit(bool topdownflag)
 
 	g_material.Create(mtrl);
 
-	// ƒVƒF[ƒ_[‚Ì‰Šú‰»
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®åˆæœŸåŒ–
 	g_shader.Create(
-		"shader/vertexLightingVS.hlsl",				// ’¸“_ƒVƒF[ƒ_[
-		"shader/vertexLightingPS.hlsl");			// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+		"shader/vertexLightingVS.hlsl",				// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
+		"shader/vertexLightingPS.hlsl");			// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 
 }
 

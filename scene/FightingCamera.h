@@ -12,7 +12,7 @@ public:
 	void Update(float dt, Camera& cam, const Vector3& p1, const Vector3& p2);
 
 	// パラメータ調整UI（ImGui「Fighting Camera」）
-	void DebugUI();
+	void DrawUI();		// Begin/End は呼ばない（CarScene のタブ内に描く）
 
 	// 次フレームで目標へ即スナップ（モード復帰時のジャンプ防止）
 	void ResetSnap() { m_init = false; }

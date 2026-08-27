@@ -3,5 +3,8 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/tools/">
+    <Project Path="tools/CameraWorkStudio/CameraWorkStudio.csproj" />
+  </Folder>
   <Project Path="20260420-01-GM11-ひな形(VS2026).vcxproj" Id="9aba6713-eeb9-456f-94cc-5025676bac67" />
 </Solution>

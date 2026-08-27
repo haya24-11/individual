@@ -1,0 +1,305 @@
+<Window x:Class="CameraWorkStudio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CameraWorkStudio.ViewModels"
+        xmlns:ctl="clr-namespace:CameraWorkStudio.Controls"
+        Title="カメラワーク スタジオ" Height="820" Width="1280"
+        FontFamily="Yu Gothic UI" FontSize="13">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+        </Style>
+        <Style x:Key="Caption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#5A6478" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0,6,0,2" />
+        </Style>
+        <Style x:Key="PaneHeader" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="8,8,8,4" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+
+        <!-- 上部: ライブラリの場所 -->
+        <Border DockPanel.Dock="Top" Background="#F2F4F8" BorderBrush="#D6DBE5"
+                BorderThickness="0,0,0,1" Padding="8">
+            <DockPanel>
+                <TextBlock Text="ライブラリ" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <Button Content="フォルダを開く" DockPanel.Dock="Right"
+                        Command="{Binding OpenFolderCommand}" />
+                <Button Content="適用" DockPanel.Dock="Right"
+                        Command="{Binding ApplyLibraryPathCommand}" />
+                <Button Content="再読み込み" DockPanel.Dock="Right"
+                        Command="{Binding RefreshCommand}" />
+                <TextBox Text="{Binding LibraryPath, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalContentAlignment="Center" Margin="0,0,8,0" />
+            </DockPanel>
+        </Border>
+
+        <!-- 下部: ステータス -->
+        <Border DockPanel.Dock="Bottom" Background="#F2F4F8" BorderBrush="#D6DBE5"
+                BorderThickness="0,1,0,0" Padding="8,4">
+            <TextBlock Text="{Binding Status}" Foreground="#3C4557" />
+        </Border>
+
+        <!-- 下部: 3Dプレビュー（ゲームとリアルタイム同期） -->
+        <Border DockPanel.Dock="Bottom" Height="320" BorderBrush="#D6DBE5" BorderThickness="0,1,0,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#F2F4F8" Padding="8,4"
+                        BorderBrush="#D6DBE5" BorderThickness="0,0,0,1">
+                    <DockPanel>
+                        <CheckBox Content="ゲーム視点で見る" DockPanel.Dock="Right"
+                                  IsChecked="{Binding FollowGameCamera}"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding ConnectionText}" VerticalAlignment="Center"
+                                   Foreground="#3C4557" />
+                    </DockPanel>
+                </Border>
+
+                <ctl:ScenePreview x:Name="Preview" />
+            </DockPanel>
+        </Border>
+
+        <!-- 下部: タイムライン -->
+        <Border DockPanel.Dock="Bottom" BorderBrush="#D6DBE5" BorderThickness="0,1,0,0"
+                Background="#FAFBFD" Padding="8">
+            <DockPanel>
+
+                <!-- 操作列 -->
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <Button Content="{Binding PlayButtonText}" Command="{Binding PlayPauseCommand}" MinWidth="76" />
+                    <Button Content="停止" Command="{Binding StopCommand}" />
+                    <CheckBox Content="ループ" IsChecked="{Binding LoopPlayback}"
+                              VerticalAlignment="Center" Margin="4,0,14,0" />
+
+                    <Button Content="キー追加" Command="{Binding AddKeyCommand}" />
+                    <Button Content="複製" Command="{Binding DuplicateKeyCommand}" />
+                    <Button Content="削除" Command="{Binding DeleteKeyCommand}" />
+
+                    <Separator Margin="8,0" />
+
+                    <TextBlock Text="残すキー数" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBox Text="{Binding DecimateTarget, UpdateSourceTrigger=PropertyChanged}"
+                             Width="44" VerticalContentAlignment="Center" Margin="0,0,6,0" />
+                    <Button Content="間引き" Command="{Binding DecimateCommand}" />
+                    <Button Content="速度から時刻を再計算" Command="{Binding RecalcTimesCommand}" />
+                </WrapPanel>
+
+                <!-- 現在位置の数値 -->
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding CurrentPoseText}"
+                           Foreground="#5A6478" FontSize="11" Margin="0,4,0,0" />
+
+                <ctl:TimelineControl Height="150"
+                                     Take="{Binding SelectedTake}"
+                                     SelectedKey="{Binding SelectedKey, Mode=TwoWay}"
+                                     CurrentTime="{Binding CurrentTime, Mode=TwoWay}" />
+            </DockPanel>
+        </Border>
+
+        <!-- 本体: 3ペイン -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230" MinWidth="160" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="280" MinWidth="200" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="240" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="260" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左: キャラクター -->
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" Text="キャラクター" Style="{StaticResource PaneHeader}" />
+
+                <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="#E3E7EF" BorderThickness="0,1,0,0">
+                    <DockPanel>
+                        <Button Content="追加" DockPanel.Dock="Right" Margin="6,0,0,0"
+                                Command="{Binding NewCharacterCommand}" />
+                        <TextBox Text="{Binding NewCharacterName, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalContentAlignment="Center" />
+                    </DockPanel>
+                </Border>
+
+                <ListBox ItemsSource="{Binding Characters}"
+                         SelectedItem="{Binding SelectedCharacter}"
+                         Margin="8,0,8,0" />
+            </DockPanel>
+
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
+                          Background="#E3E7EF" />
+
+            <!-- 中: テイク一覧 -->
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" Text="テイク" Style="{StaticResource PaneHeader}" />
+
+                <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="#E3E7EF" BorderThickness="0,1,0,0">
+                    <WrapPanel>
+                        <Button Content="新規" Command="{Binding NewTakeCommand}" />
+                        <Button Content="複製" Command="{Binding DuplicateTakeCommand}" />
+                        <Button Content="削除" Command="{Binding DeleteTakeCommand}" />
+                    </WrapPanel>
+                </Border>
+
+                <ListBox ItemsSource="{Binding Takes}"
+                         SelectedItem="{Binding SelectedTake}"
+                         Margin="8,0,8,0"
+                         HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,2">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Summary}" Foreground="#6B7488" FontSize="11" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch"
+                          Background="#E3E7EF" />
+
+            <!-- 右: 詳細 -->
+            <DockPanel Grid.Column="4">
+                <TextBlock DockPanel.Dock="Top" Text="詳細" Style="{StaticResource PaneHeader}" />
+
+                <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="#E3E7EF" BorderThickness="0,1,0,0">
+                    <WrapPanel>
+                        <Button Content="保存" Command="{Binding SaveTakeCommand}" />
+                        <Button Content="txt を取り込む" Command="{Binding ImportLegacyCommand}" />
+                        <Button Content="txt へ書き出す" Command="{Binding ExportLegacyCommand}" />
+                    </WrapPanel>
+                </Border>
+
+                <Grid Margin="8,0,8,0">
+                    <!-- 未選択のとき -->
+                    <TextBlock Text="テイクを選択してください。" Foreground="#8A93A6" Margin="0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSelectedTake}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- 選択中のとき -->
+                    <StackPanel DataContext="{Binding SelectedTake}">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <TextBlock Text="名前" Style="{StaticResource Caption}" />
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock Text="キャラクター" Style="{StaticResource Caption}" />
+                        <TextBox Text="{Binding Character}" IsReadOnly="True" Background="#F7F8FB" />
+
+                        <TextBlock Text="キー数 / 長さ" Style="{StaticResource Caption}" />
+                        <TextBox Text="{Binding Summary, Mode=OneWay}" IsReadOnly="True" Background="#F7F8FB" />
+
+                        <TextBlock Text="ID" Style="{StaticResource Caption}" />
+                        <TextBox Text="{Binding Id, Mode=OneWay}" IsReadOnly="True" Background="#F7F8FB" />
+
+                        <TextBlock Text="保存先" Style="{StaticResource Caption}" />
+                        <TextBox Text="{Binding FilePath, Mode=OneWay}" IsReadOnly="True"
+                                 Background="#F7F8FB" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+
+            <!-- 右端: 選択キーのインスペクタ -->
+            <GridSplitter Grid.Column="5" Width="4" HorizontalAlignment="Stretch" Background="#E3E7EF" />
+
+            <DockPanel Grid.Column="6">
+                <TextBlock DockPanel.Dock="Top" Text="キー編集" Style="{StaticResource PaneHeader}" />
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="8,0,8,8">
+                    <Grid>
+                        <TextBlock Text="タイムラインのキー（◆）を選んでください。"
+                                   Foreground="#8A93A6" TextWrapping="Wrap" Margin="0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasSelectedKey}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel DataContext="{Binding SelectedKey}">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <TextBlock Text="時刻（秒）" Style="{StaticResource Caption}" />
+                            <TextBox Text="{Binding T, StringFormat=F3, UpdateSourceTrigger=LostFocus}" />
+
+                            <TextBlock Text="位置 X / Y / Z" Style="{StaticResource Caption}" />
+                            <UniformGrid Columns="3">
+                                <TextBox Text="{Binding PosX, StringFormat=F1}" Margin="0,0,3,0" />
+                                <TextBox Text="{Binding PosY, StringFormat=F1}" Margin="0,0,3,0" />
+                                <TextBox Text="{Binding PosZ, StringFormat=F1}" />
+                            </UniformGrid>
+
+                            <TextBlock Text="注視点 X / Y / Z" Style="{StaticResource Caption}" />
+                            <UniformGrid Columns="3">
+                                <TextBox Text="{Binding LookX, StringFormat=F1}" Margin="0,0,3,0" />
+                                <TextBox Text="{Binding LookY, StringFormat=F1}" Margin="0,0,3,0" />
+                                <TextBox Text="{Binding LookZ, StringFormat=F1}" />
+                            </UniformGrid>
+
+                            <Separator Margin="0,10" />
+
+                            <TextBlock Text="{Binding Roll, StringFormat=ロール（ダッチアングル）: {0:F0}°}"
+                                       Style="{StaticResource Caption}" />
+                            <Slider Value="{Binding Roll}" Minimum="-90" Maximum="90"
+                                    TickFrequency="15" IsSnapToTickEnabled="False" />
+
+                            <TextBlock Text="{Binding Fov, StringFormat=画角 FOV: {0:F0}°}"
+                                       Style="{StaticResource Caption}" />
+                            <Slider Value="{Binding Fov}" Minimum="10" Maximum="120" />
+                            <TextBlock Text="※ ゲーム側は45度固定のため現在は未反映"
+                                       Foreground="#A08040" FontSize="10" TextWrapping="Wrap" />
+
+                            <TextBlock Text="{Binding Speed, StringFormat=速度倍率: {0:F2}x}"
+                                       Style="{StaticResource Caption}" />
+                            <Slider Value="{Binding Speed}" Minimum="0.05" Maximum="5" />
+                            <TextBlock Text="※「速度から時刻を再計算」で時間配分に反映"
+                                       Foreground="#6B7488" FontSize="10" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </DockPanel>
+
+        </Grid>
+    </DockPanel>
+</Window>

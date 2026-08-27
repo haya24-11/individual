@@ -11,7 +11,7 @@ class CameraRecorder
 public:
 	void Sample(const Camera& cam, float dt);	// 録画中：現在姿勢を1フレーム分追加
 	void ApplyPlayback(Camera& cam, float dt);	// 再生中：時間補間して cam に反映
-	void DebugUI();								// ImGui「Camera Recorder」
+	void DrawUI();		// Begin/End は呼ばない（CarScene のタブ内に描く）
 
 	bool IsRecording() const { return m_recording; }
 	bool IsPlaying()   const { return m_playing; }

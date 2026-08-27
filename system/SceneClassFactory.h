@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -7,23 +7,23 @@
 #include "IScene.h"
 
 /**
- * @brief ƒV[ƒ“‚ÌƒNƒ‰ƒX‚ğ–¼‘O‚Å“o˜^E¶¬‚·‚é‚½‚ß‚Ìƒtƒ@ƒNƒgƒŠƒNƒ‰ƒX
+ * @brief ã‚·ãƒ¼ãƒ³ã®ã‚¯ãƒ©ã‚¹ã‚’åå‰ã§ç™»éŒ²ãƒ»ç”Ÿæˆã™ã‚‹ãŸã‚ã®ãƒ•ã‚¡ã‚¯ãƒˆãƒªã‚¯ãƒ©ã‚¹
  *
- * @details ‚±‚ÌƒNƒ‰ƒX‚ÍƒVƒ“ƒOƒ‹ƒgƒ“‚Æ‚µ‚Ä“®ì‚µA•¶š—ñ–¼‚É‘Î‰‚·‚é IScene ”h¶ƒNƒ‰ƒX‚Ì
- * ƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚é‚½‚ß‚ÌŠÖ”‚ğ“o˜^EŠÇ—‚µ‚Ü‚·Bcreate() ŠÖ”‚ğ’Ê‚¶‚Ä•¶š—ñ‚©‚ç
- * ƒV[ƒ“ƒCƒ“ƒXƒ^ƒ“ƒX‚ğ“®“I‚É¶¬‚Å‚«‚Ü‚·B
+ * @details ã“ã®ã‚¯ãƒ©ã‚¹ã¯ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã¨ã—ã¦å‹•ä½œã—ã€æ–‡å­—åˆ—åã«å¯¾å¿œã™ã‚‹ IScene æ´¾ç”Ÿã‚¯ãƒ©ã‚¹ã®
+ * ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã®é–¢æ•°ã‚’ç™»éŒ²ãƒ»ç®¡ç†ã—ã¾ã™ã€‚create() é–¢æ•°ã‚’é€šã˜ã¦æ–‡å­—åˆ—ã‹ã‚‰
+ * ã‚·ãƒ¼ãƒ³ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å‹•çš„ã«ç”Ÿæˆã§ãã¾ã™ã€‚
  */
 class SceneClassFactory {
 public:
     /**
-     * @brief IScene ”h¶ƒNƒ‰ƒX‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚éŠÖ”Œ^
+     * @brief IScene æ´¾ç”Ÿã‚¯ãƒ©ã‚¹ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ç”Ÿæˆã™ã‚‹é–¢æ•°å‹
      */
     using SceneCreatorFunc = std::function<std::unique_ptr<IScene>()>;
 
     /**
-     * @brief ƒVƒ“ƒOƒ‹ƒgƒ“ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾
+     * @brief ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å–å¾—
      *
-     * @return SceneClassFactory ‚Ì—Bˆê‚ÌƒCƒ“ƒXƒ^ƒ“ƒX
+     * @return SceneClassFactory ã®å”¯ä¸€ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
      */
     static SceneClassFactory& getInstance() {
         static SceneClassFactory instance;
@@ -31,50 +31,50 @@ public:
     }
 
     /**
-     * @brief ƒNƒ‰ƒX–¼‚Æ¶¬ŠÖ”‚ğ“o˜^‚·‚é
+     * @brief ã‚¯ãƒ©ã‚¹åã¨ç”Ÿæˆé–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
      *
-     * @param name ƒNƒ‰ƒX–¼icreate() ‚Åw’è‚·‚éƒL[j
-     * @param func ƒNƒ‰ƒXƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚éŠÖ”i—áFstd::make_uniquej
+     * @param name ã‚¯ãƒ©ã‚¹åï¼ˆcreate() ã§æŒ‡å®šã™ã‚‹ã‚­ãƒ¼ï¼‰
+     * @param func ã‚¯ãƒ©ã‚¹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ç”Ÿæˆã™ã‚‹é–¢æ•°ï¼ˆä¾‹ï¼šstd::make_uniqueï¼‰
      */
     void registerClass(const std::string& name, SceneCreatorFunc func) {
         registry[name] = func;
     }
 
     /**
-     * @brief “o˜^‚³‚ê‚½ƒNƒ‰ƒX–¼‚©‚çƒV[ƒ“ƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚·‚é
+     * @brief ç™»éŒ²ã•ã‚ŒãŸã‚¯ãƒ©ã‚¹åã‹ã‚‰ã‚·ãƒ¼ãƒ³ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ç”Ÿæˆã™ã‚‹
      *
-     * @param name ¶¬‚µ‚½‚¢ƒNƒ‰ƒX‚Ì–¼‘OiregisterClass ‚Å“o˜^‚³‚ê‚½ƒL[j
-     * @return std::unique_ptr<IScene> ŠY“–ƒNƒ‰ƒX‚Ìƒ†ƒj[ƒNƒ|ƒCƒ“ƒ^iŒ©‚Â‚©‚ç‚È‚¯‚ê‚Î nullptrj
+     * @param name ç”Ÿæˆã—ãŸã„ã‚¯ãƒ©ã‚¹ã®åå‰ï¼ˆregisterClass ã§ç™»éŒ²ã•ã‚ŒãŸã‚­ãƒ¼ï¼‰
+     * @return std::unique_ptr<IScene> è©²å½“ã‚¯ãƒ©ã‚¹ã®ãƒ¦ãƒ‹ãƒ¼ã‚¯ãƒã‚¤ãƒ³ã‚¿ï¼ˆè¦‹ã¤ã‹ã‚‰ãªã‘ã‚Œã° nullptrï¼‰
      */
     std::unique_ptr<IScene> create(const std::string& name) {
         auto it = registry.find(name);
         if (it != registry.end()) {
             return it->second();
         }
-		assert(false && "SceneClassFactory: ƒNƒ‰ƒX–¼‚ª“o˜^‚³‚ê‚Ä‚¢‚Ü‚¹‚ñ");   
+		assert(false && "SceneClassFactory: ã‚¯ãƒ©ã‚¹åãŒç™»éŒ²ã•ã‚Œã¦ã„ã¾ã›ã‚“");   
         return nullptr;
     }
 
 private:
     /**
-     * @brief ƒNƒ‰ƒX–¼‚Æ¶¬ŠÖ”‚Ìƒ}ƒbƒsƒ“ƒOƒe[ƒuƒ‹
+     * @brief ã‚¯ãƒ©ã‚¹åã¨ç”Ÿæˆé–¢æ•°ã®ãƒãƒƒãƒ”ãƒ³ã‚°ãƒ†ãƒ¼ãƒ–ãƒ«
      */
     std::unordered_map<std::string, SceneCreatorFunc> registry;
 };
 
 /**
- * @brief ƒNƒ‰ƒX‚ğ SceneClassFactory ‚É©“®“o˜^‚·‚éƒ}ƒNƒ
+ * @brief ã‚¯ãƒ©ã‚¹ã‚’ SceneClassFactory ã«è‡ªå‹•ç™»éŒ²ã™ã‚‹ãƒã‚¯ãƒ­
  *
- * @details IScene ”h¶ƒNƒ‰ƒX‚Ìƒ\[ƒXƒtƒ@ƒCƒ‹‚É‚±‚Ìƒ}ƒNƒ‚ğ‹Lq‚·‚é‚±‚Æ‚ÅAÃ“I‚É
- * SceneClassFactory ‚É“o˜^‚³‚êA•¶š—ñ‚É‚æ‚é“®“I¶¬‚ª‰Â”\‚É‚È‚è‚Ü‚·B
+ * @details IScene æ´¾ç”Ÿã‚¯ãƒ©ã‚¹ã®ã‚½ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã«ã“ã®ãƒã‚¯ãƒ­ã‚’è¨˜è¿°ã™ã‚‹ã“ã¨ã§ã€é™çš„ã«
+ * SceneClassFactory ã«ç™»éŒ²ã•ã‚Œã€æ–‡å­—åˆ—ã«ã‚ˆã‚‹å‹•çš„ç”ŸæˆãŒå¯èƒ½ã«ãªã‚Šã¾ã™ã€‚
  *
- * g—p—áF
+ * ä½¿ç”¨ä¾‹ï¼š
  * @code
  * class TitleScene : public IScene { ... };
  * REGISTER_CLASS(TitleScene);
  * @endcode
  *
- * @param CLASSNAME “o˜^‘ÎÛ‚ÌƒNƒ‰ƒX–¼
+ * @param CLASSNAME ç™»éŒ²å¯¾è±¡ã®ã‚¯ãƒ©ã‚¹å
  */
 #define REGISTER_CLASS(CLASSNAME) \
     namespace { \

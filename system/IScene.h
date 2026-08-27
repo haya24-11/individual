@@ -1,7 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include <cstdint>
 
-// ƒV[ƒ“ƒCƒ“ƒ^ƒtƒF[ƒX
+// ã‚·ãƒ¼ãƒ³ã‚¤ãƒ³ã‚¿ãƒ•ã‚§ãƒ¼ã‚¹
 class IScene {
 public:
 	IScene() = default;

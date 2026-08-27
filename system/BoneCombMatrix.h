@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include	<Windows.h>
 #include	<directxmath.h>
@@ -9,20 +9,20 @@
 
 struct BoneCombMatrix : NonCopyable 
 {
-	CBBoneCombMatrix	 ConstantBufferMemory{};					// s—ñŒQ
-	Microsoft::WRL::ComPtr<ID3D11Buffer> ConstantBuffer{};			// ’è”ƒoƒbƒtƒ@
+	CBBoneCombMatrix	 ConstantBufferMemory{};					// è¡Œåˆ—ç¾¤
+	Microsoft::WRL::ComPtr<ID3D11Buffer> ConstantBuffer{};			// å®šæ•°ãƒãƒƒãƒ•ã‚¡
 
 	BoneCombMatrix() {}
 	~BoneCombMatrix() 
 	{
 	}
 
-	// ’è”ƒoƒbƒtƒ@¶¬‚µ“à—e‚ğXV‚·‚é
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆã—å†…å®¹ã‚’æ›´æ–°ã™ã‚‹
 	bool Create();
 
-	// ’è”ƒoƒbƒtƒ@‚ğXV‚·‚é
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’æ›´æ–°ã™ã‚‹
 	void Update();
 
-	// GPU‚ÉƒZƒbƒg
+	// GPUã«ã‚»ãƒƒãƒˆ
 	void SetGPU();
 };

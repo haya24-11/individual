@@ -1,15 +1,15 @@
-#include	<iostream>
+ï»¿#include	<iostream>
 #include	"CConeMesh.h"
 
 /**
- * @brief ‰~ƒƒbƒVƒ…‚ğ‰Šú‰»‚·‚é
+ * @brief å††éŒãƒ¡ãƒƒã‚·ãƒ¥ã‚’åˆæœŸåŒ–ã™ã‚‹
  *
- * w’è‚³‚ê‚½•ªŠ„”A”¼ŒaA‚‚³A’¸“_ƒJƒ‰[‚ÉŠî‚Ã‚¢‚ÄA‰~‚Ì’¸“_EƒCƒ“ƒfƒbƒNƒX‚ğ¶¬‚µ‚Ü‚·B
- * @param divx ‰¡•ûŒü‚Ì•ªŠ„”
- * @param radius ‰~’ê–Ê‚Ì”¼Œa
- * @param height ‰~‚Ì‚‚³
- * @param color ’¸“_‚ÌF
- * @param bottomup true: ’ê–Ê¨’¸“_‚Ì‡‚Å’¸“_¶¬Afalse: ’¸“_¨’ê–Ê‚Ì‡‚Å’¸“_¶¬
+ * æŒ‡å®šã•ã‚ŒãŸåˆ†å‰²æ•°ã€åŠå¾„ã€é«˜ã•ã€é ‚ç‚¹ã‚«ãƒ©ãƒ¼ã«åŸºã¥ã„ã¦ã€å††éŒã®é ‚ç‚¹ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ç”Ÿæˆã—ã¾ã™ã€‚
+ * @param divx æ¨ªæ–¹å‘ã®åˆ†å‰²æ•°
+ * @param radius å††éŒåº•é¢ã®åŠå¾„
+ * @param height å††éŒã®é«˜ã•
+ * @param color é ‚ç‚¹ã®è‰²
+ * @param bottomup true: åº•é¢â†’é ‚ç‚¹ã®é †ã§é ‚ç‚¹ç”Ÿæˆã€false: é ‚ç‚¹â†’åº•é¢ã®é †ã§é ‚ç‚¹ç”Ÿæˆ
  */
 void CConeMesh::Init(
 	int		divx,
@@ -18,18 +18,18 @@ void CConeMesh::Init(
 	Color color,
 	bool bottomup)
 {
-	// ƒTƒCƒYƒZƒbƒgi•‚Æ‚‚³jiXY•½–Êj
+	// ã‚µã‚¤ã‚ºã‚»ãƒƒãƒˆï¼ˆå¹…ã¨é«˜ã•ï¼‰ï¼ˆXYå¹³é¢ï¼‰
 	m_height = height;
-	m_width = 2.0f * PI * radius;		// ’¼Œa~‰~ü—¦
+	m_width = 2.0f * PI * radius;		// ç›´å¾„Ã—å††å‘¨ç‡
 	m_radius = radius;
 
-	// •ªŠ„”
+	// åˆ†å‰²æ•°
 	m_division_x = divx;
 
-	// ’¸“_ƒJƒ‰[
+	// é ‚ç‚¹ã‚«ãƒ©ãƒ¼
 	m_color = color;
 
-	// ’¸“_ƒfƒ^¶¬
+	// é ‚ç‚¹ãƒ‡ã‚¿ç”Ÿæˆ
 	if (bottomup) {
 		CreateVertex();
 	}
@@ -39,10 +39,10 @@ void CConeMesh::Init(
 }
 
 /**
- * @brief ’¸“_‚ğu’ê–Ê¨’¸“_v‚Ì‡‚Å¶¬‚·‚é
+ * @brief é ‚ç‚¹ã‚’ã€Œåº•é¢â†’é ‚ç‚¹ã€ã®é †ã§ç”Ÿæˆã™ã‚‹
  *
- * ‰~‚Ì’¸“_”z—ñ‚ğ’ê–Ê‚©‚çR’¸‚ÉŒü‚©‚Á‚Ä\¬‚µAƒCƒ“ƒfƒbƒNƒX‚à’Ç‰Á‚µ‚Ü‚·B
- * ’ê–Êü•Ó‚ÌOŠpŒ`‚¨‚æ‚Ñ’ê–Ê©‘Ì‚Ìƒ|ƒŠƒSƒ“‚àŠÜ‚ß‚Ä\’z‚µ‚Ü‚·B
+ * å††éŒã®é ‚ç‚¹é…åˆ—ã‚’åº•é¢ã‹ã‚‰å±±é ‚ã«å‘ã‹ã£ã¦æ§‹æˆã—ã€ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚‚è¿½åŠ ã—ã¾ã™ã€‚
+ * åº•é¢å‘¨è¾ºã®ä¸‰è§’å½¢ãŠã‚ˆã³åº•é¢è‡ªä½“ã®ãƒãƒªã‚´ãƒ³ã‚‚å«ã‚ã¦æ§‹ç¯‰ã—ã¾ã™ã€‚
  */
 void CConeMesh::CreateVertex()
 {
@@ -89,7 +89,7 @@ void CConeMesh::CreateVertex()
 		};
 
 	// ------------------------------------------------------------
-	// ‘¤–Ê
+	// å´é¢
 	// ------------------------------------------------------------
 	for (unsigned int i = 0; i < m_division_x; i++) {
 		float azimuth0 = (2.0f * PI * static_cast<float>(i)) / static_cast<float>(m_division_x);
@@ -112,7 +112,7 @@ void CConeMesh::CreateVertex()
 		Vector3 n0 = MakeSideNormal(azimuth0);
 		Vector3 n1 = MakeSideNormal(azimuth1);
 
-		// ’¸“_‚Ì–@ü‚ÍA‚»‚Ì–Ê‚Ì’†ŠÔ•ûŒü‚É‚µ‚Ä‚¨‚­
+		// é ‚ç‚¹ã®æ³•ç·šã¯ã€ãã®é¢ã®ä¸­é–“æ–¹å‘ã«ã—ã¦ãŠã
 		Vector3 topNormal = n0 + n1;
 		topNormal.Normalize();
 
@@ -128,7 +128,7 @@ void CConeMesh::CreateVertex()
 	}
 
 	// ------------------------------------------------------------
-	// ’ê–Ê
+	// åº•é¢
 	// ------------------------------------------------------------
 	unsigned int bottomCenterIndex = static_cast<unsigned int>(m_vertices.size());
 
@@ -161,18 +161,18 @@ void CConeMesh::CreateVertex()
 	}
 }
 /**
- * @brief ’¸“_‚ğu’¸“_¨’ê–Êv‚Ì‡‚Å¶¬‚·‚é
+ * @brief é ‚ç‚¹ã‚’ã€Œé ‚ç‚¹â†’åº•é¢ã€ã®é †ã§ç”Ÿæˆã™ã‚‹
  *
- * ‰~‚Ì’¸“_”z—ñ‚ğR’¸‚©‚ç’ê–Ê‚ÉŒü‚©‚Á‚Ä\¬‚µAƒCƒ“ƒfƒbƒNƒX‚à’Ç‰Á‚µ‚Ü‚·B
- * ’ê–Êü•Ó‚ÌOŠpŒ`‚¨‚æ‚Ñ’ê–Ê©‘Ì‚Ìƒ|ƒŠƒSƒ“‚àŠÜ‚ß‚Ä\’z‚µ‚Ü‚·B
+ * å††éŒã®é ‚ç‚¹é…åˆ—ã‚’å±±é ‚ã‹ã‚‰åº•é¢ã«å‘ã‹ã£ã¦æ§‹æˆã—ã€ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚‚è¿½åŠ ã—ã¾ã™ã€‚
+ * åº•é¢å‘¨è¾ºã®ä¸‰è§’å½¢ãŠã‚ˆã³åº•é¢è‡ªä½“ã®ãƒãƒªã‚´ãƒ³ã‚‚å«ã‚ã¦æ§‹ç¯‰ã—ã¾ã™ã€‚
  */
 void CConeMesh::CreateVertexTopDown()
 {
-	// ’¸“_EƒCƒ“ƒfƒbƒNƒXƒf[ƒ^ƒNƒŠƒA
+	// é ‚ç‚¹ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ã‚¯ãƒªã‚¢
 	m_vertices.clear();
 	m_indices.clear();
 
-	// ˆÀ‘S‘Îô
+	// å®‰å…¨å¯¾ç­–
 	if (m_division_x < 3) {
 		m_division_x = 3;
 	}
@@ -203,9 +203,9 @@ void CConeMesh::CreateVertexTopDown()
 			float s = sinf(azimuth);
 
 			// ----------------------------------------------------
-			// TopDown”Å
-			// ’¸“_‚ª Y=0A’ê–Ê‚ª Y=m_height ‚É‚ ‚é‚Ì‚ÅA
-			// ‘¤–Ê–@ü‚ÌY¬•ª‚Íƒ}ƒCƒiƒX•ûŒü‚É‚È‚éB
+			// TopDownç‰ˆ
+			// é ‚ç‚¹ãŒ Y=0ã€åº•é¢ãŒ Y=m_height ã«ã‚ã‚‹ã®ã§ã€
+			// å´é¢æ³•ç·šã®Yæˆåˆ†ã¯ãƒã‚¤ãƒŠã‚¹æ–¹å‘ã«ãªã‚‹ã€‚
 			// ----------------------------------------------------
 			Vector3 n(
 				c,
@@ -218,7 +218,7 @@ void CConeMesh::CreateVertexTopDown()
 		};
 
 	// ------------------------------------------------------------
-	// 1. ‘¤–Ê—p‚Ì’¸“_EƒCƒ“ƒfƒbƒNƒX‚ğì¬
+	// 1. å´é¢ç”¨ã®é ‚ç‚¹ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ä½œæˆ
 	// ------------------------------------------------------------
 	for (unsigned int i = 0; i < static_cast<unsigned int>(m_division_x); i++)
 	{
@@ -251,40 +251,40 @@ void CConeMesh::CreateVertexTopDown()
 		Vector3 n0 = MakeSideNormal(azimuth0);
 		Vector3 n1 = MakeSideNormal(azimuth1);
 
-		// ’¸“_•”•ª‚Ì–@ü‚ÍA‚»‚ÌOŠpŒ`‚Ì’†ŠÔ•ûŒü‚É‚·‚é
+		// é ‚ç‚¹éƒ¨åˆ†ã®æ³•ç·šã¯ã€ãã®ä¸‰è§’å½¢ã®ä¸­é–“æ–¹å‘ã«ã™ã‚‹
 		Vector3 topNormal = n0 + n1;
 		topNormal.Normalize();
 
 		unsigned int start =
 			static_cast<unsigned int>(m_vertices.size());
 
-		// ‘¤–Ê—p’¸“_
+		// å´é¢ç”¨é ‚ç‚¹
 		AddVertex(topPos, topNormal);
 		AddVertex(p0, n0);
 		AddVertex(p1, n1);
 
-		// ‘¤–ÊOŠpŒ`
-		m_indices.emplace_back(start + 0);	// ’¸“_
-		m_indices.emplace_back(start + 1);	// Œ»İ‚Ì’ê–Ê’¸“_
-		m_indices.emplace_back(start + 2);	// Ÿ‚Ì’ê–Ê’¸“_
+		// å´é¢ä¸‰è§’å½¢
+		m_indices.emplace_back(start + 0);	// é ‚ç‚¹
+		m_indices.emplace_back(start + 1);	// ç¾åœ¨ã®åº•é¢é ‚ç‚¹
+		m_indices.emplace_back(start + 2);	// æ¬¡ã®åº•é¢é ‚ç‚¹
 	}
 
 	// ------------------------------------------------------------
-	// 2. ’ê–Ê—p‚Ì’¸“_EƒCƒ“ƒfƒbƒNƒX‚ğì¬
+	// 2. åº•é¢ç”¨ã®é ‚ç‚¹ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ä½œæˆ
 	// ------------------------------------------------------------
 
-	// ’ê–Ê’†S
+	// åº•é¢ä¸­å¿ƒ
 	unsigned int bottomCenterIndex =
 		static_cast<unsigned int>(m_vertices.size());
 
-	// TopDown”Å‚Å‚Í’ê–Ê‚ª Y=m_height ‘¤‚É‚ ‚é‚½‚ßA
-	// ŠOŒü‚«–@ü‚Í +Y
+	// TopDownç‰ˆã§ã¯åº•é¢ãŒ Y=m_height å´ã«ã‚ã‚‹ãŸã‚ã€
+	// å¤–å‘ãæ³•ç·šã¯ +Y
 	AddVertex(
 		Vector3(0.0f, m_height, 0.0f),
 		Vector3(0.0f, 1.0f, 0.0f)
 	);
 
-	// ’ê–ÊŠOü
+	// åº•é¢å¤–å‘¨
 	unsigned int bottomRingStart =
 		static_cast<unsigned int>(m_vertices.size());
 
@@ -300,14 +300,14 @@ void CConeMesh::CreateVertexTopDown()
 			m_radius * sinf(azimuth)
 		);
 
-		// ’ê–Ê—p’¸“_‚È‚Ì‚ÅA–@ü‚Í‚·‚×‚Ä +Y
+		// åº•é¢ç”¨é ‚ç‚¹ãªã®ã§ã€æ³•ç·šã¯ã™ã¹ã¦ +Y
 		AddVertex(
 			p,
 			Vector3(0.0f, 1.0f, 0.0f)
 		);
 	}
 
-	// ’ê–ÊOŠpŒ`
+	// åº•é¢ä¸‰è§’å½¢
 	for (unsigned int i = 0; i < static_cast<unsigned int>(m_division_x); i++)
 	{
 		m_indices.emplace_back(bottomCenterIndex);

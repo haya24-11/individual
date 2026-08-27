@@ -1,15 +1,15 @@
-#include	"CAnimationObject.h"
+ï»¿#include	"CAnimationObject.h"
 
 void CAnimationObject::Init()
 {
-	// ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“s—ñ‰Šú‰»
+	// ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—åˆæœŸåŒ–
 	m_BoneCombMatrix.Create();							// 20240723 
 }
 
 void CAnimationObject::Update(float dt) 
 {
 	int frame = static_cast<int>(m_CurrentFrame);
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒƒbƒVƒ…XV
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥æ›´æ–°
 	m_AnimMesh->Update(m_BoneCombMatrix,frame);
 	m_CurrentFrame+=dt;
 }
@@ -18,7 +18,7 @@ void CAnimationObject::BlendUpdate(float dt)
 {
 	int frame = static_cast<int>(m_CurrentFrame);
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒƒbƒVƒ…XV
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥æ›´æ–°
 	m_AnimMesh->UpdateBlended(m_BoneCombMatrix, frame);
 
 	m_CurrentFrame += dt;
@@ -27,13 +27,13 @@ void CAnimationObject::BlendUpdate(float dt)
 
 void CAnimationObject::Draw()
 {
-	// ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“‚ğ’è”ƒoƒbƒtƒ@‚Ö”½‰f‚³‚¹‚é
+	// ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³ã‚’å®šæ•°ãƒãƒƒãƒ•ã‚¡ã¸åæ˜ ã•ã›ã‚‹
 	m_BoneCombMatrix.Update();
 
-	// ’è”ƒoƒbƒtƒ@GPU‚ÖƒZƒbƒg
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡GPUã¸ã‚»ãƒƒãƒˆ
 	m_BoneCombMatrix.SetGPU();
 
-	// ƒƒbƒVƒ…•`‰æ
+	// ãƒ¡ãƒƒã‚·ãƒ¥æç”»
 	m_AnimMesh->Draw();
 }
 

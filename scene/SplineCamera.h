@@ -14,7 +14,11 @@ public:
 	void ResetDefault();				// 既定4点・速度・進行量をリセット
 	void Update(float dt, Camera& cam);	// active時：距離を進めて t を求め、cam に反映
 	void DrawVisualization();			// 経路（黄）＋現在地(赤)/注視点(青)/制御点(緑)を描画
-	void DebugUI();						// ImGui「Spline Camera」
+	// UI（Begin/End は呼ばない。CarScene 側のタブの中に描かれる）
+	void DrawPlaybackUI();				// 再生設定（有効・ループ・注視点）
+	void DrawCurveEditorUI();			// 曲線エディター（2Dキャンバス・制御点）
+	void DrawSpeedUI();					// 速度（基準速度・ノブ・グラフ）
+	void DrawRollUI();					// ロール（ダッチアングル）
 
 	bool     IsActive() const { return m_active; }
 	void     SetActive(bool a) { m_active = a; }

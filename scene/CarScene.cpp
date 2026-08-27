@@ -32,12 +32,19 @@ namespace {
 		}
 	};
 
+	// パスからファイル名だけを取り出す
+	// ※ std::filesystem::path は narrow 文字列を cp932 として解釈するため、
+	//    /utf-8 でビルドした UTF-8 リテラルを渡すと変換に失敗して例外(1113)になる。
+	//    ここでは区切り文字で切るだけにして、文字コード変換を一切行わない。
 	std::string getfilename(std::string_view filestring) {
-		auto u8name = std::filesystem::path(filestring).filename().u8string();
-		return { reinterpret_cast<const char*>(u8name.data()), u8name.size() };
+		size_t pos = filestring.find_last_of("/\\");
+		std::string_view name = (pos == std::string_view::npos)
+			? filestring
+			: filestring.substr(pos + 1);
+		return std::string(name);
 	}
 
-	std::array<Load3DInfo, 16> g_loadmodel =
+	std::array<Load3DInfo, 15> g_loadmodel =
 	{
 			Load3DInfo(
 				"assets/model/car000.x",			// モデル名
@@ -97,11 +104,9 @@ namespace {
 
 			Load3DInfo(
 				"assets/motion/X Bot.fbx",	// モデル名
-				"assets/motion/"),			// テクスチャのパス
+				"assets/motion/")			// テクスチャのパス
 
-			Load3DInfo(
-				"assets/model/o1kaensO5D/suzu.pmx",	// モデル名（铃：本体キャラ）
-				"assets/model/o1kaensO5D/")			// テクスチャのパス
+			
 	};
 
 	// for debug
@@ -204,17 +209,19 @@ std::string CarScene::ensureModelLoaded(int index)
 // モデル選択（プレイヤーごとに使い回す）
 void CarScene::debugModelSelect(const char* title, int& selectedIndex, std::string& meshId)
 {
-	ImGui::Begin(title);
+	// 同じウィンドウにP1/P2を並べるので、IDが衝突しないようスコープを分ける
+	ImGui::PushID(title);
+	ImGui::SeparatorText(title);
 
 	// 現在選択されているモデルの名前をプレビュー用に取得（範囲外アクセスも防止）
-	std::string preview_name = "None";
+	std::string preview_name = "なし";
 	if (selectedIndex >= 0 && selectedIndex < g_loadmodel.size())
 	{
 		preview_name = getfilename(g_loadmodel[selectedIndex].filename);
 	}
 
 	// BeginComboを使ってドロップダウンを作成
-	if (ImGui::BeginCombo("Model", preview_name.c_str()))
+	if (ImGui::BeginCombo("モデル##Model", preview_name.c_str()))
 	{
 		for (int i = 0; i < g_loadmodel.size(); ++i)
 		{
@@ -237,7 +244,90 @@ void CarScene::debugModelSelect(const char* title, int& selectedIndex, std::stri
 		ImGui::EndCombo();
 	}
 
-	ImGui::Text("Selected Model: %d", selectedIndex);
+	ImGui::Text("選択中のモデル番号: %d", selectedIndex);
+
+	ImGui::PopID();
+}
+
+// 全機能を1つのウィンドウにまとめて描く（タブ＋折りたたみ）
+void CarScene::drawMainToolsUI()
+{
+	ImGui::SetNextWindowSize(ImVec2(520, 720), ImGuiCond_FirstUseEver);
+	ImGui::Begin("カメラワーク ツール###Main Tools");
+
+	if (ImGui::BeginTabBar("##MainTabs"))
+	{
+		// ---------------- カメラ ----------------
+		if (ImGui::BeginTabItem("カメラ##Camera"))
+		{
+			int mode = (int)m_camMode;
+			if (ImGui::RadioButton("対戦（基本）##Fighting (basic)", &mode, (int)CamMode::Fighting)) {
+				m_camMode = CamMode::Fighting;
+				m_splineCam.SetActive(false);
+				m_fightCam.ResetSnap();
+			}
+			ImGui::SameLine();
+			if (ImGui::RadioButton("スプライン（曲線）##Spline (curve)", &mode, (int)CamMode::Spline)) {
+				m_camMode = CamMode::Spline;
+				m_splineCam.SetActive(true);
+			}
+			ImGui::Text("Cキー: 対戦カメラとスプラインカメラを切り替え");
+
+			ImGui::Separator();
+			ImGui::Checkbox("手動フリーカメラ（メイン画面）##Manual free-fly", &m_manualCam);
+			ImGui::Checkbox("デバッグビュー（フリーカメラ画面）##Debug view", &m_debugViewOpen);
+
+			if (ImGui::CollapsingHeader("対戦カメラのパラメータ##Fighting Params",
+				ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				m_fightCam.DrawUI();
+			}
+
+			ImGui::EndTabItem();
+		}
+
+		// ---------------- スプライン ----------------
+		if (ImGui::BeginTabItem("スプライン##Spline"))
+		{
+			if (ImGui::CollapsingHeader("再生設定##Playback", ImGuiTreeNodeFlags_DefaultOpen))
+				m_splineCam.DrawPlaybackUI();
+
+			if (ImGui::CollapsingHeader("曲線エディター##CurveEditor", ImGuiTreeNodeFlags_DefaultOpen))
+				m_splineCam.DrawCurveEditorUI();
+
+			if (ImGui::CollapsingHeader("速度##Speed", ImGuiTreeNodeFlags_DefaultOpen))
+				m_splineCam.DrawSpeedUI();
+
+			if (ImGui::CollapsingHeader("ロール（ダッチアングル）##Roll"))
+				m_splineCam.DrawRollUI();
+
+			ImGui::EndTabItem();
+		}
+
+		// ---------------- 録画 ----------------
+		if (ImGui::BeginTabItem("録画##Recorder"))
+		{
+			m_recorder.DrawUI();
+			ImGui::EndTabItem();
+		}
+
+		// ---------------- モデル ----------------
+		if (ImGui::BeginTabItem("モデル##Model"))
+		{
+			debugModelSelect("プレイヤー1 モデル###Player1 Model", m_p1Select, m_meshid);
+			debugModelSelect("プレイヤー2 モデル###Player2 Model", m_p2Select, m_meshid2);
+			ImGui::EndTabItem();
+		}
+
+		// ---------------- デバッグ ----------------
+		if (ImGui::BeginTabItem("デバッグ##Debug"))
+		{
+			debugRubikCubeLocalRotation();
+			ImGui::EndTabItem();
+		}
+
+		ImGui::EndTabBar();
+	}
 
 	ImGui::End();
 }
@@ -247,11 +337,9 @@ void CarScene::debugRubikCubeLocalRotation()
 {
 	Vector3 inputangle = { 0.0f,0.0f,0.0f };
 
-	ImGui::Begin("DebugRubikCube Local Rotation");
-
-	ImGui::SliderFloat("X Rotation", &inputangle.x, 0.0f, PI);
-	ImGui::SliderFloat("Y Rotation", &inputangle.y, 0.0f, PI);
-	ImGui::SliderFloat("Z Rotation", &inputangle.z, 0.0f, PI);
+	ImGui::SliderFloat("X軸回転##X Rotation", &inputangle.x, 0.0f, PI);
+	ImGui::SliderFloat("Y軸回転##Y Rotation", &inputangle.y, 0.0f, PI);
+	ImGui::SliderFloat("Z軸回転##Z Rotation", &inputangle.z, 0.0f, PI);
 
 	// ローカル軸を取得
 	Vector3 up = m_RotationMtx.Up();
@@ -268,16 +356,14 @@ void CarScene::debugRubikCubeLocalRotation()
 
 	static Vector3 scale = { 1.0f,1.0f,1.0f };
 
-	ImGui::SliderFloat("X scale", &scale.x, 0.5f, 20.0f);
-	ImGui::SliderFloat("Y scale", &scale.y, 0.5f, 20.0f);
-	ImGui::SliderFloat("Z scale", &scale.z, 0.5f, 20.0f);
+	ImGui::SliderFloat("X軸拡大率##X scale", &scale.x, 0.5f, 20.0f);
+	ImGui::SliderFloat("Y軸拡大率##Y scale", &scale.y, 0.5f, 20.0f);
+	ImGui::SliderFloat("Z軸拡大率##Z scale", &scale.z, 0.5f, 20.0f);
 
 	m_ScaleMtx = Matrix4x4::CreateScale(scale);
 
-	// Player1(suzu/PMX) 専用スケール（Player2やX Botには影響しない）
-	ImGui::SliderFloat("P1(suzu) scale", &m_p1Scale, 1.0f, 30.0f);
-
-	ImGui::End();
+	// Player1 専用スケール（Player2には影響しない）
+	ImGui::SliderFloat("プレイヤー1の拡大率##P1 scale", &m_p1Scale, 1.0f, 30.0f);
 }
 
 CarScene::CarScene()
@@ -748,59 +834,20 @@ void CarScene::init()
 	m_sprite = std::make_unique<CSprite>(2000, 2000, "assets/texture/Grass01.jpg", grounduv);
 
 
-	// クオータニオンから回転行列
-	DebugUI::RedistDebugFunction([this]() {
-		debugRubikCubeLocalRotation();
-		});
-
-	// モデル選択（player1 / player2 を個別に選べる）
-	DebugUI::RedistDebugFunction([this]() {
-		debugModelSelect("Player1 Model", m_p1Select, m_meshid);
-		});
-	DebugUI::RedistDebugFunction([this]() {
-		debugModelSelect("Player2 Model", m_p2Select, m_meshid2);
-		});
-
-	// スプラインカメラ：既定の制御点・マーカーを生成し、編集UIを登録
+	// スプラインカメラ：既定の制御点・マーカーを生成
 	m_splineCam.Init();
-	DebugUI::RedistDebugFunction([this]() {
-		m_splineCam.DebugUI();
-		});
 
-	// カメラモード切替UI（メイン: 基本⇔スプライン、Free-flyはデバッグ専用）＋基本カメラのパラメータ
+	// 全機能を1つのウィンドウにまとめて登録する（タブ＋折りたたみ）
 	DebugUI::RedistDebugFunction([this]() {
-		ImGui::Begin("Camera");
-		int mode = (int)m_camMode;
-		if (ImGui::RadioButton("Fighting (basic)", &mode, (int)CamMode::Fighting)) {
-			m_camMode = CamMode::Fighting;
-			m_splineCam.SetActive(false);
-			m_fightCam.ResetSnap();
-		}
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Spline (curve)", &mode, (int)CamMode::Spline)) {
-			m_camMode = CamMode::Spline;
-			m_splineCam.SetActive(true);
-		}
-		ImGui::Text("C key: toggle Fighting <-> Spline");
-		ImGui::Separator();
-		ImGui::Checkbox("Manual free-fly (main view)", &m_manualCam);	// 手動でメイン画面を飛ばす（録画用）
-		ImGui::Checkbox("Debug view (free-fly window)", &m_debugViewOpen);
-		ImGui::End();
-
-		m_fightCam.DebugUI();	// 基本カメラのパラメータ
-		});
-
-	// カメラワーク録画・再生UI
-	DebugUI::RedistDebugFunction([this]() {
-		m_recorder.DebugUI();
+		drawMainToolsUI();
 		});
 
 	// デバッグ第2ビュー窓（free-fly視点のオフスクリーンをImGuiに表示）
 	DebugUI::RedistDebugFunction([this]() {
 		if (!m_debugViewOpen || !m_dbgSRV) return;
 		ImGui::SetNextWindowSize(ImVec2(720, 460), ImGuiCond_FirstUseEver);	// 初回の既定サイズ
-		ImGui::Begin("Debug Free-fly View");
-		ImGui::TextDisabled("focus/hover: WASD move, Right-drag look, Q/E up-down, Shift x3");
+		ImGui::Begin("デバッグ・フリーカメラビュー###Debug Free-fly View");
+		ImGui::TextDisabled("フォーカス中: WASDで移動／右ドラッグで視点操作／Q・Eで上下移動／Shiftで3倍速");
 
 		// 映像をウィンドウのサイズに合わせて拡大（アスペクト維持で歪ませない）
 		ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -828,4 +875,3 @@ void CarScene::dispose()
 {
 
 }
-

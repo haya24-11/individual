@@ -1,4 +1,4 @@
-#include    "commontypes.h"
+ï»¿#include    "commontypes.h"
 #include	"collision.h"
 
 namespace GM31 {
@@ -6,21 +6,21 @@ namespace GM31 {
 		namespace {}
 		namespace Collision {
 
-			// OBB‚Ìd‚È‚è‚ğ”»’è‚·‚é
+			// OBBã®é‡ãªã‚Šã‚’åˆ¤å®šã™ã‚‹
 			bool CompareLengthOBB(
 				const BoundingBoxOBB& ObbA,		// OBB-A
 				const BoundingBoxOBB& ObbB,		// OBB-B
-				const Vector3& vecSeparate,		// •ª—£²
-				const Vector3& vecDistance)		// ’†SÀ•W‚ğŒ‹‚ñ‚¾ƒxƒNƒgƒ‹
+				const Vector3& vecSeparate,		// åˆ†é›¢è»¸
+				const Vector3& vecDistance)		// ä¸­å¿ƒåº§æ¨™ã‚’çµã‚“ã ãƒ™ã‚¯ãƒˆãƒ«
 			{
-				// ‰Û‘èNO 03 [OBB“–‚½‚è”»’è]‚ÅŠ®¬‚³‚¹‚Ä‚­‚¾‚³‚¢
+				// èª²é¡ŒNO 03 [OBBå½“ãŸã‚Šåˆ¤å®š]ã§å®Œæˆã•ã›ã¦ãã ã•ã„
 
 
 
 				return true;
 			}
 
-			// ü•ª‚É•½s‚È—^‚¦‚ç‚ê‚½•‚Ì‚SŠpŒ`‚ÌÀ•W‚ğ‹‚ß‚é
+			// ç·šåˆ†ã«å¹³è¡Œãªä¸ãˆã‚‰ã‚ŒãŸå¹…ã®ï¼”è§’å½¢ã®åº§æ¨™ã‚’æ±‚ã‚ã‚‹
 			void CalcQuadOrientedLine(
 				Vector3 startpos,
 				Vector3 endpos,
@@ -28,13 +28,13 @@ namespace GM31 {
 				float width)
 			{
 
-				// ‚’¼‚ÈƒxƒNƒgƒ‹‚ğ‹‚ß‚é	
+				// å‚ç›´ãªãƒ™ã‚¯ãƒˆãƒ«ã‚’æ±‚ã‚ã‚‹	
 				Vector3 zaxis(0, 0, 1);
 				Vector3 line = endpos - startpos;
 
 				Vector3 ans;
-				ans = line.Cross(zaxis);					// ŠOÏ
-				ans.Normalize();							// ³‹K‰»
+				ans = line.Cross(zaxis);					// å¤–ç©
+				ans.Normalize();							// æ­£è¦åŒ–
 
 				Vector3 startposplus = startpos + ans * width / 2.0f;
 				Vector3 startposminus = startpos - ans * width / 2.0f;
@@ -50,7 +50,7 @@ namespace GM31 {
 
 			}
 
-			// ü•ª‚É•½s‚È—^‚¦‚ç‚ê‚½•‚Ì‚SŠpŒ`‚ÌÀ•W‚ğ‹‚ß‚é
+			// ç·šåˆ†ã«å¹³è¡Œãªä¸ãˆã‚‰ã‚ŒãŸå¹…ã®ï¼”è§’å½¢ã®åº§æ¨™ã‚’æ±‚ã‚ã‚‹
 			void CalcQuadOrientedLine(
 				Vector3 startpos,
 				Vector3 endpos,
@@ -59,15 +59,15 @@ namespace GM31 {
 				float width)
 			{
 
-				// ‚’¼‚ÈƒxƒNƒgƒ‹‚ğ‹‚ß‚é	
+				// å‚ç›´ãªãƒ™ã‚¯ãƒˆãƒ«ã‚’æ±‚ã‚ã‚‹	
 				Vector3 zaxis = up;
 				Vector3 line = endpos - startpos;
 
 
 
 				Vector3 ans;
-				ans = line.Cross(zaxis);					// ŠOÏ
-				ans.Normalize();							// ³‹K‰»
+				ans = line.Cross(zaxis);					// å¤–ç©
+				ans.Normalize();							// æ­£è¦åŒ–
 
 				Vector3 startposplus = startpos + ans * width / 2.0f;
 				Vector3 startposminus = startpos - ans * width / 2.0f;
@@ -85,7 +85,7 @@ namespace GM31 {
 
 
 
-			// ’¼ü‚Æ“_‚Ì‹——£‚ğ‹‚ß‚é
+			// ç›´ç·šã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 			float calcPointLineDist(
 				const Vector3& point,
 				const Segment& segment,
@@ -94,37 +94,37 @@ namespace GM31 {
 
 				float distance = 0.0f;
 
-				// ü•ª‚ÌƒxƒNƒgƒ‹‚ğ‹‚ß‚é
+				// ç·šåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’æ±‚ã‚ã‚‹
 				double ABx = segment.endpoint.x - segment.startpoint.x;
 				double ABy = segment.endpoint.y - segment.startpoint.y;
 				double ABz = segment.endpoint.z - segment.startpoint.z;
 
-				// ü•ª‚Ìn“_‚Æ“_‚ğŒ‹‚ÔƒxƒNƒgƒ‹‚ğ‹‚ß‚é
+				// ç·šåˆ†ã®å§‹ç‚¹ã¨ç‚¹ã‚’çµã¶ãƒ™ã‚¯ãƒˆãƒ«ã‚’æ±‚ã‚ã‚‹
 				double APx = point.x - segment.startpoint.x;
 				double APy = point.y - segment.startpoint.y;
 				double APz = point.z - segment.startpoint.z;
 
-				// ü•ªAB‚Ì’·‚³‚ğ‹‚ß‚é
+				// ç·šåˆ†ABã®é•·ã•ã‚’æ±‚ã‚ã‚‹
 				double AB2 = ABx * ABx + ABy * ABy + ABz * ABz;
 
-				// ABƒxƒNƒgƒ‹‚ÆAPƒxƒNƒgƒ‹‚Ì“àÏ‚ğŒvZ‚·‚éiË‰e‚µ‚½’·‚³‚ğ‹‚ß‚éj
+				// ABãƒ™ã‚¯ãƒˆãƒ«ã¨APãƒ™ã‚¯ãƒˆãƒ«ã®å†…ç©ã‚’è¨ˆç®—ã™ã‚‹ï¼ˆå°„å½±ã—ãŸé•·ã•ã‚’æ±‚ã‚ã‚‹ï¼‰
 				double ABdotAP = ABx * APx + ABy * APy + ABz * APz;
 
-				// tt‚ğŒvZ
+				// ttã‚’è¨ˆç®—
 				double tt = ABdotAP / AB2;
 
-				// ‚ü‚Ì‘«
+				// å‚ç·šã®è¶³
 				intersectionpoint.x = static_cast<float>(segment.startpoint.x + ABx * tt);
 				intersectionpoint.y = static_cast<float>(segment.startpoint.y + ABy * tt);
 				intersectionpoint.z = static_cast<float>(segment.startpoint.z + ABz * tt);
 
 				t = static_cast<float>(tt);
-				// ‚ü‚Ì‘«‚Ì’·‚³
+				// å‚ç·šã®è¶³ã®é•·ã•
 				distance = (intersectionpoint - point).Length();
 				return distance;
 			}
 
-			// ü•ª‚Æ’¼ü‚Ì’·‚³‚ğ‹‚ß‚é
+			// ç·šåˆ†ã¨ç›´ç·šã®é•·ã•ã‚’æ±‚ã‚ã‚‹
 			float calcPointSegmentDist(
 				const Vector3& p,
 				const Segment& segment,
@@ -133,34 +133,34 @@ namespace GM31 {
 
 				float distance = calcPointLineDist(p, segment, intersectionpoint, t);
 
-				// Œğ“_‚ªü•ª‚ÌŠO‚É‚ ‚éin“_‚É‹ß‚¢j
+				// äº¤ç‚¹ãŒç·šåˆ†ã®å¤–ã«ã‚ã‚‹ï¼ˆå§‹ç‚¹ã«è¿‘ã„ï¼‰
 				if (t < 0.0f) {
 
-					intersectionpoint = segment.startpoint;		// ŠJn“_‚ªŒğ“_
+					intersectionpoint = segment.startpoint;		// é–‹å§‹ç‚¹ãŒäº¤ç‚¹
 
-					float l = (p - intersectionpoint).Length();	// Œğ“_‚Æ‚Ì‹——£‚ğ‹‚ß‚é
+					float l = (p - intersectionpoint).Length();	// äº¤ç‚¹ã¨ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 
 					return l;
 				}
 
-				// Œğ“_‚ªü•ª‚ÌŠO‚É‚ ‚éiI“_‚É‹ß‚¢j
+				// äº¤ç‚¹ãŒç·šåˆ†ã®å¤–ã«ã‚ã‚‹ï¼ˆçµ‚ç‚¹ã«è¿‘ã„ï¼‰
 				if (t > 1.0f) {
 
-					intersectionpoint = segment.endpoint;		// I“_‚ªŒğ“_
+					intersectionpoint = segment.endpoint;		// çµ‚ç‚¹ãŒäº¤ç‚¹
 
-					float l = (p - intersectionpoint).Length();	// Œğ“_‚Æ‚Ì‹——£‚ğ‹‚ß‚é
+					float l = (p - intersectionpoint).Length();	// äº¤ç‚¹ã¨ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 
 					return l;
 				}
 
-				// Œğ“_‚ªü•ªã‚É‚ ‚éi‚Oƒ‚”ƒ‚Pj
+				// äº¤ç‚¹ãŒç·šåˆ†ä¸Šã«ã‚ã‚‹ï¼ˆï¼ï¼œï½”ï¼œï¼‘ï¼‰
 				return distance;
 			}
 
-			// ü•ª‚Æ“_‚Ì‹——£‚ğ‹‚ß‚é•û–@‚ğg—p‚·‚é
+			// ç·šåˆ†ã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹æ–¹æ³•ã‚’ä½¿ç”¨ã™ã‚‹
 			bool CollisionSphereCylinder(BoundingSphere sphere, BoundingCylinder cylinder)
 			{
-				// ‚ü‚Ì‘«	
+				// å‚ç·šã®è¶³	
 				Vector3 intersectionpoint;
 				float t{};
 
@@ -168,19 +168,19 @@ namespace GM31 {
 				seg.startpoint = cylinder.bottom;
 				seg.endpoint = cylinder.top;
 
-				// ‹…‚Ì’†S‚Æü•ª‚Ì‹——£‚ğ‹‚ß‚é
+				// çƒã®ä¸­å¿ƒã¨ç·šåˆ†ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 				float length = calcPointSegmentDist(
 					sphere.center,
 					seg,
 					intersectionpoint,
 					t);
 
-				// ‹…‚Ì’†S‚Æü•ª‚Ì‹——£‚ª”¼Œa‚æ‚è¬‚³‚¢ê‡‚Í“–‚½‚Á‚Ä‚¢‚é
+				// çƒã®ä¸­å¿ƒã¨ç·šåˆ†ã®è·é›¢ãŒåŠå¾„ã‚ˆã‚Šå°ã•ã„å ´åˆã¯å½“ãŸã£ã¦ã„ã‚‹
 				if (length > sphere.radius + cylinder.radius) {
 					return false;
 				}
 
-				// ü•ª‚Ìn“_‚É‹ß‚¢
+				// ç·šåˆ†ã®å§‹ç‚¹ã«è¿‘ã„
 				if (t < 0) {
 					BoundingBoxAABB aabb;
 
@@ -199,7 +199,7 @@ namespace GM31 {
 						return true;
 					}
 				}
-				// ü•ª‚ÌI“_‚É‹ß‚¢
+				// ç·šåˆ†ã®çµ‚ç‚¹ã«è¿‘ã„
 				else if (t > 1) {
 					BoundingBoxAABB aabb;
 
@@ -218,7 +218,7 @@ namespace GM31 {
 						return true;
 					}
 				}
-				// ü•ª‚Ìn“_‚ÆI“_‚ÌŠÔ‚É‚ ‚é‚©H
+				// ç·šåˆ†ã®å§‹ç‚¹ã¨çµ‚ç‚¹ã®é–“ã«ã‚ã‚‹ã‹ï¼Ÿ
 				else {
 					return true;
 				}
@@ -226,7 +226,7 @@ namespace GM31 {
 				return false;
 			}
 
-			// ‹…
+			// çƒ
 			bool CollisionSphere(BoundingSphere p1, BoundingSphere p2)
 			{
 
@@ -237,12 +237,12 @@ namespace GM31 {
 				return length <= radiussum;
 			}
 
-			// OBB‚Ì“–‚½‚è”»’è‚ğs‚¤
+			// OBBã®å½“ãŸã‚Šåˆ¤å®šã‚’è¡Œã†
 			bool CollisionOBB(
 				const BoundingBoxOBB& obbA,
 				const BoundingBoxOBB& obbB) {
 
-				// ‰Û‘èNO 03 [OBB“–‚½‚è”»’è]‚ÅŠ®¬‚³‚¹‚Ä‚­‚¾‚³‚¢
+				// èª²é¡ŒNO 03 [OBBå½“ãŸã‚Šåˆ¤å®š]ã§å®Œæˆã•ã›ã¦ãã ã•ã„
 
 				return true;
 			}
@@ -250,7 +250,7 @@ namespace GM31 {
 			// AABB
 			bool CollisionAABB(BoundingBoxAABB p1, BoundingBoxAABB p2) {
 
-				// XÀ•W
+				// Xåº§æ¨™
 				if (p1.max.x < p2.min.x) {
 					return false;
 				}
@@ -259,7 +259,7 @@ namespace GM31 {
 					return false;
 				}
 
-				// YÀ•W
+				// Yåº§æ¨™
 				if (p1.max.y < p2.min.y) {
 					return false;
 				}
@@ -268,7 +268,7 @@ namespace GM31 {
 					return false;
 				}
 
-				// ZÀ•W
+				// Zåº§æ¨™
 				if (p1.max.z < p2.min.z) {
 					return false;
 				}
@@ -300,7 +300,7 @@ namespace GM31 {
 				return aabb;
 			}
 
-			// AABB‚Æ“_‚Ì‚à‚Á‚Æ‹ß‚¢“_‚ğ‹‚ß‚é
+			// AABBã¨ç‚¹ã®ã‚‚ã£ã¨è¿‘ã„ç‚¹ã‚’æ±‚ã‚ã‚‹
 			void ClosestPtPointAABB(Vector3 p, BoundingBoxAABB aabb, Vector3& q)
 			{
 				q.x = std::max(aabb.min.x, std::min(p.x, aabb.max.x));
@@ -308,7 +308,7 @@ namespace GM31 {
 				q.z = std::max(aabb.min.z, std::min(p.z, aabb.max.z));
 			}
 
-			// AABB‚Æ“_‚Ì‹——£‚ğ‹‚ß‚éi‚Qæj
+			// AABBã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹ï¼ˆï¼’ä¹—ï¼‰
 			float SqDistPointAABB(Vector3 p, BoundingBoxAABB aabb)
 			{
 				float sqDist = 0.0f;
@@ -325,12 +325,12 @@ namespace GM31 {
 				return sqDist;
 			}
 
-			// AABB‚Æ‹…‚Ì“–‚½‚è”»’è
+			// AABBã¨çƒã®å½“ãŸã‚Šåˆ¤å®š
 			bool CollisionSphereAABB(
 				BoundingSphere sphere,
 				BoundingBoxAABB aabb)
 			{
-				// AABB‚Æ“_‚Ì‹——£‚ğ‹‚ß‚é
+				// AABBã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 				float lng = SqDistPointAABB(sphere.center, aabb);
 
 				if (lng < sphere.radius * sphere.radius)
@@ -341,48 +341,48 @@ namespace GM31 {
 				return false;
 			}
 
-			// OBB‚Æ“_‚Ì‚à‚Á‚Æ‹ß‚¢“_‚ğ‹‚ß‚é
+			// OBBã¨ç‚¹ã®ã‚‚ã£ã¨è¿‘ã„ç‚¹ã‚’æ±‚ã‚ã‚‹
 			void ClosestPtPointOBB(Vector3 point, BoundingBoxOBB obb, Vector3& answer)
 			{
-				// “_‚©‚çOBB‚Ì’†S‚Ö‚ÌƒxƒNƒgƒ‹(·•ª‚ğ‹‚ß‚½)
+				// ç‚¹ã‹ã‚‰OBBã®ä¸­å¿ƒã¸ã®ãƒ™ã‚¯ãƒˆãƒ«(å·®åˆ†ã‚’æ±‚ã‚ãŸ)
 				Vector3 diff = point - obb.worldcenter;
 
 				answer = obb.worldcenter;
 
-				// OBB‚Ìƒ[ƒJƒ‹À•W‚É•ÏŠ·i²‚Í³‹K‰»‚³‚ê‚Ä‚¢‚é‚±‚Æ‚ğ‘O’ñ‚Æ‚·‚éj
+				// OBBã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã«å¤‰æ›ï¼ˆè»¸ã¯æ­£è¦åŒ–ã•ã‚Œã¦ã„ã‚‹ã“ã¨ã‚’å‰æã¨ã™ã‚‹ï¼‰
 				float obbaxisx = diff.Dot(obb.axisX);
 				float obbaxisy = diff.Dot(obb.axisY);
 				float obbaxisz = diff.Dot(obb.axisZ);
 
-				// OBB‚ÌŠe²‚É‰ˆ‚Á‚½Å‹ßÚ“_‚ğ‹‚ß‚é
+				// OBBã®å„è»¸ã«æ²¿ã£ãŸæœ€è¿‘æ¥ç‚¹ã‚’æ±‚ã‚ã‚‹
 				obbaxisx = std::clamp(obbaxisx, -0.5f * obb.lengthx, 0.5f * obb.lengthx);
 				obbaxisy = std::clamp(obbaxisy, -0.5f * obb.lengthy, 0.5f * obb.lengthy);
 				obbaxisz = std::clamp(obbaxisz, -0.5f * obb.lengthz, 0.5f * obb.lengthz);
 
-				// ƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
+				// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
 				answer = obb.worldcenter + obb.axisX * obbaxisx + obb.axisY * obbaxisy + obb.axisZ * obbaxisz;
 			}
 
-			// OBB‚Æ“_‚Ì‹——£‚ğ‹‚ß‚é
+			// OBBã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 			float DistPointOBB(Vector3 point, BoundingBoxOBB obb)
 			{
 				Vector3 answer{};
 
-				// OBB‚Æ“_‚Ì‚à‚Á‚Æ‹ß‚¢“_‚ğ‹‚ß‚é
+				// OBBã¨ç‚¹ã®ã‚‚ã£ã¨è¿‘ã„ç‚¹ã‚’æ±‚ã‚ã‚‹
 				ClosestPtPointOBB(point, obb, answer);
-				// ‹——£‚ğ‹‚ß‚é
+				// è·é›¢ã‚’æ±‚ã‚ã‚‹
 				float length = (answer - point).Length();
 
 				return length;
 			}
 
-			// OBB‚Ìİ’è
+			// OBBã®è¨­å®š
 			BoundingBoxOBB SetOBB(
-				Vector3 rot,					// p¨i‰ñ“]Šp“xj
-				Vector3 pos,					// ’†SÀ•Wiƒ[ƒ‹ƒhj
-				float width,					// •
-				float height,					// ‚‚³
-				float depth)					// ‰œs
+				Vector3 rot,					// å§¿å‹¢ï¼ˆå›è»¢è§’åº¦ï¼‰
+				Vector3 pos,					// ä¸­å¿ƒåº§æ¨™ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰ï¼‰
+				float width,					// å¹…
+				float height,					// é«˜ã•
+				float depth)					// å¥¥è¡Œ
 			{
 				BoundingBoxOBB obb{};
 
@@ -406,12 +406,12 @@ namespace GM31 {
 				return obb;
 			}
 
-			// OBB‚Æ‹…‚Ì“–‚½‚è”»’è
+			// OBBã¨çƒã®å½“ãŸã‚Šåˆ¤å®š
 			bool CollisionSphereOBB(
 				BoundingSphere sphere,
 				BoundingBoxOBB obb)
 			{
-				// OBB‚Æ“_‚Ì‹——£‚ğ‹‚ß‚é
+				// OBBã¨ç‚¹ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 				float lng = DistPointOBB(sphere.center, obb);
 
 				if (lng < sphere.radius)
@@ -422,10 +422,10 @@ namespace GM31 {
 				return false;
 			}
 
-			// ƒJƒvƒZƒ‹“¯m‚Ì“–‚½‚è”»’è
+			// ã‚«ãƒ—ã‚»ãƒ«åŒå£«ã®å½“ãŸã‚Šåˆ¤å®š
 			bool CollisionCapsule(BoundingCapsule caps1, BoundingCapsule caps2)
 			{
-				// ü•ª‚Ìn“_‚ÆI“_‚ğ‹‚ß‚é
+				// ç·šåˆ†ã®å§‹ç‚¹ã¨çµ‚ç‚¹ã‚’æ±‚ã‚ã‚‹
 				Segment seg1;
 				seg1.startpoint = caps1.startpoint;
 				seg1.endpoint = caps1.endpoint;
@@ -434,12 +434,12 @@ namespace GM31 {
 				seg2.startpoint = caps2.startpoint;
 				seg2.endpoint = caps2.endpoint;
 
-				// ‚Q‚Â‚Ìü•ª‚ÌÅ’Z‹——£‚ğ‹‚ß‚é
+				// ï¼’ã¤ã®ç·šåˆ†ã®æœ€çŸ­è·é›¢ã‚’æ±‚ã‚ã‚‹
 				Vector3 p1, p2;
 				float s, t;
 				float length = ClosestPtSegmentSegment(seg1, seg2, s, t, p1, p2);
 
-				// ‹…‚Ì”¼Œa‚ğl—¶‚µ‚Ä“–‚½‚è”»’è
+				// çƒã®åŠå¾„ã‚’è€ƒæ…®ã—ã¦å½“ãŸã‚Šåˆ¤å®š
 				if (length < caps1.radius + caps2.radius) {
 					return true;
 				}
@@ -447,46 +447,46 @@ namespace GM31 {
 				return false;
 			}
 
-			// ü•ª‚Æü•ª‚ÌÅ’Z‹——£‚ğ‹‚ß‚é
+			// ç·šåˆ†ã¨ç·šåˆ†ã®æœ€çŸ­è·é›¢ã‚’æ±‚ã‚ã‚‹
 			float ClosestPtSegmentSegment(
-				const Segment& seg1,				// ü•ª‚P
-				const Segment& seg2, 				// ü•ª‚Q	
-				float& s,							// ü•ª‚P‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-				float& t,							// ü•ª‚Q‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-				Vector3& p1, 						// ü•ª‚P‚ÌÅ’Z‹——£‚Ì“_	
-				Vector3& p2) 						// ü•ª‚Q‚ÌÅ’Z‹——£‚Ì“_
+				const Segment& seg1,				// ç·šåˆ†ï¼‘
+				const Segment& seg2, 				// ç·šåˆ†ï¼’	
+				float& s,							// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+				float& t,							// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+				Vector3& p1, 						// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ç‚¹	
+				Vector3& p2) 						// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ç‚¹
 			{
-				Vector3 d1 = seg1.endpoint - seg1.startpoint;	// ü•ª‚P‚Ì•ûŒü
-				Vector3 d2 = seg2.endpoint - seg2.startpoint;	// ü•ª‚Q‚Ì•ûŒü
-				Vector3 r = seg1.startpoint - seg2.startpoint;	// ü•ª‚P‚Ìn“_‚Æü•ª‚Q‚Ìn“_‚ğŒ‹‚ÔƒxƒNƒgƒ‹
+				Vector3 d1 = seg1.endpoint - seg1.startpoint;	// ç·šåˆ†ï¼‘ã®æ–¹å‘
+				Vector3 d2 = seg2.endpoint - seg2.startpoint;	// ç·šåˆ†ï¼’ã®æ–¹å‘
+				Vector3 r = seg1.startpoint - seg2.startpoint;	// ç·šåˆ†ï¼‘ã®å§‹ç‚¹ã¨ç·šåˆ†ï¼’ã®å§‹ç‚¹ã‚’çµã¶ãƒ™ã‚¯ãƒˆãƒ«
 
-				float a = d1.Dot(d1);	// ü•ª‚P‚Ì’·‚³‚Ì‚Qæ
-				float e = d2.Dot(d2);	// ü•ª‚Q‚Ì’·‚³‚Ì‚Qæ
-				float f = d2.Dot(r);	// ü•ª‚Q‚Ìn“_‚©‚çü•ª‚P‚Ìn“_‚Ö‚ÌƒxƒNƒgƒ‹‚Ì’·‚³‚Ì‚Qæ
+				float a = d1.Dot(d1);	// ç·šåˆ†ï¼‘ã®é•·ã•ã®ï¼’ä¹—
+				float e = d2.Dot(d2);	// ç·šåˆ†ï¼’ã®é•·ã•ã®ï¼’ä¹—
+				float f = d2.Dot(r);	// ç·šåˆ†ï¼’ã®å§‹ç‚¹ã‹ã‚‰ç·šåˆ†ï¼‘ã®å§‹ç‚¹ã¸ã®ãƒ™ã‚¯ãƒˆãƒ«ã®é•·ã•ã®ï¼’ä¹—
 
-				// ü•ª‚P‚ªk‘Ş‚µ‚Ä‚¢‚È‚¢‚©H@Š‚Â@ü•ª‚Q‚ªk‘Ş‚µ‚Ä‚¢‚È‚¢‚©H
+				// ç·šåˆ†ï¼‘ãŒç¸®é€€ã—ã¦ã„ãªã„ã‹ï¼Ÿã€€ä¸”ã¤ã€€ç·šåˆ†ï¼’ãŒç¸®é€€ã—ã¦ã„ãªã„ã‹ï¼Ÿ
 				if (a <= 1e-5 && e <= 1e-5) {
 					s = t = 0.0f;
 					p1 = seg1.startpoint;
 					p2 = seg2.startpoint;
-					return (p1 - p2).Length();		// k‘Ş‚µ‚Ä‚¢‚éê‡‚Í“_‚Ì‹——£
+					return (p1 - p2).Length();		// ç¸®é€€ã—ã¦ã„ã‚‹å ´åˆã¯ç‚¹ã®è·é›¢
 				}
 
-				if (a <= 1e-5) {					// ü•ª‚P‚ªk‘Ş‚µ‚Ä‚¢‚éê‡
+				if (a <= 1e-5) {					// ç·šåˆ†ï¼‘ãŒç¸®é€€ã—ã¦ã„ã‚‹å ´åˆ
 					s = 0.0f;
 					t = std::clamp(f / e, 0.0f, 1.0f);
 				}
 				else {
 					float c = d1.Dot(r);
-					if (e <= 1e-5) {	// ü•ª‚Q‚ªk‘Ş‚µ‚Ä‚¢‚éê‡
+					if (e <= 1e-5) {	// ç·šåˆ†ï¼’ãŒç¸®é€€ã—ã¦ã„ã‚‹å ´åˆ
 						t = 0.0f;
 						s = std::clamp(-c / a, 0.0f, 1.0f);
 					}
 					else {
-						// ü•ª“¯m‚Ì‹——£‚ğ‹‚ß‚é
+						// ç·šåˆ†åŒå£«ã®è·é›¢ã‚’æ±‚ã‚ã‚‹
 						float b = d1.Dot(d2);
 
-						// s—ñ®‚ğ‹‚ß‚é
+						// è¡Œåˆ—å¼ã‚’æ±‚ã‚ã‚‹
 						float denom = a * e - b * b; // Always nonnegative
 
 						// If segments are not parallel, compute closest point on L1 to L2 and
@@ -518,7 +518,7 @@ namespace GM31 {
 
 			}
 
-			// À•W•ÏŠ·‚µ‚½Œã‚Ì‚a‚“‚‚ˆ‚…‚’‚…‚ğ‘S’¸“_‚©‚ç‹‚ß‚é
+			// åº§æ¨™å¤‰æ›ã—ãŸå¾Œã®ï¼¢ï½“ï½ï½ˆï½…ï½’ï½…ã‚’å…¨é ‚ç‚¹ã‹ã‚‰æ±‚ã‚ã‚‹
 			BoundingSphere calcBSphere(
 				const std::vector<Vector3>& vertices,
 				SRT transform)
@@ -527,12 +527,12 @@ namespace GM31 {
 
 				Matrix4x4 mtx = transform.GetMatrix();
 
-				// À•W•ÏŠ·
+				// åº§æ¨™å¤‰æ›
 				for (const auto& v : vertices) {
 					transformedVertices.push_back(Vector3::Transform(v, mtx));
 				}
 
-				// AABB‚ÌÅ¬’l‚ÆÅ‘å’l‚ğ‹‚ß‚é
+				// AABBã®æœ€å°å€¤ã¨æœ€å¤§å€¤ã‚’æ±‚ã‚ã‚‹
 				BoundingBoxAABB aabb{};
 
 				Vector3 minVec = transformedVertices.front();
@@ -557,7 +557,7 @@ namespace GM31 {
 
 				Vector3 center = (aabb.min + aabb.max) / 2.0f;
 
-				// ”¼Œa‚ğ‹‚ß‚é
+				// åŠå¾„ã‚’æ±‚ã‚ã‚‹
 				float maxlng = FLT_MIN;
 				for (const auto& v : transformedVertices) {
 					float lng= (v - center).Length();
@@ -575,7 +575,7 @@ namespace GM31 {
 
 			}
 
-			// À•W•ÏŠ·‚µ‚½Œã‚ÌAABB‚ğ‘S’¸“_‚©‚ç‹‚ß‚é
+			// åº§æ¨™å¤‰æ›ã—ãŸå¾Œã®AABBã‚’å…¨é ‚ç‚¹ã‹ã‚‰æ±‚ã‚ã‚‹
 			BoundingBoxAABB calcAABB(
 				const std::vector<Vector3>& vertices,
 				SRT transform)
@@ -585,12 +585,12 @@ namespace GM31 {
 
 				std::vector<Vector3> transformedVertices(vertices.size());	
 
-				// À•W•ÏŠ·
+				// åº§æ¨™å¤‰æ›
 				for (const auto& v : vertices) {
 					transformedVertices.push_back(Vector3::Transform(v,mtx));
 				}
 
-				// AABB‚ÌÅ¬’l‚ÆÅ‘å’l‚ğ‹‚ß‚é
+				// AABBã®æœ€å°å€¤ã¨æœ€å¤§å€¤ã‚’æ±‚ã‚ã‚‹
 				BoundingBoxAABB aabb{};
 
 				Vector3 minVec = transformedVertices.front();
@@ -617,7 +617,7 @@ namespace GM31 {
 			}
 
 
-			// AABB‚©‚ç8’¸“_‚ğæ“¾
+			// AABBã‹ã‚‰8é ‚ç‚¹ã‚’å–å¾—
 			std::vector<Vector3> GetCorners(const BoundingBoxAABB& box) {
 				const auto& min = box.min;
 				const auto& max = box.max;
@@ -634,25 +634,25 @@ namespace GM31 {
 				};
 			}
 
-			// À•W•ÏŠ·‚µ‚½Œã‚ÌAABB‚ğ‹‚ß‚é
+			// åº§æ¨™å¤‰æ›ã—ãŸå¾Œã®AABBã‚’æ±‚ã‚ã‚‹
 			BoundingBoxAABB TransformAABB(
 				const BoundingBoxAABB& inAABB,
 				SRT transform)
 			{
 
-				std::vector<Vector3> corners = GetCorners(inAABB);	// AABB‚Ì8’¸“_‚ğæ“¾
+				std::vector<Vector3> corners = GetCorners(inAABB);	// AABBã®8é ‚ç‚¹ã‚’å–å¾—
 
-				// SRTî•ñ‚©‚çs—ñ‚ğæ“¾	
+				// SRTæƒ…å ±ã‹ã‚‰è¡Œåˆ—ã‚’å–å¾—	
 				Matrix4x4 mtx = transform.GetMatrix();
 
 				std::vector<Vector3> transformedVertices{};
 
-				// À•W•ÏŠ·
+				// åº§æ¨™å¤‰æ›
 				for (const auto& v : corners) {
 					transformedVertices.push_back(Vector3::Transform(v, mtx));
 				}
 
-				// AABB‚ÌÅ¬’l‚ÆÅ‘å’l‚ğ‹‚ß‚é
+				// AABBã®æœ€å°å€¤ã¨æœ€å¤§å€¤ã‚’æ±‚ã‚ã‚‹
 				BoundingBoxAABB aabb{};
 
 				Vector3 minVec = transformedVertices.front();
@@ -679,15 +679,15 @@ namespace GM31 {
 			}
 
 			BoundingCapsule SetBoundingCapsule(
-				SRT transform,		// ƒJƒvƒZƒ‹‚Ìp¨î•ñ
-				float radius,		// ƒJƒvƒZƒ‹‚Ì”¼Œa
-				float height)		// ƒJƒvƒZƒ‹‚Ì‚‚³
+				SRT transform,		// ã‚«ãƒ—ã‚»ãƒ«ã®å§¿å‹¢æƒ…å ±
+				float radius,		// ã‚«ãƒ—ã‚»ãƒ«ã®åŠå¾„
+				float height)		// ã‚«ãƒ—ã‚»ãƒ«ã®é«˜ã•
 			{
 				BoundingCapsule boundingcapsule{};
 
 				boundingcapsule.radius = radius;
 
-				// p¨‚ğ•\‚·s—ñ‚ğì‚é	
+				// å§¿å‹¢ã‚’è¡¨ã™è¡Œåˆ—ã‚’ä½œã‚‹	
 				Matrix4x4 mtx = Matrix4x4::CreateFromYawPitchRoll(
 					transform.rot.y,
 					transform.rot.x,
@@ -702,8 +702,8 @@ namespace GM31 {
 			}
 
 			BoundingCylinder SetBoundingCylinder(
-				SRT transform,		// ‰~’Œ‚Ìp¨î•ñ
-				Cylinder cylinder)	// •`‰æ—p‚Ì‰~’Œî•ñ
+				SRT transform,		// å††æŸ±ã®å§¿å‹¢æƒ…å ±
+				Cylinder cylinder)	// æç”»ç”¨ã®å††æŸ±æƒ…å ±
 			{
 				BoundingCylinder boundingcylinder{};
 
@@ -735,46 +735,46 @@ namespace GM31 {
 				seg2.startpoint = Cylinder2.bottom;
 				seg2.endpoint = Cylinder2.top;
 
-				// ü•ª‚Æü•ª‚ÌÅ’Z‹——£‚ğ‹‚ß‚é
+				// ç·šåˆ†ã¨ç·šåˆ†ã®æœ€çŸ­è·é›¢ã‚’æ±‚ã‚ã‚‹
 				Vector3 p1, p2;
 				float s = 0.0f;
 				float t = 0.0f;
 
 				float distance = ClosestPtSegmentSegment(
-					seg1,				// ü•ª‚P
-					seg2, 				// ü•ª‚Q	
-					s,					// ü•ª‚P‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-					t,					// ü•ª‚Q‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-					p1, 				// ü•ª‚P‚ÌÅ’Z‹——£‚Ì“_	
-					p2); 				// ü•ª‚Q‚ÌÅ’Z‹——£‚Ì“_
+					seg1,				// ç·šåˆ†ï¼‘
+					seg2, 				// ç·šåˆ†ï¼’	
+					s,					// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+					t,					// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+					p1, 				// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ç‚¹	
+					p2); 				// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ç‚¹
 
 
-				// ’¼ü“¯m‚ÌÅ’Z‹——£‚ª‰~’Œ‚Ì”¼Œa‚æ‚è‘å‚«‚¢ê‡‚ÍÕ“Ë‚µ‚Ä‚¢‚È‚¢
+				// ç›´ç·šåŒå£«ã®æœ€çŸ­è·é›¢ãŒå††æŸ±ã®åŠå¾„ã‚ˆã‚Šå¤§ãã„å ´åˆã¯è¡çªã—ã¦ã„ãªã„
 				if (distance > Cylinder1.radius + Cylinder2.radius) {
-					return false;	// Õ“Ë‚µ‚Ä‚¢‚È‚¢
+					return false;	// è¡çªã—ã¦ã„ãªã„
 				}
 
-				return true;	// Õ“Ë‚µ‚Ä‚¢‚é
+				return true;	// è¡çªã—ã¦ã„ã‚‹
 			}
 
-			// ‰~’Œ‚Ì’f–Ê
+			// å††æŸ±ã®æ–­é¢
 			struct Cap {
-				Vector3 center; // ‰~‚Ì’†SˆÊ’u
-				Vector3 normal; // ‰~‚Ì–@üƒxƒNƒgƒ‹i‰~’Œ‚Ì²‚Æ“¯‚¶j
+				Vector3 center; // å††ã®ä¸­å¿ƒä½ç½®
+				Vector3 normal; // å††ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«ï¼ˆï¼å††æŸ±ã®è»¸ã¨åŒã˜ï¼‰
 				float radius;
 			};
 
 
 			bool CapCircleIntersect(const Cap& capA, const Cap& capB) {
-				// Step 1: B‚Ì’†S‚ğA‚Ì–@ü‚ÉË‰e
+				// Step 1: Bã®ä¸­å¿ƒã‚’Aã®æ³•ç·šã«å°„å½±
 				Vector3 delta = capB.center - capA.center;
 				float distToPlane = delta.Dot(capA.normal);
 				Vector3 projectedB = capB.center - capA.normal * distToPlane;
 
-				// Step 2: A‚Ì’†S‚Æ‚Ì•½–Êã‹——£
+				// Step 2: Aã®ä¸­å¿ƒã¨ã®å¹³é¢ä¸Šè·é›¢
 				float planarDist = (projectedB - capA.center).Length();
 
-				// Step 3: ”¼Œa‚Ì‡Œv‚Æ”äŠr
+				// Step 3: åŠå¾„ã®åˆè¨ˆã¨æ¯”è¼ƒ
 				return planarDist <= (capA.radius + capB.radius);
 			}
 
@@ -782,7 +782,7 @@ namespace GM31 {
 				const BoundingCylinder& c1, 
 				const BoundingCylinder& c2) 
 			{
-				// ‚»‚ê‚¼‚ê‚Ìã‰º’[‚ğ‹‚ß‚é
+				// ãã‚Œãã‚Œã®ä¸Šä¸‹ç«¯ã‚’æ±‚ã‚ã‚‹
 				Vector3 top1 = c1.top;
 				Vector3 top2 = c2.top;
 
@@ -794,7 +794,7 @@ namespace GM31 {
 				Cap c2_bottom = { c2.bottom, c2axis, c2.radius };
 				Cap c2_top = { top2,         c2axis, c2.radius };
 
-				// 4’Ê‚è‚Ì‘g‚İ‡‚í‚¹‚ğŠm”Fiã‰º~ã‰ºj
+				// 4é€šã‚Šã®çµ„ã¿åˆã‚ã›ã‚’ç¢ºèªï¼ˆä¸Šä¸‹Ã—ä¸Šä¸‹ï¼‰
 				return
 					CapCircleIntersect(c1_bottom, c2_bottom) ||
 					CapCircleIntersect(c1_bottom, c2_top) ||
@@ -806,7 +806,7 @@ namespace GM31 {
 				const BoundingCylinder& Cylinder1,
 				const BoundingCylinder& Cylinder2)
 			{
-				// ü•ª‚Æü•ª‚ÌÅ’Z‹——£‚ğ‹‚ß‚é
+				// ç·šåˆ†ã¨ç·šåˆ†ã®æœ€çŸ­è·é›¢ã‚’æ±‚ã‚ã‚‹
 				Vector3 p1;
 				Vector3 p2;
 				float s = 0.0f;
@@ -821,24 +821,24 @@ namespace GM31 {
 				seg2.endpoint = Cylinder2.top;
 
 				float distance = ClosestPtSegmentSegment(
-					seg1,				// ü•ª‚P
-					seg2, 				// ü•ª‚Q	
-					s,					// ü•ª‚P‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-					t,					// ü•ª‚Q‚ÌÅ’Z‹——£‚Ìƒpƒ‰ƒ[ƒ^
-					p1, 				// ü•ª‚P‚ÌÅ’Z‹——£‚Ì“_	
-					p2); 				// ü•ª‚Q‚ÌÅ’Z‹——£‚Ì“_
+					seg1,				// ç·šåˆ†ï¼‘
+					seg2, 				// ç·šåˆ†ï¼’	
+					s,					// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+					t,					// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+					p1, 				// ç·šåˆ†ï¼‘ã®æœ€çŸ­è·é›¢ã®ç‚¹	
+					p2); 				// ç·šåˆ†ï¼’ã®æœ€çŸ­è·é›¢ã®ç‚¹
 
 				if (distance > Cylinder1.radius * Cylinder2.radius) {
 					return false;
 				}
 
-				// ¸–§’f–Êƒ`ƒFƒbƒNiã‰º‚Ìcapj
+				// ç²¾å¯†æ–­é¢ãƒã‚§ãƒƒã‚¯ï¼ˆä¸Šä¸‹ã®capï¼‰
 				bool sts = CylinderCapIntersect(Cylinder1, Cylinder2);
 				if (sts) {
 					return true;
 				}
 
-				// Step 3: ˆê•û‚Ìcap‚ª‘¼•û‚Ì‘¤–Ê‚É‚ß‚è‚ñ‚Å‚¢‚é
+				// Step 3: ä¸€æ–¹ã®capãŒä»–æ–¹ã®å´é¢ã«ã‚ã‚Šè¾¼ã‚“ã§ã„ã‚‹
 				if (CylinderSideIntersect(Cylinder1, Cylinder2))
 					return true;
 				if (CylinderSideIntersect(Cylinder2, Cylinder1))
@@ -857,13 +857,13 @@ namespace GM31 {
 				Vector3 AP = point - seg.startpoint;
 				Vector3 BP = point - seg.endpoint;
 
-				// ğŒ1: “¯ˆê’¼üãiƒNƒƒXÏ‚ªƒ[ƒj
+				// æ¡ä»¶1: åŒä¸€ç›´ç·šä¸Šï¼ˆã‚¯ãƒ­ã‚¹ç©ãŒã‚¼ãƒ­ï¼‰
 				Vector3 cross = AB.Cross(AP);
 				if (cross.LengthSquared() > epsilon * epsilon) {
-					return false; // “¯ˆêüã‚É‚È‚¢
+					return false; // åŒä¸€ç·šä¸Šã«ãªã„
 				}
 
-				// ğŒ2: “àÏ‚Å”ÍˆÍ‚ğ”»’è
+				// æ¡ä»¶2: å†…ç©ã§ç¯„å›²ã‚’åˆ¤å®š
 				float dot1 = AB.Dot(AP);
 				float dot2 = (-AB).Dot(BP); // = AB.dot(P - B)
 
@@ -873,10 +873,10 @@ namespace GM31 {
 			float ClosestDistanceBetweenLines(
 				const Line& line1, 
 				const Line& line2,
-				float& s, 			// line1 ƒpƒ‰ƒ[ƒ^i–³§ŒÀj
-				float& t,			// line2 ƒpƒ‰ƒ[ƒ^i–³§ŒÀj
-				Vector3& p1, 		// line1 Å‹ßÚ“_
-				Vector3& p2			// line2 Å‹ßÚ“_
+				float& s, 			// line1 ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ï¼ˆç„¡åˆ¶é™ï¼‰
+				float& t,			// line2 ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ï¼ˆç„¡åˆ¶é™ï¼‰
+				Vector3& p1, 		// line1 æœ€è¿‘æ¥ç‚¹
+				Vector3& p2			// line2 æœ€è¿‘æ¥ç‚¹
 			) 
 			{
 				const Vector3& p = line1.point;
@@ -886,16 +886,16 @@ namespace GM31 {
 
 				Vector3 r = p - q;
 
-				float a = d1.Dot(d1);       // d1Ed1
-				float e = d2.Dot(d2);       // d2Ed2
-				float f = d2.Dot(r);        // d2E(p - q)
-				float c = d1.Dot(r);        // d1E(p - q)
-				float b = d1.Dot(d2);       // d1Ed2
+				float a = d1.Dot(d1);       // d1ãƒ»d1
+				float e = d2.Dot(d2);       // d2ãƒ»d2
+				float f = d2.Dot(r);        // d2ãƒ»(p - q)
+				float c = d1.Dot(r);        // d1ãƒ»(p - q)
+				float b = d1.Dot(d2);       // d1ãƒ»d2
 				float denom = a * e - b * b;
 
-				// •Às or “¯ˆê’¼ü
+				// ä¸¦è¡Œ or åŒä¸€ç›´ç·š
 				if (std::abs(denom) < 1e-6f) {
-					// ”CˆÓ s = 0 ‚É‚µ‚ÄAt ‚ğüŒ`‚É‰ğ‚­
+					// ä»»æ„ s = 0 ã«ã—ã¦ã€t ã‚’ç·šå½¢ã«è§£ã
 					s = 0.0f;
 					t = f / e;
 				}
@@ -914,27 +914,27 @@ namespace GM31 {
 				const BoundingCylinder& cylinderSide, 
 				const BoundingCylinder& other)
 			{
-				// cylinderSide‚Ì²‚Æ‚‚³ƒxƒNƒgƒ‹
+				// cylinderSideã®è»¸ã¨é«˜ã•ãƒ™ã‚¯ãƒˆãƒ«
 				Vector3 axis = cylinderSide.top - cylinderSide.bottom;
 				float height = axis.Length();
-				Vector3 axisDir = axis / height; // ³‹K‰»
+				Vector3 axisDir = axis / height; // æ­£è¦åŒ–
 
-				// other‚Ìã‰ºcap
+				// otherã®ä¸Šä¸‹cap
 				Vector3 otherCapCenters[2] = { other.bottom, other.top };
 
 				for (const Vector3& point : otherCapCenters) {
-					// cylinderSide‚Ì²‚É“_‚ğË‰e
+					// cylinderSideã®è»¸ã«ç‚¹ã‚’å°„å½±
 					Vector3 baseToPoint = point - cylinderSide.bottom;
-					float h = baseToPoint.Dot(axisDir); // Ë‰e‹——£
+					float h = baseToPoint.Dot(axisDir); // å°„å½±è·é›¢
 
-					// ‚»‚Ì“_‚ªcylinderSide‚Ì‚‚³”ÍˆÍ“à‚É‚ ‚é‚©H
+					// ãã®ç‚¹ãŒcylinderSideã®é«˜ã•ç¯„å›²å†…ã«ã‚ã‚‹ã‹ï¼Ÿ
 					if (h < 0.0f || h > height)
 						continue;
 
-					// ²ã‚ÌÅ‹ßÚ“_‚ğ‹‚ß‚é
+					// è»¸ä¸Šã®æœ€è¿‘æ¥ç‚¹ã‚’æ±‚ã‚ã‚‹
 					Vector3 closestPoint = cylinderSide.bottom + axisDir * h;
 
-					// ‘¤–Ê‚Ü‚Å‚Ì…•½‹——£‚ğ‘ª‚é
+					// å´é¢ã¾ã§ã®æ°´å¹³è·é›¢ã‚’æ¸¬ã‚‹
 					float radialDist = (point - closestPoint).Length();
 
 					if (radialDist <= cylinderSide.radius + other.radius) {
@@ -945,33 +945,33 @@ namespace GM31 {
 				return false;
 			}
 
-			// ’¼ü‚Æ•½–Ê‚ÌŒğ“_‚ğ‹‚ß‚é
+			// ç›´ç·šã¨å¹³é¢ã®äº¤ç‚¹ã‚’æ±‚ã‚ã‚‹
 			bool LinetoPlaneCross(
-				const Plane& plane,		//•½–Ê‚Ì•û’ö®
-				const Vector3& p0,		//’¼ü‚Ì‹N“_
-				const Vector3& wv,		//’¼ü‚Ì•ûŒüƒxƒNƒgƒ‹
-				float& t,				// Œğ“_ˆÊ’uî•ñ	
-				Vector3& ans)			//Œğ“_À•W
+				const Plane& plane,		//å¹³é¢ã®æ–¹ç¨‹å¼
+				const Vector3& p0,		//ç›´ç·šã®èµ·ç‚¹
+				const Vector3& wv,		//ç›´ç·šã®æ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«
+				float& t,				// äº¤ç‚¹ä½ç½®æƒ…å ±	
+				Vector3& ans)			//äº¤ç‚¹åº§æ¨™
 			{
 				//	float t = 0;
 
-				Vector3 n;				// •½–Ê‚Ì–@üƒxƒNƒgƒ‹i³‹K‰»Ï‚İj
+				Vector3 n;				// å¹³é¢ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«ï¼ˆæ­£è¦åŒ–æ¸ˆã¿ï¼‰
 				n.x = plane.a;
 				n.y = plane.b;
 				n.z = plane.c;
 
-				float dot;			// •ª•ê
+				float dot;			// åˆ†æ¯
 
 				dot = wv.Dot(n);
-				// •½sƒ`ƒFƒbƒN(“àÏ‚ğŒvZ‚·‚é)
+				// å¹³è¡Œãƒã‚§ãƒƒã‚¯(å†…ç©ã‚’è¨ˆç®—ã™ã‚‹)
 				if (fabsf(dot) < FLT_EPSILON) {
-					//		MessageBox(nullptr, "•½s‚Å‚·B", "•½s‚Å‚·B", MB_OK);
+					//		MessageBox(nullptr, "å¹³è¡Œã§ã™ã€‚", "å¹³è¡Œã§ã™ã€‚", MB_OK);
 
-					printf("•½s‚Å‚· \n");
+					printf("å¹³è¡Œã§ã™ \n");
 					return false;
 				}
 
-				// •½–Ê•û’ö®: nEp + d = 0
+				// å¹³é¢æ–¹ç¨‹å¼: nãƒ»p + d = 0
 				t = -(n.Dot(p0) + plane.d) / dot;
 
 				ans = p0 + t * wv;
@@ -979,17 +979,17 @@ namespace GM31 {
 				return true;
 			}
 
-			// OŠpŒ`‚Ì“à•”‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
+			// ä¸‰è§’å½¢ã®å†…éƒ¨ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
 			bool CheckInTriangle(
 				const Vector3& a,
 				const Vector3& b,
 				const Vector3& c,
 				const Vector3& p) {
 
-				Vector3	ab, bc, ca;			// ‚R•Ó‚ÌƒxƒNƒgƒ‹
-				Vector3	ap, bp, cp;			// “à•”‚Ì“_‚Æ‚ÌƒxƒNƒgƒ‹
-				Vector3	normal;				// ‚RŠpŒ`‚Ì–@üƒxƒNƒgƒ‹
-				Vector3	n1, n2, n3;			// ‚R•Ó‚Æ“à•”‚Ì“_‚Æ‚Ì–@üƒxƒNƒgƒ‹
+				Vector3	ab, bc, ca;			// ï¼“è¾ºã®ãƒ™ã‚¯ãƒˆãƒ«
+				Vector3	ap, bp, cp;			// å†…éƒ¨ã®ç‚¹ã¨ã®ãƒ™ã‚¯ãƒˆãƒ«
+				Vector3	normal;				// ï¼“è§’å½¢ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«
+				Vector3	n1, n2, n3;			// ï¼“è¾ºã¨å†…éƒ¨ã®ç‚¹ã¨ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«
 
 				ab = b - a;
 
@@ -1012,13 +1012,13 @@ namespace GM31 {
 				n3 = ca.Cross(cp);
 
 				float dot = n1.Dot(normal);
-				if (dot < 0) return false;			// ˆ×‚·Šp“x‚ª“İŠp
+				if (dot < 0) return false;			// ç‚ºã™è§’åº¦ãŒéˆè§’
 
 				dot = n2.Dot(normal);
-				if (dot < 0) return false;			// ˆ×‚·Šp“x‚ª“İŠp
+				if (dot < 0) return false;			// ç‚ºã™è§’åº¦ãŒéˆè§’
 
 				dot = n3.Dot(normal);
-				if (dot < 0) return false;			// ˆ×‚·Šp“x‚ª“İŠp
+				if (dot < 0) return false;			// ç‚ºã™è§’åº¦ãŒéˆè§’
 
 				return true;
 			}

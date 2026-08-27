@@ -36,6 +36,7 @@ public:
 	void init() override;
 	void dispose() override;
 	void debugRubikCubeLocalRotation();
+	void drawMainToolsUI();		// 全機能を1つのウィンドウにまとめて描く
 
 	void debugModelSelect(const char* title, int& selectedIndex, std::string& meshId);
 	std::string ensureModelLoaded(int index);	// 未ロードならLoad+Registerしてmeshidを返す
@@ -86,12 +87,12 @@ private:
 	// 今表示しているメッシュのID
 	std::string m_meshid{};		// player1 の表示メッシュID
 	std::string m_meshid2{};	// player2 の表示メッシュID
-	int m_p1Select = 15;			// Player1 のコンボ選択index（初期表示: suzu.pmx）
+	int m_p1Select = 14;			// Player1 のコンボ選択index（初期表示: suzu.pmx）
 	int m_p2Select = 0;			// Player2 のコンボ選択index
-	float m_p1Scale = 9.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
+	float m_p1Scale = 1.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
 
 	// 各プレイヤーの配置（向かい合わせ。値は実機で微調整）
-	Vector3 m_p1Pos{ -150, -100, 0 };	// player1 は左（suzuは原点が足元→地面Y=-100に接地）
+	Vector3 m_p1Pos{ -150, -100, 0 };	// player1 は左（原点が足元→地面Y=-100に接地）
 	Vector3 m_p2Pos{  150, 0, 0 };	// player2 は右
 	float   m_p1FaceY = -PI / 2.0f;	// 相手(+X方向)を向く ※モデルの正面軸により要調整
 	float   m_p2FaceY =  PI / 2.0f;	// 相手(-X方向)を向く ※同上

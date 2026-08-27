@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <chrono>
 #include <thread>
 #include <cstdint>
@@ -6,15 +6,15 @@
 
 /**
  * @class FPS
- * @brief w’è‚µ‚½FPS‚ÅƒQ[ƒ€ƒ‹[ƒv‚ğ“®‚©‚·‚½‚ß‚ÌƒNƒ‰ƒX
+ * @brief æŒ‡å®šã—ãŸFPSã§ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—ã‚’å‹•ã‹ã™ãŸã‚ã®ã‚¯ãƒ©ã‚¹
  */
 class FPS {
 public:
     FPS() = delete;
 
     /**
-     * @brief FPS‚ğw’è‚µ‚Ä‰Šú‰»
-     * @param fps –Ú•WFPS
+     * @brief FPSã‚’æŒ‡å®šã—ã¦åˆæœŸåŒ–
+     * @param fps ç›®æ¨™FPS
      */
     explicit FPS(uint64_t fps)
         : m_MicrosecondsPerFrame(1000000 / fps)
@@ -30,8 +30,8 @@ public:
     }
 
     /**
-     * @brief ƒtƒŒ[ƒ€ŠJn‚ÉŒÄ‚Ô
-     * @return ‘OƒtƒŒ[ƒ€ŠJn‚©‚ç¡‰ñƒtƒŒ[ƒ€ŠJn‚Ü‚Å‚ÌŒo‰ßŠÔ ƒ}ƒCƒNƒ•b
+     * @brief ãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹æ™‚ã«å‘¼ã¶
+     * @return å‰ãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹ã‹ã‚‰ä»Šå›ãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹ã¾ã§ã®çµŒéæ™‚é–“ ãƒã‚¤ã‚¯ãƒ­ç§’
      */
     uint64_t BeginFrame() {
         auto now = std::chrono::steady_clock::now();
@@ -48,9 +48,9 @@ public:
     }
 
     /**
-     * @brief ƒtƒŒ[ƒ€I—¹‚ÉŒÄ‚Ô
+     * @brief ãƒ•ãƒ¬ãƒ¼ãƒ çµ‚äº†æ™‚ã«å‘¼ã¶
      *
-     * ˆ—‚ª‘‚­I‚í‚Á‚½ê‡A–Ú•WFPS‚É‚È‚é‚Ü‚Å‘Ò‹@‚·‚éB
+     * å‡¦ç†ãŒæ—©ãçµ‚ã‚ã£ãŸå ´åˆã€ç›®æ¨™FPSã«ãªã‚‹ã¾ã§å¾…æ©Ÿã™ã‚‹ã€‚
      */
     void EndFrame() const {
         auto targetTime =

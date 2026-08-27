@@ -1,18 +1,18 @@
-#pragma once
+ï»¿#pragma once
 //==============================================================================
 // CInputManager.h
-//   CDirectInput ‚ğƒ‰ƒbƒv‚µ‚½‰SÒŒü‚¯“ü—ÍƒVƒXƒeƒ€
+//   CDirectInput ã‚’ãƒ©ãƒƒãƒ—ã—ãŸåˆå¿ƒè€…å‘ã‘å…¥åŠ›ã‚·ã‚¹ãƒ†ãƒ 
 //
-//   ‚Å‚«‚é‚±‚ÆF
-//     EƒL[/ƒ}ƒEƒXƒ{ƒ^ƒ“‚ªu‰Ÿ‚³‚ê‚Ä‚¢‚é‚©v‚ğ’²‚×‚é
-//     EƒL[/ƒ}ƒEƒXƒ{ƒ^ƒ“‚ªu‰Ÿ‚µ‘±‚¯‚ç‚ê‚Ä‚¢‚éŠÔiƒ~ƒŠ•bjv‚ğæ“¾
-//     Eu‰Ÿ‰ºƒgƒŠƒK[vi‰Ÿ‚µ‚½uŠÔj‚ÌŒŸ’m
-//     Eu—£‚³‚ê‚½ƒgƒŠƒK[vi—£‚µ‚½uŠÔj‚ÌŒŸ’m + ‚»‚Ì‚Ì‰Ÿ‰ºŠÔ
+//   ã§ãã‚‹ã“ã¨ï¼š
+//     ãƒ»ã‚­ãƒ¼/ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãŒã€ŒæŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ã€ã‚’èª¿ã¹ã‚‹
+//     ãƒ»ã‚­ãƒ¼/ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãŒã€ŒæŠ¼ã—ç¶šã‘ã‚‰ã‚Œã¦ã„ã‚‹æ™‚é–“ï¼ˆãƒŸãƒªç§’ï¼‰ã€ã‚’å–å¾—
+//     ãƒ»ã€ŒæŠ¼ä¸‹ãƒˆãƒªã‚¬ãƒ¼ã€ï¼ˆæŠ¼ã—ãŸç¬é–“ï¼‰ã®æ¤œçŸ¥
+//     ãƒ»ã€Œé›¢ã•ã‚ŒãŸãƒˆãƒªã‚¬ãƒ¼ã€ï¼ˆé›¢ã—ãŸç¬é–“ï¼‰ã®æ¤œçŸ¥ + ãã®æ™‚ã®æŠ¼ä¸‹æ™‚é–“
 //
-//   g‚¢•ûF
-//     1) ƒQ[ƒ€‰Šú‰»‚É CDirectInput::GetInstance().Init(...) ‚ğŒÄ‚Ô
-//     2) –ˆƒtƒŒ[ƒ€æ“ª‚Å CInputManager::GetInstance().Update() ‚ğŒÄ‚Ô
-//     3) ‚ ‚Æ‚Í IsKeyPressed / IsKeyTriggered ‚È‚Ç‚ğ©—R‚ÉŒÄ‚Ô‚¾‚¯I
+//   ä½¿ã„æ–¹ï¼š
+//     1) ã‚²ãƒ¼ãƒ åˆæœŸåŒ–æ™‚ã« CDirectInput::GetInstance().Init(...) ã‚’å‘¼ã¶
+//     2) æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å…ˆé ­ã§ CInputManager::GetInstance().Update() ã‚’å‘¼ã¶
+//     3) ã‚ã¨ã¯ IsKeyPressed / IsKeyTriggered ãªã©ã‚’è‡ªç”±ã«å‘¼ã¶ã ã‘ï¼
 //==============================================================================
 #include "CDirectInput.h"
 #include <windows.h>
@@ -20,54 +20,54 @@
 class CInputManager {
 public:
 	//--------------------------------------------------------------------------
-	// ƒ}ƒEƒXƒ{ƒ^ƒ“¯•Êqi‰SÒ‚ª”š‚Å–À‚í‚È‚¢‚æ‚¤‚É enum ‚Å—pˆÓj
+	// ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³è­˜åˆ¥å­ï¼ˆåˆå¿ƒè€…ãŒæ•°å­—ã§è¿·ã‚ãªã„ã‚ˆã†ã« enum ã§ç”¨æ„ï¼‰
 	//--------------------------------------------------------------------------
 	enum MouseButton {
-		MOUSE_LEFT = 0,	// ƒ}ƒEƒX¶ƒ{ƒ^ƒ“
-		MOUSE_RIGHT = 1,	// ƒ}ƒEƒX‰Eƒ{ƒ^ƒ“
-		MOUSE_CENTER = 2,	// ƒ}ƒEƒX’†‰›ƒ{ƒ^ƒ“iƒzƒC[ƒ‹ƒNƒŠƒbƒNj
+		MOUSE_LEFT = 0,	// ãƒã‚¦ã‚¹å·¦ãƒœã‚¿ãƒ³
+		MOUSE_RIGHT = 1,	// ãƒã‚¦ã‚¹å³ãƒœã‚¿ãƒ³
+		MOUSE_CENTER = 2,	// ãƒã‚¦ã‚¹ä¸­å¤®ãƒœã‚¿ãƒ³ï¼ˆãƒ›ã‚¤ãƒ¼ãƒ«ã‚¯ãƒªãƒƒã‚¯ï¼‰
 	};
 
 private:
 	//--------------------------------------------------------------------------
-	// 1 ‚Â‚ÌƒL[ or ƒ{ƒ^ƒ“‚Ìó‘Ô‚ğ‚Ü‚Æ‚ß‚½\‘¢‘Ì
+	// 1 ã¤ã®ã‚­ãƒ¼ or ãƒœã‚¿ãƒ³ã®çŠ¶æ…‹ã‚’ã¾ã¨ã‚ãŸæ§‹é€ ä½“
 	//--------------------------------------------------------------------------
 	struct KeyInfo {
-		bool  isPressed = false;	// Œ»İ‰Ÿ‚³‚ê‚Ä‚¢‚é‚©
-		bool  wasPressed = false;	// 1 ƒtƒŒ[ƒ€‘O‚É‰Ÿ‚³‚ê‚Ä‚¢‚½‚©
-		DWORD pressStartTime = 0;		// ‰Ÿ‚µn‚ß‚½ (ƒ~ƒŠ•b)
-		DWORD pressDuration = 0;		// Œ»İ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚éŠÔ (ƒ~ƒŠ•b)
-		DWORD lastHoldTime = 0;		// ÅŒã‚É—£‚³‚ê‚½A‰½ƒ~ƒŠ•b‰Ÿ‚³‚ê‚Ä‚¢‚½‚©
+		bool  isPressed = false;	// ç¾åœ¨æŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹
+		bool  wasPressed = false;	// 1 ãƒ•ãƒ¬ãƒ¼ãƒ å‰ã«æŠ¼ã•ã‚Œã¦ã„ãŸã‹
+		DWORD pressStartTime = 0;		// æŠ¼ã—å§‹ã‚ãŸæ™‚åˆ» (ãƒŸãƒªç§’)
+		DWORD pressDuration = 0;		// ç¾åœ¨æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹æ™‚é–“ (ãƒŸãƒªç§’)
+		DWORD lastHoldTime = 0;		// æœ€å¾Œã«é›¢ã•ã‚ŒãŸæ™‚ã€ä½•ãƒŸãƒªç§’æŠ¼ã•ã‚Œã¦ã„ãŸã‹
 	};
 
-	KeyInfo m_keys[256]{};			// ƒL[ƒ{[ƒh 256 ŒÂ•ª
-	KeyInfo m_mouseButtons[8]{};	// ƒ}ƒEƒXƒ{ƒ^ƒ“ 8 ŒÂ•ªig‚¤‚Ì‚Í¶‰E’†‚Ì 3 ŒÂj
+	KeyInfo m_keys[256]{};			// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 256 å€‹åˆ†
+	KeyInfo m_mouseButtons[8]{};	// ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ 8 å€‹åˆ†ï¼ˆä½¿ã†ã®ã¯å·¦å³ä¸­ã® 3 å€‹ï¼‰
 
-	// ƒVƒ“ƒOƒ‹ƒgƒ“‚È‚Ì‚ÅŠO‚©‚ç‚Ì¶¬‚Í‹Ö~
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ãªã®ã§å¤–ã‹ã‚‰ã®ç”Ÿæˆã¯ç¦æ­¢
 	CInputManager() = default;
 
 	//--------------------------------------------------------------------------
-	// 1 ‚Â‚ÌƒL[î•ñ‚ğXV‚·‚é“à•”ˆ—
+	// 1 ã¤ã®ã‚­ãƒ¼æƒ…å ±ã‚’æ›´æ–°ã™ã‚‹å†…éƒ¨å‡¦ç†
 	//--------------------------------------------------------------------------
 	void UpdateKeyInfo(KeyInfo& info, bool nowPressed, DWORD currentTime) {
-		// ‘OƒtƒŒ[ƒ€‚Ì‰Ÿ‰ºó‘Ô‚ğ•Û‘¶
+		// å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®æŠ¼ä¸‹çŠ¶æ…‹ã‚’ä¿å­˜
 		info.wasPressed = info.isPressed;
 
 		if (nowPressed) {
 			if (!info.isPressed) {
-				// ----- ‰Ÿ‚³‚ê‚½uŠÔi‰Ÿ‰ºƒgƒŠƒK[j -----
+				// ----- æŠ¼ã•ã‚ŒãŸç¬é–“ï¼ˆæŠ¼ä¸‹ãƒˆãƒªã‚¬ãƒ¼ï¼‰ -----
 				info.pressStartTime = currentTime;
 				info.pressDuration = 0;
 			}
 			else {
-				// ----- ‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é -----
+				// ----- æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ -----
 				info.pressDuration = currentTime - info.pressStartTime;
 			}
 			info.isPressed = true;
 		}
 		else {
 			if (info.isPressed) {
-				// ----- —£‚³‚ê‚½uŠÔi—£‚µƒgƒŠƒK[j -----
+				// ----- é›¢ã•ã‚ŒãŸç¬é–“ï¼ˆé›¢ã—ãƒˆãƒªã‚¬ãƒ¼ï¼‰ -----
 				info.lastHoldTime = currentTime - info.pressStartTime;
 				info.pressDuration = 0;
 			}
@@ -76,14 +76,14 @@ private:
 	}
 
 public:
-	// ƒRƒs[Eƒ€[ƒu‹Ö~
+	// ã‚³ãƒ”ãƒ¼ãƒ»ãƒ ãƒ¼ãƒ–ç¦æ­¢
 	CInputManager(const CInputManager&) = delete;
 	CInputManager& operator=(const CInputManager&) = delete;
 	CInputManager(CInputManager&&) = delete;
 	CInputManager& operator=(CInputManager&&) = delete;
 
 	//--------------------------------------------------------------------------
-	// ƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	//--------------------------------------------------------------------------
 	static CInputManager& GetInstance() {
 		static CInputManager instance;
@@ -91,68 +91,68 @@ public:
 	}
 
 	//==========================================================================
-	// –ˆƒtƒŒ[ƒ€æ“ª‚Å•K‚¸ŒÄ‚ÔXVˆ—
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å…ˆé ­ã§å¿…ãšå‘¼ã¶æ›´æ–°å‡¦ç†
 	//==========================================================================
 	void Update() {
 		CDirectInput& di = CDirectInput::GetInstance();
 
-		// DirectInput ‚©‚çƒL[/ƒ}ƒEƒXó‘Ô‚ğæ“¾
+		// DirectInput ã‹ã‚‰ã‚­ãƒ¼/ãƒã‚¦ã‚¹çŠ¶æ…‹ã‚’å–å¾—
 		di.GetKeyBuffer();
 		di.GetMouseState();
 
 		const DWORD now = GetTickCount();
 
-		// ----- ƒL[ƒ{[ƒh 256 ŒÂ‚Ìó‘Ô‚ğˆêŠ‡XV -----
+		// ----- ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ 256 å€‹ã®çŠ¶æ…‹ã‚’ä¸€æ‹¬æ›´æ–° -----
 		for (int i = 0; i < 256; ++i) {
 			bool pressed = di.CheckKeyBuffer(i);
 			UpdateKeyInfo(m_keys[i], pressed, now);
 		}
 
-		// ----- ƒ}ƒEƒX¶‰E’† 3 ƒ{ƒ^ƒ“‚ğXV -----
+		// ----- ãƒã‚¦ã‚¹å·¦å³ä¸­ 3 ãƒœã‚¿ãƒ³ã‚’æ›´æ–° -----
 		UpdateKeyInfo(m_mouseButtons[MOUSE_LEFT], di.GetMouseLButtonCheck(), now);
 		UpdateKeyInfo(m_mouseButtons[MOUSE_RIGHT], di.GetMouseRButtonCheck(), now);
 		UpdateKeyInfo(m_mouseButtons[MOUSE_CENTER], di.GetMouseCButtonCheck(), now);
 	}
 
 	//==========================================================================
-	// yƒL[ƒ{[ƒhz”»’èŠÖ”
-	//   keyCode ‚É‚Í DIK_A, DIK_SPACE, DIK_RETURN ‚È‚Ç‚Ì DirectInput ƒL[’è”‚ğ“n‚·
+	// ã€ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã€‘åˆ¤å®šé–¢æ•°
+	//   keyCode ã«ã¯ DIK_A, DIK_SPACE, DIK_RETURN ãªã©ã® DirectInput ã‚­ãƒ¼å®šæ•°ã‚’æ¸¡ã™
 	//==========================================================================
 
-	// ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©i‰Ÿ‚µ‚Á‚Ï‚È‚µó‘Ô‚Å true ‚ğ•Ô‚µ‘±‚¯‚éj
+	// ã‚­ãƒ¼ãŒæŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ï¼ˆæŠ¼ã—ã£ã±ãªã—çŠ¶æ…‹ã§ true ã‚’è¿”ã—ç¶šã‘ã‚‹ï¼‰
 	bool IsKeyPressed(int keyCode) const {
 		if (keyCode < 0 || keyCode >= 256) return false;
 		return m_keys[keyCode].isPressed;
 	}
 
-	// ‰Ÿ‚µ‚½uŠÔ‚¾‚¯ truei‰Ÿ‰ºƒgƒŠƒK[j
+	// æŠ¼ã—ãŸç¬é–“ã ã‘ trueï¼ˆæŠ¼ä¸‹ãƒˆãƒªã‚¬ãƒ¼ï¼‰
 	bool IsKeyTriggered(int keyCode) const {
 		if (keyCode < 0 || keyCode >= 256) return false;
 		return m_keys[keyCode].isPressed && !m_keys[keyCode].wasPressed;
 	}
 
-	// —£‚µ‚½uŠÔ‚¾‚¯ truei—£‚µƒgƒŠƒK[j
+	// é›¢ã—ãŸç¬é–“ã ã‘ trueï¼ˆé›¢ã—ãƒˆãƒªã‚¬ãƒ¼ï¼‰
 	bool IsKeyReleased(int keyCode) const {
 		if (keyCode < 0 || keyCode >= 256) return false;
 		return !m_keys[keyCode].isPressed && m_keys[keyCode].wasPressed;
 	}
 
-	// Œ»İ‰½ƒ~ƒŠ•b‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©
-	//   ‰Ÿ‚³‚ê‚Ä‚¢‚È‚¢‚Í 0
+	// ç¾åœ¨ä½•ãƒŸãƒªç§’æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹
+	//   æŠ¼ã•ã‚Œã¦ã„ãªã„æ™‚ã¯ 0
 	DWORD GetKeyHoldTime(int keyCode) const {
 		if (keyCode < 0 || keyCode >= 256) return 0;
 		return m_keys[keyCode].pressDuration;
 	}
 
-	// ÅŒã‚É—£‚³‚ê‚½A‰½ƒ~ƒŠ•b‰Ÿ‚³‚ê‚Ä‚¢‚½‚©
-	//   iIsKeyReleased() ‚ª true ‚ÌƒtƒŒ[ƒ€‚Åg‚¤‚Æu‚»‚Ì‰Ÿ‰ºŠÔv‚ªæ‚ê‚éj
+	// æœ€å¾Œã«é›¢ã•ã‚ŒãŸæ™‚ã€ä½•ãƒŸãƒªç§’æŠ¼ã•ã‚Œã¦ã„ãŸã‹
+	//   ï¼ˆIsKeyReleased() ãŒ true ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§ä½¿ã†ã¨ã€Œãã®æŠ¼ä¸‹æ™‚é–“ã€ãŒå–ã‚Œã‚‹ï¼‰
 	DWORD GetKeyLastHoldTime(int keyCode) const {
 		if (keyCode < 0 || keyCode >= 256) return 0;
 		return m_keys[keyCode].lastHoldTime;
 	}
 
 	//==========================================================================
-	// yƒ}ƒEƒXƒ{ƒ^ƒ“z”»’èŠÖ”
+	// ã€ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã€‘åˆ¤å®šé–¢æ•°
 	//==========================================================================
 	bool  IsMousePressed(MouseButton btn) const { return  m_mouseButtons[btn].isPressed && true; }
 	bool  IsMouseTriggered(MouseButton btn) const { return  m_mouseButtons[btn].isPressed && !m_mouseButtons[btn].wasPressed; }
@@ -161,7 +161,7 @@ public:
 	DWORD GetMouseLastHoldTime(MouseButton btn) const { return m_mouseButtons[btn].lastHoldTime; }
 
 	//==========================================================================
-	// yƒ}ƒEƒXÀ•WziCDirectInput ‚ÉŠÛ“Š‚°‚·‚é‚¾‚¯‚Ìƒ‰ƒbƒp[j
+	// ã€ãƒã‚¦ã‚¹åº§æ¨™ã€‘ï¼ˆCDirectInput ã«ä¸¸æŠ•ã’ã™ã‚‹ã ã‘ã®ãƒ©ãƒƒãƒ‘ãƒ¼ï¼‰
 	//==========================================================================
 	int GetMouseX() const { return CDirectInput::GetInstance().GetMousePosX(); }
 	int GetMouseY() const { return CDirectInput::GetInstance().GetMousePosY(); }

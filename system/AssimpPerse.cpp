@@ -1,4 +1,4 @@
-#include	<vector>
+ï»¿#include	<vector>
 #include	<iostream>
 #include	<unordered_map>
 #include	<cassert>
@@ -11,23 +11,23 @@
 
 namespace GM31 {namespace GE {namespace {}
 namespace myAssimp{
-	std::vector<std::vector<VERTEX>> g_vertices{};				// ’¸“_ƒf[ƒ^iƒƒbƒVƒ…’PˆÊj
+	std::vector<std::vector<VERTEX>> g_vertices{};				// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥å˜ä½ï¼‰
 
-	std::vector<std::vector<unsigned int>> g_indices{};			// ƒCƒ“ƒfƒbƒNƒXƒf[ƒ^iƒƒbƒVƒ…’PˆÊj
+	std::vector<std::vector<unsigned int>> g_indices{};			// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥å˜ä½ï¼‰
 
-	std::vector<SUBSET> g_subsets{};							// ƒTƒuƒZƒbƒgî•ñ
+	std::vector<SUBSET> g_subsets{};							// ã‚µãƒ–ã‚»ãƒƒãƒˆæƒ…å ±
 
-	std::vector<MATERIAL> g_materials{};						// ƒ}ƒeƒŠƒAƒ‹
+	std::vector<MATERIAL> g_materials{};						// ãƒãƒ†ãƒªã‚¢ãƒ«
 
-	std::vector<std::unique_ptr<CTexture>> g_diffuseTextures;	// ƒfƒBƒtƒ…[ƒYƒeƒNƒXƒ`ƒƒŒQ
+	std::vector<std::unique_ptr<CTexture>> g_diffuseTextures;	// ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºãƒ†ã‚¯ã‚¹ãƒãƒ£ç¾¤
 
-	std::unordered_map<std::string, BONE> g_BoneDictionary;		// ƒ{[ƒ“«‘iƒL[Fƒ{[ƒ“–¼j
+	std::unordered_map<std::string, BONE> g_BoneDictionary;		// ãƒœãƒ¼ãƒ³è¾æ›¸ï¼ˆã‚­ãƒ¼ï¼šãƒœãƒ¼ãƒ³åï¼‰
 	
-	std::vector<std::vector<BONE>>	g_BonesPerMeshes;			// ƒƒbƒVƒ…’PˆÊ‚Åƒ{[ƒ“î•ñ‚ğW‚ß‚½‚à‚Ì
+	std::vector<std::vector<BONE>>	g_BonesPerMeshes;			// ãƒ¡ãƒƒã‚·ãƒ¥å˜ä½ã§ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’é›†ã‚ãŸã‚‚ã®
 
-	CTreeNode<std::string>	g_AssimpNodeNameTree;				// assimpƒm[ƒh–¼ƒcƒŠ[
+	CTreeNode<std::string>	g_AssimpNodeNameTree;				// assimpãƒãƒ¼ãƒ‰åãƒ„ãƒªãƒ¼
 
-	// ƒm[ƒh–¼ƒcƒŠ[‚ğ¶¬‚·‚é
+	// ãƒãƒ¼ãƒ‰åãƒ„ãƒªãƒ¼ã‚’ç”Ÿæˆã™ã‚‹
 	void CreateNodeTree(aiNode* node, CTreeNode<std::string>* ptree) {
 
 		ptree->m_nodedata = std::string(node->mName.C_Str());
@@ -47,18 +47,18 @@ namespace myAssimp{
 		return std::move(g_AssimpNodeNameTree);
 	}
 
-	// ƒ{[ƒ“«‘‚ğ•Ô‚·	
+	// ãƒœãƒ¼ãƒ³è¾æ›¸ã‚’è¿”ã™	
 	std::unordered_map<std::string, BONE> GetBoneDictionary()
 	{
 		return g_BoneDictionary;
 	}
 
-	// ‹ó‚Ìƒ{[ƒ“«‘iƒL[‚Íƒ{[ƒ“–¼j‚ğì¬‚·‚éiƒm[ƒh‚ğÄ‹A‚Å’H‚è‹ó‚Ì«‘‚ğì¬‚·‚éj
+	// ç©ºã®ãƒœãƒ¼ãƒ³è¾æ›¸ï¼ˆã‚­ãƒ¼ã¯ãƒœãƒ¼ãƒ³åï¼‰ã‚’ä½œæˆã™ã‚‹ï¼ˆãƒãƒ¼ãƒ‰ã‚’å†å¸°ã§è¾¿ã‚Šç©ºã®è¾æ›¸ã‚’ä½œæˆã™ã‚‹ï¼‰
 	void CreateEmptyBoneDictionary(aiNode* node)
 	{
 		BONE bone{};
 
-		// ƒ{[ƒ“–¼‚ÅQÆ‚Å‚«‚é‚æ‚¤‚É‹ó‚Ìƒ{[ƒ“î•ñ‚ğƒZƒbƒg‚·‚é
+		// ãƒœãƒ¼ãƒ³åã§å‚ç…§ã§ãã‚‹ã‚ˆã†ã«ç©ºã®ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 		g_BoneDictionary[node->mName.C_Str()] = bone;
 
 		std::cout << node->mName.C_Str() << std::endl;
@@ -69,27 +69,27 @@ namespace myAssimp{
 		}
 	}
 
-	// ƒTƒuƒZƒbƒg‚É•R‚Ã‚¢‚Ä‚¢‚éƒ{[ƒ“î•ñ‚ğæ“¾‚·‚é
+	// ã‚µãƒ–ã‚»ãƒƒãƒˆã«ç´ã¥ã„ã¦ã„ã‚‹ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—ã™ã‚‹
 	std::vector<BONE> GetBonesPerMesh(const aiMesh* mesh)
 	{
-		std::vector<BONE> bones;		// ‚±‚ÌƒTƒuƒZƒbƒgƒƒbƒVƒ…‚Åg—p‚³‚ê‚Ä‚¢‚éƒ{[ƒ“ƒRƒ“ƒeƒi
+		std::vector<BONE> bones;		// ã“ã®ã‚µãƒ–ã‚»ãƒƒãƒˆãƒ¡ãƒƒã‚·ãƒ¥ã§ä½¿ç”¨ã•ã‚Œã¦ã„ã‚‹ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ†ãƒŠ
 
-		// ƒ{[ƒ“”•ªƒ‹[ƒv
+		// ãƒœãƒ¼ãƒ³æ•°åˆ†ãƒ«ãƒ¼ãƒ—
 		for (unsigned int bidx = 0; bidx < mesh->mNumBones; bidx++) {
 
 			BONE bone{};
 
-			// ƒ{[ƒ“–¼æ“¾
+			// ãƒœãƒ¼ãƒ³åå–å¾—
 			bone.bonename = std::string(mesh->mBones[bidx]->mName.C_Str());
 
-			// ƒƒbƒVƒ…ƒm[ƒh–¼
+			// ãƒ¡ãƒƒã‚·ãƒ¥ãƒãƒ¼ãƒ‰å
 // ts 20260531			bone.meshname = std::string(mesh->mBones[bidx]->mNode->mName.C_Str());
 
 
-			// ƒA[ƒ}ƒ`ƒ…ƒAƒm[ƒh–¼
+			// ã‚¢ãƒ¼ãƒãƒãƒ¥ã‚¢ãƒãƒ¼ãƒ‰å
 //	ts 20260531		bone.armaturename = std::string(mesh->mBones[bidx]->mArmature->mName.C_Str());
 
-			// ƒfƒoƒbƒO—p
+			// ãƒ‡ãƒãƒƒã‚°ç”¨
 			std::cout
 				<< "(" << bidx << ")"
 				<< bone.bonename
@@ -97,36 +97,36 @@ namespace myAssimp{
 				<< "(" << bone.armaturename << ")"
 				<< std::endl;
 
-			// ƒ{[ƒ“ƒIƒtƒZƒbƒgs—ñæ“¾
+			// ãƒœãƒ¼ãƒ³ã‚ªãƒ•ã‚»ãƒƒãƒˆè¡Œåˆ—å–å¾—
 			bone.OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
 
-			// ƒEƒFƒCƒgî•ñ’Šo
+			// ã‚¦ã‚§ã‚¤ãƒˆæƒ…å ±æŠ½å‡º
 			bone.weights.clear();
 			for (unsigned int widx = 0; widx < mesh->mBones[bidx]->mNumWeights; widx++) {
 
 				WEIGHT w;
-				w.meshname = bone.meshname;										// ƒƒbƒVƒ…–¼
-				w.bonename = bone.bonename;										// ƒ{[ƒ“–¼
+				w.meshname = bone.meshname;										// ãƒ¡ãƒƒã‚·ãƒ¥å
+				w.bonename = bone.bonename;										// ãƒœãƒ¼ãƒ³å
 
-				w.weight = mesh->mBones[bidx]->mWeights[widx].mWeight;			// d‚İ
-				w.vertexindex = mesh->mBones[bidx]->mWeights[widx].mVertexId;	// ’¸“_ƒCƒ“ƒfƒbƒNƒX
+				w.weight = mesh->mBones[bidx]->mWeights[widx].mWeight;			// é‡ã¿
+				w.vertexindex = mesh->mBones[bidx]->mWeights[widx].mVertexId;	// é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 				bone.weights.emplace_back(w);
 			}
 
-			// ƒRƒ“ƒeƒi‚É“o˜^
+			// ã‚³ãƒ³ãƒ†ãƒŠã«ç™»éŒ²
 			bones.emplace_back(bone);
 
-			// ƒ{[ƒ“«‘‚É‚à”½‰f‚³‚¹‚é
+			// ãƒœãƒ¼ãƒ³è¾æ›¸ã«ã‚‚åæ˜ ã•ã›ã‚‹
 			g_BoneDictionary[mesh->mBones[bidx]->mName.C_Str()].OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
 		}
 
 		return bones;
 	}
 
-	// ƒ{[ƒ“–¼Aƒ{[ƒ“ƒCƒ“ƒfƒbƒNƒXAƒ{[ƒ“ƒEƒFƒCƒg‚ğ’¸“_‚ÉƒZƒbƒg‚·‚éi20231225’Ç‰Áj
+	// ãƒœãƒ¼ãƒ³åã€ãƒœãƒ¼ãƒ³ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€ãƒœãƒ¼ãƒ³ã‚¦ã‚§ã‚¤ãƒˆã‚’é ‚ç‚¹ã«ã‚»ãƒƒãƒˆã™ã‚‹ï¼ˆ20231225è¿½åŠ ï¼‰
 	void SetBoneDataToVertices() {
 
-		// ƒ{[ƒ“ƒCƒ“ƒfƒbƒNƒX‚ğ‰Šú‰»
+		// ãƒœãƒ¼ãƒ³ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’åˆæœŸåŒ–
 		for (auto& vtbl : g_vertices) {
 			for (auto& v : vtbl) {
 				v.bonecnt = 0;
@@ -138,39 +138,39 @@ namespace myAssimp{
 			}
 		}
 
-		// ƒƒbƒVƒ…–ˆ‚Ìƒ{[ƒ“ƒRƒ“ƒeƒi
+		// ãƒ¡ãƒƒã‚·ãƒ¥æ¯ã®ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ†ãƒŠ
 		int subsetid = 0;
 		for (auto& bones : g_BonesPerMeshes) {
 
-			// ‚±‚ÌƒXƒ^ƒeƒBƒbƒNƒƒbƒVƒ…“à‚Ì’¸“_ƒf[ƒ^‚ÌƒXƒ^[ƒgˆÊ’u‚ğæ“¾
+			// ã“ã®ã‚¹ã‚¿ãƒ†ã‚£ãƒƒã‚¯ãƒ¡ãƒƒã‚·ãƒ¥å†…ã®é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã®ã‚¹ã‚¿ãƒ¼ãƒˆä½ç½®ã‚’å–å¾—
 //			int vertexbase = g_subsets[subsetid].VertexBase;
 
-			// ‚±‚ÌƒTƒuƒZƒbƒg“à‚Ìƒ{[ƒ“‚ğ‚Ğ‚Æ‚Â‚Ã‚Âæ‚èo‚·
+			// ã“ã®ã‚µãƒ–ã‚»ãƒƒãƒˆå†…ã®ãƒœãƒ¼ãƒ³ã‚’ã²ã¨ã¤ã¥ã¤å–ã‚Šå‡ºã™
 			for (auto& bone : bones)
 			{
 				for (auto& w : bone.weights) {
 					int& idx = g_vertices[subsetid][w.vertexindex].bonecnt;
 
-					g_vertices[subsetid][w.vertexindex].BoneName[idx] = w.bonename;	// ƒ{[ƒ“–¼‚ğƒZƒbƒg
-					g_vertices[subsetid][w.vertexindex].BoneWeight[idx] = w.weight;	// weight’l‚ğƒZƒbƒg
+					g_vertices[subsetid][w.vertexindex].BoneName[idx] = w.bonename;	// ãƒœãƒ¼ãƒ³åã‚’ã‚»ãƒƒãƒˆ
+					g_vertices[subsetid][w.vertexindex].BoneWeight[idx] = w.weight;	// weightå€¤ã‚’ã‚»ãƒƒãƒˆ
 					g_vertices[subsetid][w.vertexindex].BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
 
-					//ƒ{[ƒ“‚Ì”z—ñ”Ô†‚ğƒZƒbƒg
+					//ãƒœãƒ¼ãƒ³ã®é…åˆ—ç•ªå·ã‚’ã‚»ãƒƒãƒˆ
 					idx++;
 					assert(idx <= 4);
 				}
 			}
-			subsetid++;				// Ÿ‚ÌƒƒbƒVƒ…‚Ö
+			subsetid++;				// æ¬¡ã®ãƒ¡ãƒƒã‚·ãƒ¥ã¸
 		}
 	}
 
-	// ƒ{[ƒ“î•ñ‚ğæ“¾‚·‚éiƒm[ƒh‚ğÄ‹A‚Å’H‚èƒ{[ƒ“î•ñ‚ğæ“¾‚·‚éj
+	// ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—ã™ã‚‹ï¼ˆãƒãƒ¼ãƒ‰ã‚’å†å¸°ã§è¾¿ã‚Šãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—ã™ã‚‹ï¼‰
 	void GetBone(const aiScene* pScene)
 	{
-		// ‹ó‚Ìƒ{[ƒ“«‘‚ğì¬‚·‚éiƒL[iƒ{[ƒ“–¼j‚¾‚¯‚Ìæ‚èo‚µj
+		// ç©ºã®ãƒœãƒ¼ãƒ³è¾æ›¸ã‚’ä½œæˆã™ã‚‹ï¼ˆã‚­ãƒ¼ï¼ˆãƒœãƒ¼ãƒ³åï¼‰ã ã‘ã®å–ã‚Šå‡ºã—ï¼‰
 		CreateEmptyBoneDictionary(pScene->mRootNode);
 
-		// ƒ{[ƒ“‚Ì”z—ñˆÊ’uiƒCƒ“ƒfƒbƒNƒX’lj‚ğŠi”[‚·‚é
+		// ãƒœãƒ¼ãƒ³ã®é…åˆ—ä½ç½®ï¼ˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ï¼‰ã‚’æ ¼ç´ã™ã‚‹
 		unsigned int num = 0;						
 		for (auto& data : g_BoneDictionary) 
 		{											
@@ -178,110 +178,110 @@ namespace myAssimp{
 			num++;									
 		}					
 
-		// ƒƒbƒVƒ…”•ªƒ‹[ƒv
+		// ãƒ¡ãƒƒã‚·ãƒ¥æ•°åˆ†ãƒ«ãƒ¼ãƒ—
 		for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = pScene->mMeshes[m];
 
-			// ƒTƒuƒZƒbƒg‚É•R‚Ã‚¢‚Ä‚¢‚éƒ{[ƒ“î•ñ‚ğæ“¾‚·‚é
+			// ã‚µãƒ–ã‚»ãƒƒãƒˆã«ç´ã¥ã„ã¦ã„ã‚‹ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—ã™ã‚‹
 			std::vector<BONE> BonesPerMesh = GetBonesPerMesh(mesh);
 			g_BonesPerMeshes.emplace_back(BonesPerMesh);
 		}
 
-		// ’¸“_ƒf[ƒ^‚Éƒ{[ƒ“î•ñ‚ğƒZƒbƒg‚·‚é
+		// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã«ãƒœãƒ¼ãƒ³æƒ…å ±ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 		SetBoneDataToVertices();
 
-		// ƒ{[ƒ“‚Ìƒm[ƒh–¼ƒcƒŠ[‚ğ¶¬‚·‚é
+		// ãƒœãƒ¼ãƒ³ã®ãƒãƒ¼ãƒ‰åãƒ„ãƒªãƒ¼ã‚’ç”Ÿæˆã™ã‚‹
 		CreateNodeTree(pScene->mRootNode, &g_AssimpNodeNameTree);
 	}
 
-	// ƒfƒBƒtƒ…[ƒY‚b‚s‚…‚˜‚”‚•‚’‚…ƒRƒ“ƒeƒi‚ğ•Ô‚·
+	// ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºï¼£ï¼´ï½…ï½˜ï½”ï½•ï½’ï½…ã‚³ãƒ³ãƒ†ãƒŠã‚’è¿”ã™
 	std::vector<std::unique_ptr<CTexture>> GetDiffuseTextures()
 	{
 		return std::move(g_diffuseTextures);
 	}
 
-	// ƒ}ƒeƒŠƒAƒ‹î•ñ‚ğ‚‚“‚“‚‰‚‚‚ğg—p‚µ‚Äæ“¾‚·‚é
+	// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±ã‚’ï½ï½“ï½“ï½‰ï½ï½ã‚’ä½¿ç”¨ã—ã¦å–å¾—ã™ã‚‹
 	void GetMaterialData(const aiScene* pScene,std::string texturedirectory)
 	{
-		// ƒ}ƒeƒŠƒAƒ‹”•ªƒeƒNƒXƒ`ƒƒŠi”[ƒGƒŠƒA‚ğ—pˆÓ‚·‚é
+		// ãƒãƒ†ãƒªã‚¢ãƒ«æ•°åˆ†ãƒ†ã‚¯ã‚¹ãƒãƒ£æ ¼ç´ã‚¨ãƒªã‚¢ã‚’ç”¨æ„ã™ã‚‹
 		g_diffuseTextures.resize(pScene->mNumMaterials);
 
-		// ƒ}ƒeƒŠƒAƒ‹”•¶ƒ‹[ƒv
+		// ãƒãƒ†ãƒªã‚¢ãƒ«æ•°æ–‡ãƒ«ãƒ¼ãƒ—
 		for (unsigned int m = 0; m < pScene->mNumMaterials; m++)
 		{
 			aiMaterial* material = pScene->mMaterials[m];
 
-			// ƒ}ƒeƒŠƒAƒ‹–¼æ“¾
+			// ãƒãƒ†ãƒªã‚¢ãƒ«åå–å¾—
 			std::string mtrlname = std::string(material->GetName().C_Str());
 			std::cout << mtrlname << std::endl;
 
-			// ƒ}ƒeƒŠƒAƒ‹î•ñ
+			// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±
 			aiColor4D ambient;
 			aiColor4D diffuse;
 			aiColor4D specular;
 			aiColor4D emission;
 			float shiness;
 
-			// ƒAƒ“ƒrƒGƒ“ƒg
+			// ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆ
 			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
 			}
 			else {
 					ambient = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// ƒfƒBƒtƒ…[ƒY
+			// ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚º
 			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
 			}
 			else {
 					diffuse = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
 			}
 
-			// ƒXƒyƒLƒ…ƒ‰
+			// ã‚¹ãƒšã‚­ãƒ¥ãƒ©
 			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specular)) {
 			}
 			else {
 					specular = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// ƒGƒ~ƒbƒVƒ‡ƒ“
+			// ã‚¨ãƒŸãƒƒã‚·ãƒ§ãƒ³
 			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_EMISSIVE, &emission)) {
 			}
 			else {
 					emission = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// ƒVƒƒƒCƒlƒX
+			// ã‚·ãƒ£ã‚¤ãƒã‚¹
 			if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shiness)) {
 			}
 			else {
 					shiness = 0.0f;
 			}
 
-			// ‚±‚Ìƒ}ƒeƒŠƒAƒ‹‚É•R‚Ã‚¢‚Ä‚¢‚éƒfƒBƒtƒ…[ƒYƒeƒNƒXƒ`ƒƒ”•ªƒ‹[ƒv
+			// ã“ã®ãƒãƒ†ãƒªã‚¢ãƒ«ã«ç´ã¥ã„ã¦ã„ã‚‹ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºãƒ†ã‚¯ã‚¹ãƒãƒ£æ•°åˆ†ãƒ«ãƒ¼ãƒ—
 			std::vector<std::string> texpaths{};
 
 			for (unsigned int t = 0; t < material->GetTextureCount(aiTextureType_DIFFUSE); t++)
 			{
 				aiString path{};
 
-				// t”Ô–Ú‚ÌƒeƒNƒXƒ`ƒƒƒpƒXæ“¾
+				// tç•ªç›®ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‘ã‚¹å–å¾—
 				if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, t), path))
 				{
-					// ƒeƒNƒXƒ`ƒƒƒpƒXæ“¾
+					// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‘ã‚¹å–å¾—
 					std::string texpath = std::string(path.C_Str());
 					std::cout << texpath << std::endl;
 
 					texpaths.push_back(texpath);
-					// “à‘ ƒeƒNƒXƒ`ƒƒ‚©‚Ç‚¤‚©‚ğ”»’f‚·‚é
+					// å†…è”µãƒ†ã‚¯ã‚¹ãƒãƒ£ã‹ã©ã†ã‹ã‚’åˆ¤æ–­ã™ã‚‹
 					if (auto tex = pScene->GetEmbeddedTexture(path.C_Str())) {
 
 						std::unique_ptr<CTexture> texture =std::make_unique<CTexture>();
 
-						// “à‘ ƒeƒNƒXƒ`ƒƒ‚Ìê‡
+						// å†…è”µãƒ†ã‚¯ã‚¹ãƒãƒ£ã®å ´åˆ
 						bool sts = texture->LoadFromFemory(
-							(unsigned char*)tex->pcData,			// æ“ªƒAƒhƒŒƒX
-							tex->mWidth);			// ƒeƒNƒXƒ`ƒƒƒTƒCƒYiƒƒ‚ƒŠ‚É‚ ‚éê‡•‚ªƒTƒCƒYj	
+							(unsigned char*)tex->pcData,			// å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹
+							tex->mWidth);			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚µã‚¤ã‚ºï¼ˆãƒ¡ãƒ¢ãƒªã«ã‚ã‚‹å ´åˆå¹…ãŒã‚µã‚¤ã‚ºï¼‰	
 						if (sts) {
 							g_diffuseTextures[m] = std::move(texture);
 						}
@@ -289,7 +289,7 @@ namespace myAssimp{
 
 					}
 					else {
-						// ŠO•”ƒeƒNƒXƒ`ƒƒƒtƒ@ƒCƒ‹‚Ìê‡
+						// å¤–éƒ¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚¡ã‚¤ãƒ«ã®å ´åˆ
 						std::unique_ptr<CTexture>	texture;
 						texture = std::make_unique<CTexture>();
 
@@ -303,17 +303,17 @@ namespace myAssimp{
 						std::cout << "other Embedded" << std::endl;
 					}
 				}
-				// ƒfƒBƒtƒ…[ƒYƒeƒNƒXƒ`ƒƒ‚ª‚È‚©‚Á‚½ê‡
+				// ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºãƒ†ã‚¯ã‚¹ãƒãƒ£ãŒãªã‹ã£ãŸå ´åˆ
 				else
 				{
-					// ŠO•”ƒeƒNƒXƒ`ƒƒƒtƒ@ƒCƒ‹‚Ìê‡
+					// å¤–éƒ¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚¡ã‚¤ãƒ«ã®å ´åˆ
 					std::unique_ptr<CTexture>	texture;
 					texture = std::make_unique<CTexture>();
 					g_diffuseTextures[m] = std::move(texture);
 				}
 			}
 
-			// ƒ}ƒeƒŠƒAƒ‹î•ñ‚ğ•Û‘¶
+			// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±ã‚’ä¿å­˜
 			MATERIAL mtrl{};
 
 			mtrl.mtrlname = mtrlname;
@@ -335,20 +335,22 @@ namespace myAssimp{
 
 	void GetModelData(std::string filename,std::string texturedirectory)
 	{
-		// “ú–{ŒêƒpƒX‘ÎôFfilesystem::path ¨ UTF-8 stringi‚ ‚È‚½‚Ì utility ‚É‡‚í‚¹‚éj
-		const std::string srcUtf8 = utility::PathToUtf8String(filename);
+		// æ—¥æœ¬èªãƒ‘ã‚¹å¯¾ç­–ï¼šå‘¼ã³å‡ºã—å…ƒã‹ã‚‰æ¸¡ã•ã‚Œã‚‹ filename ã¯æ—¢ã« UTF-8ã€‚
+		// ã“ã‚Œã‚’ filesystem::path ã«é€šã™ã¨ Windows ã§ã¯ cp932 ã¨ã—ã¦è§£é‡ˆã•ã‚Œã€
+		// æ—¥æœ¬èªã‚’å«ã‚€ãƒ‘ã‚¹ã§å¤‰æ›ã«å¤±æ•—ã—ã¦ä¾‹å¤–(1113)ã«ãªã‚‹ãŸã‚ã€ãã®ã¾ã¾ä½¿ã†ã€‚
+		const std::string& srcUtf8 = filename;
 
-		// ƒV[ƒ“î•ñ\’z
+		// ã‚·ãƒ¼ãƒ³æƒ…å ±æ§‹ç¯‰
 		Assimp::Importer importer;
 
-		// ƒV[ƒ“î•ñ‚ğ\’z
+		// ã‚·ãƒ¼ãƒ³æƒ…å ±ã‚’æ§‹ç¯‰
 		const aiScene* pScene = importer.ReadFile(
 			srcUtf8.c_str(),
-//			aiProcess_ConvertToLeftHanded |	// ¶èÀ•WŒn‚É•ÏŠ·‚·‚é
-//			aiProcess_Triangulate);			// OŠpŒ`‰»‚·‚é
+//			aiProcess_ConvertToLeftHanded |	// å·¦æ‰‹åº§æ¨™ç³»ã«å¤‰æ›ã™ã‚‹
+//			aiProcess_Triangulate);			// ä¸‰è§’å½¢åŒ–ã™ã‚‹
 			aiProcessPreset_TargetRealtime_MaxQuality |
 			aiProcess_ConvertToLeftHanded |
-			aiProcess_PopulateArmatureData);		// 20231225’Ç‰Á
+			aiProcess_PopulateArmatureData);		// 20231225è¿½åŠ 
 
 		if (pScene == nullptr)
 		{
@@ -356,7 +358,7 @@ namespace myAssimp{
 		}
 		assert(pScene != nullptr);
 
-		// “Ç‚İ‚İ—Ìˆæ‚ğƒNƒŠƒA
+		// èª­ã¿è¾¼ã¿é ˜åŸŸã‚’ã‚¯ãƒªã‚¢
 		g_vertices.clear();				//20240908
 		g_indices.clear();				//20240908	
 		g_materials.clear();			//20240908
@@ -365,7 +367,7 @@ namespace myAssimp{
 		g_BoneDictionary.clear();		//20240908
 		g_BonesPerMeshes.clear();		//20240908
 
-		// ƒ}ƒeƒŠƒAƒ‹î•ñæ“¾
+		// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±å–å¾—
 		GetMaterialData(pScene,texturedirectory);
 
 		g_vertices.resize(pScene->mNumMeshes);
@@ -374,26 +376,26 @@ namespace myAssimp{
 		{
 			aiMesh* mesh = pScene->mMeshes[m];
 
-			// ƒƒbƒVƒ…–¼æ“¾
+			// ãƒ¡ãƒƒã‚·ãƒ¥åå–å¾—
 			std::string meshname = std::string(mesh->mName.C_Str());
 
-			//@’¸“_”•ªƒ‹[ƒv
+			//ã€€é ‚ç‚¹æ•°åˆ†ãƒ«ãƒ¼ãƒ—
 			for (unsigned int vidx = 0; vidx < mesh->mNumVertices; vidx++)
 			{
-				// ’¸“_ƒf[ƒ^
+				// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿
 				VERTEX	v{};
-				v.meshname = meshname;		// ƒƒbƒVƒ…–¼ƒZƒbƒg
+				v.meshname = meshname;		// ãƒ¡ãƒƒã‚·ãƒ¥åã‚»ãƒƒãƒˆ
 
-				// À•W		
+				// åº§æ¨™		
 				v.pos = mesh->mVertices[vidx];
 
-				// ‚±‚Ì’¸“_‚ªg—p‚µ‚Ä‚¢‚éƒ}ƒeƒŠƒAƒ‹‚ÌƒCƒ“ƒfƒbƒNƒX”Ô†iƒƒbƒVƒ…“à‚Ìj
-				// ‚ğg—p‚µ‚Äƒ}ƒeƒŠƒAƒ‹–¼‚ğƒZƒbƒg
+				// ã“ã®é ‚ç‚¹ãŒä½¿ç”¨ã—ã¦ã„ã‚‹ãƒãƒ†ãƒªã‚¢ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ç•ªå·ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥å†…ã®ï¼‰
+				// ã‚’ä½¿ç”¨ã—ã¦ãƒãƒ†ãƒªã‚¢ãƒ«åã‚’ã‚»ãƒƒãƒˆ
 				v.materialindex = mesh->mMaterialIndex;
 
 				v.mtrlname = g_materials[mesh->mMaterialIndex].mtrlname;
 
-				// –@ü‚ ‚èH
+				// æ³•ç·šã‚ã‚Šï¼Ÿ
 				if (mesh->HasNormals()) {
 					v.normal = mesh->mNormals[vidx];
 				}
@@ -402,7 +404,7 @@ namespace myAssimp{
 					v.normal = aiVector3D(0.0f, 0.0f, 0.0f);
 				}
 
-				// ’¸“_ƒJƒ‰[Hi‚O”Ô–Új
+				// é ‚ç‚¹ã‚«ãƒ©ãƒ¼ï¼Ÿï¼ˆï¼ç•ªç›®ï¼‰
 				if (mesh->HasVertexColors(0)) {
 					v.color = mesh->mColors[0][vidx];
 				}
@@ -411,7 +413,7 @@ namespace myAssimp{
 					v.color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
 				}
 
-				// ƒeƒNƒXƒ`ƒƒ‚ ‚èHi‚O”Ô–Új
+				// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚ã‚Šï¼Ÿï¼ˆï¼ç•ªç›®ï¼‰
 				if (mesh->HasTextureCoords(0)) {
 					v.texcoord = mesh->mTextureCoords[0][vidx];
 				}
@@ -420,30 +422,30 @@ namespace myAssimp{
 					v.texcoord = aiVector3D(0.0f, 0.0f, 0.0f);
 				}
 
-				// ’¸“_ƒf[ƒ^‚ğ’Ç‰Á
+				// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ 
 				g_vertices[m].push_back(v);
 			}
 		}
 
-		// ƒƒbƒVƒ…”•¶ƒ‹[ƒv
-		// ƒCƒ“ƒfƒbƒNƒXƒf[ƒ^ì¬
+		// ãƒ¡ãƒƒã‚·ãƒ¥æ•°æ–‡ãƒ«ãƒ¼ãƒ—
+		// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ä½œæˆ
 		g_indices.resize(pScene->mNumMeshes);
 		for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = pScene->mMeshes[m];
 
-			// ƒƒbƒVƒ…–¼æ“¾
+			// ãƒ¡ãƒƒã‚·ãƒ¥åå–å¾—
 			std::string meshname = std::string(mesh->mName.C_Str());
 
-			// ƒCƒ“ƒfƒbƒNƒX”•ªƒ‹[ƒv
+			// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹æ•°åˆ†ãƒ«ãƒ¼ãƒ—
 			for (unsigned int fidx = 0; fidx < mesh->mNumFaces; fidx++)
 			{
 				aiFace face = mesh->mFaces[fidx];
 
-//				assert(face.mNumIndices == 3);	// OŠpŒ`‚Ì‚İ‘Î‰   car000.x@‘Î‰
- 				assert(face.mNumIndices <= 3);	// OŠpŒ`ˆÈ‰º‚Å‚ ‚ê‚ÎOKik‘Şƒ|ƒŠƒSƒ“j
+//				assert(face.mNumIndices == 3);	// ä¸‰è§’å½¢ã®ã¿å¯¾å¿œ   car000.xã€€å¯¾å¿œ
+ 				assert(face.mNumIndices <= 3);	// ä¸‰è§’å½¢ä»¥ä¸‹ã§ã‚ã‚Œã°OKï¼ˆç¸®é€€ãƒãƒªã‚´ãƒ³ï¼‰
 
-				// ƒCƒ“ƒfƒbƒNƒXƒf[ƒ^‚ğ’Ç‰Á
+				// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ 
 				for (unsigned int i = 0; i < face.mNumIndices; i++)
 				{
 					g_indices[m].push_back(face.mIndices[i]);
@@ -451,7 +453,7 @@ namespace myAssimp{
 			}
 		}
 
-		// ƒTƒuƒZƒbƒgî•ñ‚ğ¶¬
+		// ã‚µãƒ–ã‚»ãƒƒãƒˆæƒ…å ±ã‚’ç”Ÿæˆ
 		g_subsets.resize(pScene->mNumMeshes);
 		for (unsigned int m = 0; m < g_subsets.size(); m++)
 		{
@@ -464,23 +466,23 @@ namespace myAssimp{
 			g_subsets[m].materialindex = g_vertices[m][0].materialindex;
 		}
 
-		// ƒTƒuƒZƒbƒgî•ñ‚ğ‘Š‘Î“I‚È‚à‚Ì‚É‚·‚é	
+		// ã‚µãƒ–ã‚»ãƒƒãƒˆæƒ…å ±ã‚’ç›¸å¯¾çš„ãªã‚‚ã®ã«ã™ã‚‹	
 		for (int m = 0; m < g_subsets.size(); m++)
 		{
-			// ’¸“_ƒoƒbƒtƒ@‚Ìƒx[ƒX‚ğŒvZ
+			// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ãƒ™ãƒ¼ã‚¹ã‚’è¨ˆç®—
 			g_subsets[m].VertexBase = 0;
 			for (int i = m - 1; i >= 0; i--) {
 				g_subsets[m].VertexBase += g_subsets[i].VertexNum;
 			}
 
-			// ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Ìƒx[ƒX‚ğŒvZ
+			// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã®ãƒ™ãƒ¼ã‚¹ã‚’è¨ˆç®—
 			g_subsets[m].IndexBase = 0;
 			for (int i = m - 1; i >= 0; i--) {
 				g_subsets[m].IndexBase += g_subsets[i].IndexNum;
 			}
 		}
 
-		// ƒ{[ƒ“î•ñæ“¾	
+		// ãƒœãƒ¼ãƒ³æƒ…å ±å–å¾—	
 		GetBone(pScene);
 	}
 
@@ -489,20 +491,20 @@ namespace myAssimp{
 		return g_subsets;
 	}
 
-		// ƒTƒuƒZƒbƒgî•ñ{
+		// ã‚µãƒ–ã‚»ãƒƒãƒˆæƒ…å ±{
 	std::vector<std::vector<VERTEX>> GetVertices() 
 	{
-		return g_vertices;		// ’¸“_ƒf[ƒ^iƒƒbƒVƒ…’PˆÊj
+		return g_vertices;		// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥å˜ä½ï¼‰
 	}
 
 	std::vector<std::vector<unsigned int>> GetIndices() 
 	{
-		return g_indices;		// ƒCƒ“ƒfƒbƒNƒXƒf[ƒ^iƒƒbƒVƒ…’PˆÊj
+		return g_indices;		// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥å˜ä½ï¼‰
 	}
 
 	std::vector<MATERIAL> GetMaterials()
 	{
-		return g_materials;		// ƒ}ƒeƒŠƒAƒ‹
+		return g_materials;		// ãƒãƒ†ãƒªã‚¢ãƒ«
 	}
 }
 }

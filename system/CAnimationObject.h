@@ -1,17 +1,17 @@
-#pragma once
+ï»¿#pragma once
 #include	"commontypes.h"
 #include	"BoneCombMatrix.h"
 #include	"CAnimationMeshBlender.h"
 
 class CAnimationObject
 {
-	// ƒ{[ƒ“ƒRƒ“ƒrƒl[ƒVƒ‡ƒ“s—ñ—p’è”ƒoƒbƒtƒ@“à—e
+	// ãƒœãƒ¼ãƒ³ã‚³ãƒ³ãƒ“ãƒãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡å†…å®¹
 	BoneCombMatrix m_BoneCombMatrix{};							// 20240723
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒƒbƒVƒ…
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥
 	CAnimationMeshBlender*	m_AnimMesh = nullptr;
 
-	// Œ»İƒtƒŒ[ƒ€
+	// ç¾åœ¨ãƒ•ãƒ¬ãƒ¼ãƒ 
 	float m_CurrentFrame = 0;
 public:
 	void Init();

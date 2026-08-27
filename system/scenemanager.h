@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <memory>
 #include <unordered_map>
 #include <string>
@@ -6,7 +6,7 @@
 #include "IScene.h"
 #include "noncopyable.h"
 
-// ‘O•ûéŒ¾
+// å‰æ–¹å®£è¨€
 class IScene;
 
 class SceneManager : NonCopyable{

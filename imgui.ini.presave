@@ -1,0 +1,146 @@
+[Window][Debug##Default]
+Pos=60,60
+Size=400,400
+Collapsed=0
+LastUsed=20260824
+
+[Window][Debug Information]
+ViewportPos=0,0
+ViewportId=0x5E649FDA
+Size=737,764
+Collapsed=0
+DockId=0x00000001,0
+LastUsed=20260824
+
+[Window][debug UI DirectWriteCheck]
+Pos=772,-2
+Size=387,686
+Collapsed=0
+
+[Window][DebugRubikCube Local Rotation]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Pos=313,0
+Size=343,615
+Collapsed=0
+DockId=0x00000004,1
+LastUsed=20260822
+
+[Window][DebugRubikCube CubeRowCollumn]
+Pos=491,511
+Size=589,171
+Collapsed=0
+
+[Window][DebugRubikCube SpinStart]
+Pos=57,43
+Size=150,76
+Collapsed=0
+
+[Window][Model Selector]
+Pos=795,76
+Size=319,105
+Collapsed=0
+
+[Window][Player1 Model]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Pos=313,0
+Size=343,615
+Collapsed=0
+DockId=0x00000004,0
+LastUsed=20260822
+
+[Window][Player2 Model]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Size=311,308
+Collapsed=0
+DockId=0x00000007,1
+LastUsed=20260822
+
+[Window][Spline Camera]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Size=311,308
+Collapsed=0
+DockId=0x00000007,0
+LastUsed=20260822
+
+[Window][Cinematic Camera]
+Pos=443,134
+Size=288,202
+Collapsed=0
+
+[Window][Curve Editor]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Pos=313,0
+Size=343,615
+Collapsed=0
+DockId=0x00000004,2
+LastUsed=20260822
+
+[Window][Spline Speed]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Pos=313,0
+Size=343,615
+Collapsed=0
+DockId=0x00000004,4
+LastUsed=20260822
+
+[Window][Camera]
+ViewportPos=454,642
+ViewportId=0x99FE08C5
+Size=1071,504
+Collapsed=0
+LastUsed=20260822
+
+[Window][Fighting Camera]
+ViewportPos=53,637
+ViewportId=0x6B958BC6
+Pos=0,310
+Size=311,305
+Collapsed=0
+DockId=0x00000003,0
+LastUsed=20260822
+
+[Window][Debug Free-fly View]
+ViewportPos=73,287
+ViewportId=0x7CDE39CA
+Size=1071,504
+Collapsed=0
+LastUsed=20260824
+
+[Window][Spline Roll]
+Pos=62,206
+Size=249,198
+Collapsed=0
+LastUsed=20260822
+
+[Window][Camera Recorder]
+Pos=63,7
+Size=363,136
+Collapsed=0
+LastUsed=20260822
+
+[Window][Main Tools]
+ViewportPos=0,0
+ViewportId=0x5E649FDA
+Size=737,764
+Collapsed=0
+DockId=0x00000001,1
+LastUsed=20260824
+
+[Table][0x9AE01AC5,3]
+RefScale=18
+Column 0  Width=40
+Column 1  Width=70
+Column 2  Weight=1.0000
+
+[Docking][Data]
+DockNode    ID=0x00000001 Pos=0,0 Size=737,764 Selected=0xE61149E0
+DockNode    ID=0x00000004 Pos=228,458 Size=656,615 Split=Y Selected=0x8D3381C1
+  DockNode  ID=0x00000007 Parent=0x00000004 SizeRef=222,276 Selected=0x90D68C9D
+  DockNode  ID=0x00000003 Parent=0x00000004 SizeRef=222,273 Selected=0x0F8FD4F1
+
