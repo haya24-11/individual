@@ -225,7 +225,7 @@
     <ClInclude Include="system\Inputmanager.h">
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
-    <ClInclude Include="scene\CarScene.h">
+    <ClInclude Include="scene\FightScene.h">
       <Filter>ソース ファイル\scene</Filter>
     </ClInclude>
     <ClInclude Include="fpscontrol.h">
@@ -249,8 +249,14 @@
     <ClInclude Include="CameraBlend.h">
       <Filter>ソース ファイル\scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameSyncServer.h">
+    <ClInclude Include="Json.h">
       <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraTake.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraLibrary.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -386,7 +392,7 @@
     <ClCompile Include="system\DirectWrite.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
-    <ClCompile Include="scene\CarScene.cpp">
+    <ClCompile Include="scene\FightScene.cpp">
       <Filter>ソース ファイル\scene</Filter>
     </ClCompile>
     <ClCompile Include="scene\FreeFlyCamera.cpp">
@@ -404,8 +410,14 @@
     <ClCompile Include="CameraBlend.cpp">
       <Filter>ソース ファイル\scene</Filter>
     </ClCompile>
-    <ClCompile Include="GameSyncServer.cpp">
+    <ClCompile Include="Json.cpp">
       <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraTake.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraLibrary.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

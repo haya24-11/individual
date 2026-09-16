@@ -4,7 +4,7 @@
 #include	<vector>
 #include	<cstdint>
 #include	<fstream>
-#include	"CarScene.h"
+#include	"FightScene.h"
 #include	"../system/CShader.h"
 #include	"../system/imgui/imgui.h"
 #include	"../system/MeshManager.h"
@@ -20,6 +20,8 @@
 #include	<cmath>
 #include	<filesystem>
 #include	<string_view>
+#include	"../CameraTake.h"
+#include	"../CameraLibrary.h"
 
 namespace {
 
@@ -185,7 +187,7 @@ namespace {
 }
 
 // モデルを未ロードならロード＋登録し、meshid（＝ファイル名）を返す
-std::string CarScene::ensureModelLoaded(int index)
+std::string FightScene::ensureModelLoaded(int index)
 {
 	std::string id = getfilename(g_loadmodel[index].filename);
 
@@ -207,7 +209,7 @@ std::string CarScene::ensureModelLoaded(int index)
 }
 
 // モデル選択（プレイヤーごとに使い回す）
-void CarScene::debugModelSelect(const char* title, int& selectedIndex, std::string& meshId)
+void FightScene::debugModelSelect(const char* title, int& selectedIndex, std::string& meshId)
 {
 	// 同じウィンドウにP1/P2を並べるので、IDが衝突しないようスコープを分ける
 	ImGui::PushID(title);
@@ -250,7 +252,7 @@ void CarScene::debugModelSelect(const char* title, int& selectedIndex, std::stri
 }
 
 // 全機能を1つのウィンドウにまとめて描く（タブ＋折りたたみ）
-void CarScene::drawMainToolsUI()
+void FightScene::drawMainToolsUI()
 {
 	ImGui::SetNextWindowSize(ImVec2(520, 720), ImGuiCond_FirstUseEver);
 	ImGui::Begin("カメラワーク ツール###Main Tools");
@@ -269,7 +271,7 @@ void CarScene::drawMainToolsUI()
 			ImGui::SameLine();
 			if (ImGui::RadioButton("スプライン（曲線）##Spline (curve)", &mode, (int)CamMode::Spline)) {
 				m_camMode = CamMode::Spline;
-				m_splineCam.SetActive(true);
+				m_splineCam.Play();			// 先頭から
 			}
 			ImGui::Text("Cキー: 対戦カメラとスプラインカメラを切り替え");
 
@@ -311,6 +313,13 @@ void CarScene::drawMainToolsUI()
 			ImGui::EndTabItem();
 		}
 
+		// ---------------- ライブラリ ----------------
+		if (ImGui::BeginTabItem("ライブラリ##Library"))
+		{
+			drawLibraryUI();
+			ImGui::EndTabItem();
+		}
+
 		// ---------------- モデル ----------------
 		if (ImGui::BeginTabItem("モデル##Model"))
 		{
@@ -333,7 +342,7 @@ void CarScene::drawMainToolsUI()
 }
 
 // ローカル軸回転
-void CarScene::debugRubikCubeLocalRotation()
+void FightScene::debugRubikCubeLocalRotation()
 {
 	Vector3 inputangle = { 0.0f,0.0f,0.0f };
 
@@ -366,13 +375,13 @@ void CarScene::debugRubikCubeLocalRotation()
 	ImGui::SliderFloat("プレイヤー1の拡大率##P1 scale", &m_p1Scale, 1.0f, 30.0f);
 }
 
-CarScene::CarScene()
+FightScene::FightScene()
 {
 
 }
 
 // マウス位置からワールド空間のレイ（始点・方向）を計算する
-bool CarScene::computeMouseRay(Vector3& outOrigin, Vector3& outDir) const
+bool FightScene::computeMouseRay(Vector3& outOrigin, Vector3& outDir) const
 {
 	float w = (float)Application::GetWidth();
 	float h = (float)Application::GetHeight();
@@ -397,7 +406,7 @@ bool CarScene::computeMouseRay(Vector3& outOrigin, Vector3& outDir) const
 }
 
 // 選択対象の実体（Vector3*）を返す
-Vector3* CarScene::getPickTarget(PickKind kind, int index)
+Vector3* FightScene::getPickTarget(PickKind kind, int index)
 {
 	if (kind == PickKind::ControlPoint)
 	{
@@ -412,7 +421,7 @@ Vector3* CarScene::getPickTarget(PickKind kind, int index)
 }
 
 // 制御点・注視点のクリック選択とドラッグ移動を処理する
-void CarScene::updateGizmoPicking()
+void FightScene::updateGizmoPicking()
 {
 	namespace Collision = GM31::GE::Collision;	// system/C3DShape.h の Segment クラスと名前が衝突するため別名で修飾
 
@@ -536,7 +545,7 @@ void CarScene::updateGizmoPicking()
 }
 
 // 選択中の点に X(赤)/Y(緑)/Z(青) の矢印ギズモを描画するz
-void CarScene::drawGizmo()
+void FightScene::drawGizmo()
 {
 	if (m_selectedKind == PickKind::None) return;
 
@@ -563,7 +572,7 @@ void CarScene::drawGizmo()
 	}
 }
 
-void CarScene::update(uint64_t deltatime)
+void FightScene::update(uint64_t deltatime)
 {
 	// マイクロ秒 → 秒
 	float dt = deltatime / 1'000'000.0f;
@@ -600,8 +609,14 @@ void CarScene::update(uint64_t deltatime)
 	if (in.CheckKeyBufferTrigger(DIK_C))
 	{
 		m_camMode = (m_camMode == CamMode::Spline) ? CamMode::Fighting : CamMode::Spline;
-		m_splineCam.SetActive(m_camMode == CamMode::Spline);	// スプライン時のみ再生
-		if (m_camMode == CamMode::Fighting) m_fightCam.ResetSnap();	// 復帰時は即スナップ
+
+		// スプラインへ切り替えたときは必ず先頭から流す。
+		// ループOFFだと終端で止まったままになり、切り替えても動かないため。
+		if (m_camMode == CamMode::Spline) m_splineCam.Play();
+		else {
+			m_splineCam.SetActive(false);
+			m_fightCam.ResetSnap();		// 復帰時は即スナップ
+		}
 	}
 
 	// デバッグ第2ビューのカメラ操作はビュー窓のImGuiラムダ内で行う（別OSウィンドウでも効くように）
@@ -632,7 +647,7 @@ void CarScene::update(uint64_t deltatime)
 		m_recorder.Sample(m_camera, dt);
 }
 
-void CarScene::draw(uint64_t deltatime)
+void FightScene::draw(uint64_t deltatime)
 {
 	// メインパス（従来どおり main RT へ）
 	m_camera.Draw();
@@ -643,7 +658,7 @@ void CarScene::draw(uint64_t deltatime)
 }
 
 // シーンの3D描画本体（メイン／第2ビュー共通。view/projは呼び出し前に設定済み前提）
-void CarScene::drawSceneGeometry()
+void FightScene::drawSceneGeometry()
 {
 	// 3軸カラー
 	Color axiscol[3] = {
@@ -698,7 +713,7 @@ void CarScene::drawSceneGeometry()
 }
 
 // デバッグ第2ビュー用のオフスクリーンRT（カラー＋深度）を生成
-void CarScene::createDebugTarget()
+void FightScene::createDebugTarget()
 {
 	m_dbgW = (UINT)Application::GetWidth();	// フル解像度（アプリと同アスペクト・拡大に強い）
 	m_dbgH = (UINT)Application::GetHeight();
@@ -726,7 +741,7 @@ void CarScene::createDebugTarget()
 }
 
 // free-fly 視点でシーンをオフスクリーンへ再描画する（第2パス）
-void CarScene::renderDebugView()
+void FightScene::renderDebugView()
 {
 	ID3D11DeviceContext* ctx = Renderer::GetDeviceContext();
 
@@ -758,8 +773,10 @@ void CarScene::renderDebugView()
 	if (sDSV) sDSV->Release();
 }
 
-void CarScene::init()
+void FightScene::init()
 {
+	refreshLibraryLists();		// ライブラリの一覧を読み込む
+
 	// カメラ(3D)の初期化
 	m_camera.Init();
 	m_camera.SetPosition(Vector3(0, 0, -300));
@@ -826,12 +843,12 @@ void CarScene::init()
 	// ボーン行列定数バッファ(b5)を生成
 	m_p1BoneComb.Create();
 
-	// 板ポリ（草の地面）を生成：大きめサイズ＋UVを繰り返してタイリング
-	const float tile = 10.0f;	// 草を10×10回繰り返す
+	// 板ポリ（床タイルの地面）を生成：大きめサイズ＋UVを繰り返してタイリング
+	const float tile = 10.0f;	// タイルを10×10回繰り返す
 	std::array<Vector2, 4> grounduv = {
 		Vector2(0, 0), Vector2(tile, 0), Vector2(0, tile), Vector2(tile, tile)
 	};
-	m_sprite = std::make_unique<CSprite>(2000, 2000, "assets/texture/Grass01.jpg", grounduv);
+	m_sprite = std::make_unique<CSprite>(2000, 2000, "assets/texture/floortile.png", grounduv);
 
 
 	// スプラインカメラ：既定の制御点・マーカーを生成
@@ -870,8 +887,172 @@ void CarScene::init()
 
 }
 
-
-void CarScene::dispose()
+void FightScene::dispose()
 {
 
+}
+
+
+// フォルダを走査して一覧のキャッシュを更新する。
+// 毎フレーム走査すると無駄なので、選択が変わった時とボタンを押した時だけ呼ぶ。
+void FightScene::refreshLibraryLists()
+{
+	m_libChars = CameraLibrary::Characters();
+	m_libMoves = CameraLibrary::Moves(m_libChar);
+	m_libTakes = CameraLibrary::Takes(m_libChar, m_libMove);
+}
+
+bool FightScene::applyModelByName(const std::string& fileName, int& selectIndex, std::string& meshId)
+{
+	if (fileName.empty()) return false;
+
+	for (int i = 0; i < (int)g_loadmodel.size(); ++i)
+	{
+		if (getfilename(g_loadmodel[i].filename) != fileName) continue;
+
+		selectIndex = i;
+		meshId = ensureModelLoaded(i);
+		return true;
+	}
+	return false;	// カタログから消えたモデル。呼び出し側で警告を出す
+}
+
+
+// 「ライブラリ」タブの中身。Begin/End は呼ばない。
+void FightScene::drawLibraryUI()
+{
+	// 選んだテキストをバッファへ書き戻す小道具
+	auto pickInto = [](const char* id, char* buf, size_t size,
+		const std::vector<std::string>& list) -> bool
+		{
+			bool changed = false;
+			if (ImGui::BeginCombo(id, buf))
+			{
+				for (const std::string& s : list)
+				{
+					if (ImGui::Selectable(s.c_str(), s == buf))
+					{
+						std::snprintf(buf, size, "%s", s.c_str());
+						changed = true;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			return changed;
+	};
+	ImGui::SeparatorText("キャラクター##Character");
+
+	bool dirty = false;
+	dirty |= pickInto("既存から選ぶ##Pick character", m_libChar, sizeof(m_libChar), m_libChars);
+	dirty |= ImGui::InputText("キャラ名##Character name", m_libChar, sizeof(m_libChar));
+
+	// ---------------- 技 ----------------
+	ImGui::SeparatorText("技##Move");
+
+	dirty |= pickInto("既存から選ぶ##Pick move", m_libMove, sizeof(m_libMove), m_libMoves);
+	dirty |= ImGui::InputText("技名##Move name", m_libMove, sizeof(m_libMove));
+
+	// ---------------- テイク ----------------
+	ImGui::SeparatorText("テイク##Take");
+
+	pickInto("既存から選ぶ##Pick take", m_libTake, sizeof(m_libTake), m_libTakes);
+	ImGui::InputText("テイク名##Take name", m_libTake, sizeof(m_libTake));
+
+	// キャラや技が変わったら、下位の一覧を追従させる
+	if (dirty) refreshLibraryLists();
+
+	// ---------------- 保存される内容 ----------------
+	ImGui::SeparatorText("保存される内容##Contents");
+
+	ImGui::Text("制御点: %d 個", m_splineCam.PointCount());
+	ImGui::Text("モデル: P1 = %s", m_meshid.empty() ? "（なし）" : m_meshid.c_str());
+	ImGui::Text("　　　  P2 = %s", m_meshid2.empty() ? "（なし）" : m_meshid2.c_str());
+	ImGui::Text("基準位置: (%.0f, %.0f, %.0f)", m_p1Pos.x, m_p1Pos.y, m_p1Pos.z);
+	ImGui::TextDisabled("経路はこの基準位置からの相対座標で保存されます。");
+	ImGui::TextDisabled("キャラがステージのどこにいても同じ画が撮れます。");
+
+	// ---------------- 操作 ----------------
+	ImGui::Separator();
+
+	if (ImGui::Button("保存##Save take"))
+	{
+		CameraTake take;
+		m_splineCam.CaptureTo(take, m_p1Pos);	// 絶対 → 相対はここで行われる
+
+		take.character = m_libChar;
+		take.move = m_libMove;
+		take.name = m_libTake;
+		take.p1Model = m_meshid;
+		take.p2Model = m_meshid2;
+
+		std::string err;
+		if (CameraLibrary::Save(take, &err))
+		{
+			m_libStatus = std::string("保存しました: ")
+				+ m_libChar + " / " + m_libMove + " / " + m_libTake + ".json";
+			refreshLibraryLists();
+		}
+		else
+		{
+			m_libStatus = "保存できません: " + err;
+		}
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("読み込み##Load take"))
+	{
+		CameraTake take;
+		std::string err;
+
+		if (!CameraLibrary::Load(m_libChar, m_libMove, m_libTake, take, &err))
+		{
+			m_libStatus = "読み込めません: " + err;
+		}
+		else if (!m_splineCam.RestoreFrom(take, m_p1Pos))	// 相対 → 絶対
+		{
+			m_libStatus = "制御点が4点未満のため復元できません";
+		}
+		else
+		{
+			// 保存時のモデルに戻す。見つからなくても読み込み自体は成功扱いにする
+			std::string warn;
+			if (!take.p1Model.empty() && !applyModelByName(take.p1Model, m_p1Select, m_meshid))
+				warn += "（P1モデル " + take.p1Model + " が見つかりません）";
+			if (!take.p2Model.empty() && !applyModelByName(take.p2Model, m_p2Select, m_meshid2))
+				warn += "（P2モデル " + take.p2Model + " が見つかりません）";
+
+			// すぐ確認できるよう曲線カメラへ切り替える
+			m_camMode = CamMode::Spline;
+			m_splineCam.Play();			// 読み込んだ経路を先頭から流す
+
+			m_libStatus = "読み込みました。" + warn;
+		}
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("削除##Delete take"))
+	{
+		if (CameraLibrary::Remove(m_libChar, m_libMove, m_libTake))
+		{
+			m_libStatus = std::string("削除しました: ") + m_libTake + ".json";
+			refreshLibraryLists();
+		}
+		else
+		{
+			m_libStatus = "削除できません（ファイルがありません）";
+		}
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("一覧を更新##Refresh")) refreshLibraryLists();
+
+	// ---------------- 状態 ----------------
+	if (!m_libStatus.empty())
+	{
+		ImGui::Separator();
+		ImGui::TextWrapped("%s", m_libStatus.c_str());
+	}
 }

@@ -2,6 +2,7 @@
 #include "../system/imgui/imgui.h"
 #include "../system/LineDrawer.h"
 #include "../system/renderer.h"
+#include "../CameraTake.h"
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -374,7 +375,13 @@ void SplineCamera::DrawEditCanvas(const char* id, int axisH, int axisV, bool all
 
 void SplineCamera::DrawPlaybackUI()
 {
-	ImGui::Checkbox("有効（Cキー）##Active (C key)", &m_active);
+	// ループOFFで終端に居るときに有効へ戻したら、先頭から流し直す
+	if (ImGui::Checkbox("有効（Cキー）##Active (C key)", &m_active))
+	{
+		if (m_active && !m_loop && m_dist >= m_totalLen - 1e-4f) Play();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("先頭から##Play from start")) Play();
 	ImGui::SameLine();
 	ImGui::Checkbox("ループ##Loop", &m_loop);
 	ImGui::SameLine();
@@ -577,4 +584,77 @@ void SplineCamera::DrawRollUI()
 	}
 
 	if (ImGui::Button("ロールを初期化##Reset roll")) std::fill(m_rolls.begin(), m_rolls.end(), 0.0f);
+}
+
+
+void  SplineCamera::CaptureTo(CameraTake& take, const Vector3& origin) const
+{
+	take.origin    = origin;
+	take.lookat	   = m_lookat-origin;	//絶対→相対
+	take.baseSpeed = m_speed;
+	take.loop	   = m_loop;
+
+	take.points.clear();
+	take.points.reserve(m_points.size());
+
+	for (size_t i = 0; i < m_points.size(); ++i)
+	{
+		CamPoint p;
+		p.pos = m_points[i]-origin;
+
+		p.speed = (i < m_speeds.size()) ? m_speeds[i] : 1.0f;
+		p.roll	= (i < m_rolls.size()) ? m_rolls[i] : 0.0f;
+
+		take.points.push_back(p);
+	}
+
+
+}
+
+
+bool SplineCamera::RestoreFrom(const CameraTake& take, const Vector3& origin)
+{
+	if (take.points.size() < 4) return false;
+
+	m_points.clear();
+	m_speeds.clear();
+	m_rolls.clear();
+
+	m_points.reserve(take.points.size());
+	m_speeds.reserve(take.points.size());
+	m_rolls	.reserve(take.points.size());
+
+
+	for (const CamPoint& p : take.points)
+	{
+		m_points.push_back(p.pos + origin);
+		m_speeds.push_back(p.speed);
+		m_rolls	.push_back(p.roll);
+	}
+
+	m_lookat = take.lookat + origin;
+	m_speed = take.baseSpeed;
+	m_loop = take.loop;
+
+	m_t	   = 0.0f;
+	m_dist = 0.0f;
+
+	m_canvasDrag	 = -1;
+	m_canvasDragView = -1;
+	m_speedDrag		 = -1;
+
+	BuildArcTable();
+	return true;
+
+}
+
+
+// 先頭から再生し直す。
+// ループOFFで終端に着くと m_dist が m_totalLen のまま残るので、
+// 巻き戻さずに m_active を立て直しても次のフレームで即停止してしまう。
+void SplineCamera::Play()
+{
+	m_dist = 0.0f;
+	m_t = 0.0f;
+	m_active = true;
 }

@@ -5,6 +5,9 @@
 #include "../system/Camera.h"
 #include "../system/C3DShape.h"
 
+
+struct CameraTake;
+
 // スプライン曲線に沿ってカメラを動かすクラス
 // 経路（制御点・区間速度）＋弧長パラメータ化（等速化）＋再生＋可視化＋編集UIを保持する。
 class SplineCamera
@@ -14,14 +17,20 @@ public:
 	void ResetDefault();				// 既定4点・速度・進行量をリセット
 	void Update(float dt, Camera& cam);	// active時：距離を進めて t を求め、cam に反映
 	void DrawVisualization();			// 経路（黄）＋現在地(赤)/注視点(青)/制御点(緑)を描画
-	// UI（Begin/End は呼ばない。CarScene 側のタブの中に描かれる）
+	// UI（Begin/End は呼ばない。FightScene 側のタブの中に描かれる）
 	void DrawPlaybackUI();				// 再生設定（有効・ループ・注視点）
 	void DrawCurveEditorUI();			// 曲線エディター（2Dキャンバス・制御点）
 	void DrawSpeedUI();					// 速度（基準速度・ノブ・グラフ）
-	void DrawRollUI();					// ロール（ダッチアングル）
+	void DrawRollUI();					// ロール（ダッチアングル)
+
+	void CaptureTo(CameraTake& take, const Vector3& origin)const;
+	bool RestoreFrom(const CameraTake& take, const Vector3& origin);
+
+
 
 	bool     IsActive() const { return m_active; }
 	void     SetActive(bool a) { m_active = a; }
+	void Play();		// 先頭から再生し直す（終端で止まっていても巻き戻す）
 	Vector3  CurrentPos() const { return Eval(m_t); }	// ハンドオフ用（現在のカメラ位置）
 	Vector3& Lookat() { return m_lookat; }				// ギズモ編集ターゲット
 	std::vector<Vector3>& Points() { return m_points; }	// ギズモ編集ターゲット

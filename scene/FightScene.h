@@ -20,7 +20,7 @@
 #include "FightingCamera.h"
 #include "CameraRecorder.h"
 
-class CarScene : public IScene
+class FightScene : public IScene
 {
 	// 現在の姿勢を表すクォータニオン
 	Quaternion m_RotationQ{};
@@ -30,7 +30,7 @@ class CarScene : public IScene
 
 	Matrix4x4 m_ScaleMtx{};
 public:
-	explicit CarScene();
+	explicit FightScene();
 	void update(uint64_t deltatime) override;
 	void draw(uint64_t deltatime) override;
 	void init() override;
@@ -91,11 +91,37 @@ private:
 	int m_p2Select = 0;			// Player2 のコンボ選択index
 	float m_p1Scale = 1.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
 
+	// ---- カメラワーク ライブラリ（ライブラリタブ）----
+	void drawLibraryUI();			// タブの中身を描く
+	void refreshLibraryLists();		// フォルダを走査して一覧キャッシュを更新
+
+	// ファイル名（"X Bot.fbx" 等）からカタログを逆引きしてモデルを適用する。
+	// 見つからなければ false（消したモデルのテイクを読んでも落ちないように）
+	bool applyModelByName(const std::string& fileName, int& selectIndex, std::string& meshId);
+
+	// 入力バッファ。日本語は UTF-8 で1文字3バイトなので余裕を取る
+	char m_libChar[128] = "kiyo";
+	char m_libMove[128] = "";
+	char m_libTake[128] = "take1";
+
+	// 一覧のキャッシュ。毎フレーム directory_iterator を回すのは無駄なので、
+	// 選択が変わった時とボタンを押した時だけ更新する
+	std::vector<std::string> m_libChars;
+	std::vector<std::string> m_libMoves;
+	std::vector<std::string> m_libTakes;
+
+	std::string m_libStatus;		// 直前の操作結果（画面に表示する）
+
+
 	// 各プレイヤーの配置（向かい合わせ。値は実機で微調整）
 	Vector3 m_p1Pos{ -150, -100, 0 };	// player1 は左（原点が足元→地面Y=-100に接地）
 	Vector3 m_p2Pos{  150, 0, 0 };	// player2 は右
 	float   m_p1FaceY = -PI / 2.0f;	// 相手(+X方向)を向く ※モデルの正面軸により要調整
 	float   m_p2FaceY =  PI / 2.0f;	// 相手(-X方向)を向く ※同上
+
+
+
+
 
 	// 軸ギズモ（制御点・注視点をマウスで移動）
 	PickKind  m_selectedKind = PickKind::None;	// 現在選択中の対象種別
@@ -122,4 +148,4 @@ private:
 
 };
 
-REGISTER_CLASS(CarScene)
+REGISTER_CLASS(FightScene)
