@@ -24,6 +24,9 @@ protected:
 	// レンダラ
 	CStaticMeshRenderer m_StaticMeshRenderer{};
 
+	// ルート（Hips）の水平移動を無視するか。true でその場再生になる
+	bool m_LockRootXZ = false;
+
 	// ローカルポーズ生成
 	void BuildLocalPoseMap(
 		const aiAnimation* animationdata,
@@ -32,6 +35,17 @@ protected:
 
 public:
 	void SetCurentAnimation(aiAnimation* currentanimation);
+
+	// ルート移動の水平成分を止める（歩き・走りをその場で再生したいとき）
+	void SetLockRootXZ(bool lock) { m_LockRootXZ = lock; }
+
+	// 指定フレームのルート（Hips）の水平位置をモデル空間で返す。
+	// フレーム間の差分を取ることで、アニメの歩幅どおりにキャラを動かせる。
+	bool GetRootXZ(int frame, float& outX, float& outZ) const;
+
+	// ボーンのモデル空間での位置。当たり判定カプセルの芯に使う。
+	// Update() を呼んだ後の姿勢を返すので、毎フレーム引き直すこと。
+	bool GetBonePosition(const std::string& bonename, Vector3& out) const;
 
 	void Load(std::string filename, std::string texturedirectory = "");
 

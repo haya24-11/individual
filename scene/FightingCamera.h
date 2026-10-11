@@ -21,8 +21,9 @@ private:
 	// --- 調整パラメータ（ImGuiで編集） ---
 	float m_camHeight  = 20.0f;		// カメラのワールドY
 	float m_lookHeight = 0.0f;		// 注視点のワールドY（キャラ中心あたり）
-	float m_baseDist   = 250.0f;	// 最小の引き距離（-Z方向）
+	float m_baseDist   = 480.0f;	// 最小の引き距離（-Z方向）。大きいほど初期の画角が広い
 	float m_distFactor = 0.8f;		// 間合い1単位あたり追加で引く量
+	float m_zoomStartSep = 300.0f;	// この間合いを超えたら引き始める（初期配置の間合い）
 	float m_minDist    = 200.0f;	// 引き距離の下限
 	float m_maxDist    = 900.0f;	// 引き距離の上限
 	float m_smooth     = 8.0f;		// 追従の減衰（大きいほど速く追従）

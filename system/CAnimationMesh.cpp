@@ -17,6 +17,42 @@ static void DispNodeTree(CTreeNode<std::string>* ptree)
 	}
 }
 
+// 指定フレームのルート（Hips）の水平位置をモデル空間で返す
+bool CAnimationMesh::GetRootXZ(int frame, float& outX, float& outZ) const
+{
+	if (m_CurrentAnimation == nullptr) return false;
+
+	for (unsigned int c = 0; c < m_CurrentAnimation->mNumChannels; c++)
+	{
+		const aiNodeAnim* nodeAnim = m_CurrentAnimation->mChannels[c];
+		if (std::string(nodeAnim->mNodeName.C_Str()).find("Hips") == std::string::npos) continue;
+		if (nodeAnim->mNumPositionKeys == 0) return false;
+
+		// ボーンごとにキー数が違うことがある（例：slash は回転148に対し Hips の位置は91）。
+		// 剰余で折り返すと位置が先頭へ巻き戻り、差分が巨大になるので末尾を保持する。
+		const int n = (int)nodeAnim->mNumPositionKeys;
+		int f = frame;
+		if (f < 0)  f = 0;
+		if (f >= n) f = n - 1;
+
+		const aiVector3D& p = nodeAnim->mPositionKeys[f].mValue;
+		outX = p.x;
+		outZ = p.z;
+		return true;
+	}
+	return false;
+}
+
+// ボーンのモデル空間での位置を返す
+bool CAnimationMesh::GetBonePosition(const std::string& bonename, Vector3& out) const
+{
+	auto it = m_BoneDictionary.find(bonename);
+	if (it == m_BoneDictionary.end()) return false;
+
+	out = it->second.GlobalMatrix.Translation();
+	return true;
+}
+
 void CAnimationMesh::Draw()
 {
 	// メッシュ描画
@@ -86,6 +122,7 @@ void CAnimationMesh::UpdateBoneMatrix(
 	// 自分の姿勢を表す行列を作成
 	Matrix4x4 mybonemtx;													// 20240714 DX化
 	mybonemtx = bone->AnimationMatrix * matrix;								// 20240714 DX化
+	bone->GlobalMatrix = mybonemtx;			// 当たり判定でボーン位置を引けるよう保存する
 	// 子ノードに対して再帰的に処理											// 20240714 DX化
 	for (unsigned int n = 0; n < ptree->m_children.size(); n++)				// 20240714 DX化
 	{																		// 20240714 DX化
@@ -114,6 +151,15 @@ void CAnimationMesh::BuildLocalPoseMap(
 
 		f = CurrentFrame % nodeAnim->mNumPositionKeys;				//簡易実装
 		aiVector3D pos = nodeAnim->mPositionKeys[f].mValue;
+
+		// ルートの水平移動を止めて、その場で足踏みさせる（上下動は残す）
+		if (m_LockRootXZ &&
+			std::string(nodeAnim->mNodeName.C_Str()).find("Hips") != std::string::npos)
+		{
+			const aiVector3D& base = nodeAnim->mPositionKeys[0].mValue;
+			pos.x = base.x;
+			pos.z = base.z;
+		}
 
 		// assimp SRT=>DX版　SRT
 		Vector3 s = { 1.0f,1.0f,1.0f };		// 20240714 DX化

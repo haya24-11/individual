@@ -9,13 +9,13 @@ void FightingCamera::Update(float dt, Camera& cam, const Vector3& p1, const Vect
 	float cx = (p1.x + p2.x) * 0.5f;
 	float cz = (p1.z + p2.z) * 0.5f;
 
-	// 間合い（水平距離）
-	float dx  = p1.x - p2.x;
-	float dz  = p1.z - p2.z;
-	float sep = sqrtf(dx * dx + dz * dz);
+	// 間合い。2D格闘なので左右（X）だけで測る。奥行きのずれで画角が揺れないように
+	float sep = fabsf(p1.x - p2.x);
 
-	// 間合いが広いほど引く（両者を画に収める）
-	float dist = std::clamp(m_baseDist + sep * m_distFactor, m_minDist, m_maxDist);
+	// 間合いが「引き始める距離」を超えたぶんだけ引く。
+	// それより近づいても寄らない（内側に動いても画角は狭まらない）
+	float over = std::max(sep - m_zoomStartSep, 0.0f);
+	float dist = std::clamp(m_baseDist + over * m_distFactor, m_minDist, m_maxDist);
 
 	// 目標の位置・注視点（-Z前方から正面を映す）
 	Vector3 target(cx, m_camHeight, cz - dist);
@@ -48,6 +48,7 @@ void FightingCamera::DrawUI()
 	ImGui::Separator();
 	ImGui::SliderFloat("基準距離##Base Dist",   &m_baseDist,   50.0f, 1000.0f);
 	ImGui::SliderFloat("距離倍率##Dist Factor", &m_distFactor, 0.0f,  3.0f);
+	ImGui::SliderFloat("引き始める間合い##Zoom Start", &m_zoomStartSep, 0.0f, 1000.0f);
 	ImGui::SliderFloat("最小距離##Min Dist",    &m_minDist,    50.0f, 1000.0f);
 	ImGui::SliderFloat("最大距離##Max Dist",    &m_maxDist,    100.0f, 2000.0f);
 	ImGui::Separator();

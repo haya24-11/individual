@@ -306,13 +306,6 @@ void FightScene::drawMainToolsUI()
 			ImGui::EndTabItem();
 		}
 
-		// ---------------- 録画 ----------------
-		if (ImGui::BeginTabItem("録画##Recorder"))
-		{
-			m_recorder.DrawUI();
-			ImGui::EndTabItem();
-		}
-
 		// ---------------- ライブラリ ----------------
 		if (ImGui::BeginTabItem("ライブラリ##Library"))
 		{
@@ -325,12 +318,17 @@ void FightScene::drawMainToolsUI()
 		{
 			debugModelSelect("プレイヤー1 モデル###Player1 Model", m_p1Select, m_meshid);
 			debugModelSelect("プレイヤー2 モデル###Player2 Model", m_p2Select, m_meshid2);
+			drawMotionUI();
 			ImGui::EndTabItem();
 		}
 
 		// ---------------- デバッグ ----------------
 		if (ImGui::BeginTabItem("デバッグ##Debug"))
 		{
+			ImGui::Checkbox("当たり判定を表示##Show hitbox", &m_showHitbox);
+			ImGui::SliderFloat("線の濃さ##Hitbox alpha", &m_hitboxAlpha, 0.05f, 1.0f, "%.2f");
+			ImGui::TextDisabled("緑＝やられ判定　青＝押し合い判定　（まだ判定は行っていません）");
+			ImGui::Separator();
 			debugRubikCubeLocalRotation();
 			ImGui::EndTabItem();
 		}
@@ -583,26 +581,71 @@ void FightScene::update(uint64_t deltatime)
 	updateGizmoPicking();
 
 	// --- Player1 アッパーカットモーション（J キーで再生開始、終了で構えに戻る） ---
-	if (in.CheckKeyBufferTrigger(DIK_J) && !m_p1Attacking)
+	if (in.CheckKeyBufferTrigger(DIK_J) && m_p1Loop)
 	{
-		m_p1Attacking = true;
-		m_p1AnimFrame = 0.0f;
+		playMotion(m_p1AttackName, false);
 	}
-	if (m_p1Attacking)
+	if (m_p1AnimMesh&&m_p1Current)
 	{
-		m_p1AnimFrame += m_animFps * dt;
-		if (m_p1AnimFrame >= (float)(m_uppercutFrames - 1))
+		m_p1AnimFrame += m_animFps * m_p1SpeedScale * dt;
+		const float last = (float)m_p1FrameEnd;
+		if (m_p1AnimFrame >= last)
 		{
-			// 最終キーまで再生したら終了して構え（先頭フレーム）へ戻す
-			m_p1Attacking = false;
-			m_p1AnimFrame = 0.0f;
+			if (m_p1Loop)
+			{
+				m_p1AnimFrame = (float)m_p1FrameBegin;	//範囲の先頭へ戻す
+				m_p1RootValid = false;					//折り返しの巨大な差分を無視する
+			}
+			else if (!playMotion(m_p1IdleName, true))				//技が終わったら構えへ
+			{
+				m_p1AnimFrame = last;
+				m_p1Loop = true;	// 構えに戻れなくても入力を受け付け続ける
+			}
 		}
+		int frame = (int)m_p1AnimFrame;
+
+		// ルートモーションを位置へ反映する。見た目はその場再生のまま、キャラだけが動く
+		// 構えは腰が前後にわずかに揺れるだけなので移動させない（カメラが揺れる原因になる）
+		if (m_p1ApplyRootMotion && m_p1CurrentName != m_p1IdleName)
+		{
+			float rx = 0.0f, rz = 0.0f;
+			if (m_p1AnimMesh->GetRootXZ(frame, rx, rz))
+			{
+				// 1フレームで進む量は走りでも約7。これを大きく超える差分は
+				// ループの折り返しやキー数の食い違いによるものなので捨てる
+				const float dx = rx - m_p1RootPrevX;
+				const float dz = rz - m_p1RootPrevZ;
+				const bool  sane = (fabsf(dx) < 50.0f && fabsf(dz) < 50.0f);
+
+				if (m_p1RootValid && sane)
+				{
+					// モデル空間の差分を、描画と同じスケール・向きでワールドへ移す
+					Vector3 local(dx * m_p1Scale, 0.0f, dz * m_p1Scale);
+					m_p1Pos += Vector3::TransformNormal(local, Matrix4x4::CreateRotationY(m_p1FaceY));
+				}
+				m_p1RootPrevX = rx;
+				m_p1RootPrevZ = rz;
+				m_p1RootValid = true;
+			}
+		}
+
+		m_p1AnimMesh->Update(m_p1BoneComb, frame);
+	}
+
+	// --- Player2 の構え（常にループ。P1 と同じ再生速度） ---
+	if (m_p2AnimMesh && m_p2Current)
+	{
+		m_p2AnimFrame += m_animFps * dt;
+		const float last = (float)std::max(m_p2CurrentFrames - 1, 0);
+		if (m_p2AnimFrame >= last) m_p2AnimFrame = 0.0f;
+
+		int frame = (int)m_p2AnimFrame;
+		m_p2AnimMesh->Update(m_p2BoneComb, frame);
 	}
 	// 姿勢を毎フレーム計算（非再生時はフレーム0の構えを維持）
 	if (m_p1AnimMesh)
 	{
 		int frame = (int)m_p1AnimFrame;
-		m_p1AnimMesh->Update(m_p1BoneComb, frame);
 	}
 
 	// --- C キー: メインカメラを 基本 ⇔ スプライン でトグル ---
@@ -622,11 +665,7 @@ void FightScene::update(uint64_t deltatime)
 	// デバッグ第2ビューのカメラ操作はビュー窓のImGuiラムダ内で行う（別OSウィンドウでも効くように）
 
 	// --- メインカメラを m_camera に反映する ---
-	if (m_recorder.IsPlaying())
-	{
-		m_recorder.ApplyPlayback(m_camera, dt);				// 録画テイクで上書き（最優先）
-	}
-	else if (m_manualCam)
+	if (m_manualCam)
 	{
 		if (!m_prevManualCam)								// 手動ON開始時は現在姿勢を引き継ぐ
 			m_manualFly.AdoptFromLookAt(m_camera.GetPosition(), m_camera.GetLookat());
@@ -641,10 +680,6 @@ void FightScene::update(uint64_t deltatime)
 		m_fightCam.Update(dt, m_camera, m_p1Pos, m_p2Pos);	// 格ゲー基本カメラ
 	}
 	m_prevManualCam = m_manualCam;
-
-	// 録画中（再生中を除く）は、確定した姿勢を1フレーム分記録
-	if (m_recorder.IsRecording() && !m_recorder.IsPlaying())
-		m_recorder.Sample(m_camera, dt);
 }
 
 void FightScene::draw(uint64_t deltatime)
@@ -686,14 +721,42 @@ void FightScene::drawSceneGeometry()
 	// PMXはMMDスケール（約20単位）なので m_p1Scale（既定9倍）で拡大して表示する。
 	Matrix4x4 w1 = Matrix4x4::CreateScale(m_p1Scale) * Matrix4x4::CreateRotationY(m_p1FaceY) * Matrix4x4::CreateTranslation(m_p1Pos);
 	Renderer::SetWorldMatrix(&w1);
-	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
-	if (auto* r1 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid)) r1->Draw();
+	
+	if (m_p1AnimMesh && m_p1Current && m_meshid == "X Bot.fbx")
+	{
 
-	// player2 を描画（右・相手を向く）: 従来どおり静的描画（シェーダを戻す）
-	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
+		ShaderManager::Get<CShader>("Skin3D")->SetGPU();
+		m_p1BoneComb.Update();
+		m_p1BoneComb.SetGPU();
+		m_p1AnimMesh->Draw();
+	}
+	else
+	{
+		ShaderManager::Get<CShader>("Shader3D")->SetGPU();
+		if (auto* r1 = MeshManager::getRenderer <CStaticMeshRenderer>(m_meshid)) r1->Draw();
+	}
+	
+
+
+	// player2 を描画（右・相手を向く）: P1 と同じくスキンメッシュ／静的で分岐する
 	Matrix4x4 w2 = m_ScaleMtx * Matrix4x4::CreateRotationY(m_p2FaceY) * Matrix4x4::CreateTranslation(m_p2Pos);
 	Renderer::SetWorldMatrix(&w2);
-	if (auto* r2 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid2)) r2->Draw();
+
+	if (m_p2AnimMesh && m_p2Current && m_meshid2 == "X Bot.fbx")
+	{
+		ShaderManager::Get<CShader>("Skin3D")->SetGPU();
+		m_p2BoneComb.Update();
+		m_p2BoneComb.SetGPU();
+		m_p2AnimMesh->Draw();
+	}
+	else
+	{
+		ShaderManager::Get<CShader>("Shader3D")->SetGPU();
+		if (auto* r2 = MeshManager::getRenderer<CStaticMeshRenderer>(m_meshid2)) r2->Draw();
+	}
+
+	// この先の可視化は静的シェーダ前提なので戻しておく
+	ShaderManager::Get<CShader>("Shader3D")->SetGPU();
 
 	// スプライン経路・マーカーの可視化
 	m_splineCam.DrawVisualization();
@@ -710,6 +773,25 @@ void FightScene::drawSceneGeometry()
 		Renderer::DisableCulling(true);		// カリングON（通常）に戻す
 	}
 
+	// 当たり判定の可視化（デバッグタブで ON にしたときだけ）
+	// 枠線だけ・深度テスト無しで最後に描くことで、常に全部が手前に出る
+	if (m_showHitbox)
+	{
+		ShaderManager::Get<CShader>("Shader3D")->SetGPU();
+		Renderer::SetDepthEnable(false);				// 奥行きを無視して手前に重ねる
+		Renderer::SetFillMode(D3D11_FILL_WIREFRAME);	// 枠線だけ
+
+		const Color green(0.1f, 1.0f, 0.1f, m_hitboxAlpha);	// やられ判定
+		const Color blue (0.2f, 0.4f, 1.0f, m_hitboxAlpha);	// 押し合い判定
+
+		drawHurtboxes(m_p1AnimMesh.get(), w1, m_p1Scale, green);
+		drawPushbox  (m_p1AnimMesh.get(), w1, m_p1Scale, blue);
+		drawHurtboxes(m_p2AnimMesh.get(), w2, 1.0f,      green);
+		drawPushbox  (m_p2AnimMesh.get(), w2, 1.0f,      blue);
+
+		Renderer::SetFillMode(D3D11_FILL_SOLID);		// 通常の塗りに戻す
+		Renderer::SetDepthEnable(true);					// 深度テストを戻す
+	}
 }
 
 // デバッグ第2ビュー用のオフスクリーンRT（カラー＋深度）を生成
@@ -828,20 +910,22 @@ void FightScene::init()
 	// X Bot（スキン+ボーン）を読み込み
 	m_p1AnimMesh = std::make_unique<CAnimationMeshBlender>();
 	m_p1AnimMesh->Load("assets/motion/X Bot.fbx", "assets/motion/");
+	m_p1AnimMesh->SetLockRootXZ(true);	// 歩き・走りをその場で再生する（キャラが流れていかない）
 
-	// アッパーカットモーションを別FBXから読み込み、モデルに結合
-	m_uppercutData = std::make_unique<CAnimationData>();
-	m_uppercutData->LoadAnimation("assets/motion/Uppercut Jab.fbx", "uppercut");
-	aiAnimation* upper = m_uppercutData->GetAnimation("uppercut", 0);
-	m_p1AnimMesh->SetCurentAnimation(upper);
-
-	// 総キー数（全チャンネルの最大キー数）→ ワンショット終了判定に使用
-	for (unsigned int c = 0; c < upper->mNumChannels; ++c) {
-		m_uppercutFrames = std::max(m_uppercutFrames, (int)upper->mChannels[c]->mNumRotationKeys);
-	}
+	// モーション一覧を取得して構えを再生（各 FBX の読み込みは選択時に遅延）
+	scanMotionFolder();
+	if (!playMotion(m_p1IdleName, true))
+		playMotion("Uppercut Jab", true);	// パックが無い環境でも何か動くように
 
 	// ボーン行列定数バッファ(b5)を生成
 	m_p1BoneComb.Create();
+
+	// プレイヤー2 も同じスキンメッシュを読み込み、構えをループ再生する
+	m_p2AnimMesh = std::make_unique<CAnimationMeshBlender>();
+	m_p2AnimMesh->Load("assets/motion/X Bot.fbx", "assets/motion/");
+	m_p2AnimMesh->SetLockRootXZ(true);
+	playMotionP2(m_p2IdleName);
+	m_p2BoneComb.Create();
 
 	// 板ポリ（床タイルの地面）を生成：大きめサイズ＋UVを繰り返してタイリング
 	const float tile = 10.0f;	// タイルを10×10回繰り返す
@@ -884,6 +968,9 @@ void FightScene::init()
 	m_gizmoShaft = std::make_unique<Cylinder>(m_gizmoShaftRad, m_gizmoShaftLen);
 	m_gizmoHead  = std::make_unique<Cone>(m_gizmoHeadRad, m_gizmoHeadLen);
 
+	// 当たり判定の可視化用。サイズは描画のたびに設定するので初期値は仮
+	m_hitBox = std::make_unique<Box>(10.0f, 10.0f, 10.0f);
+
 
 }
 
@@ -892,6 +979,233 @@ void FightScene::dispose()
 
 }
 
+void  FightScene::scanMotionFolder() 
+{
+	namespace fs = std::filesystem;
+	m_motionList.clear();
+
+	const fs::path root = "assets/motion";
+	if (!fs::exists(root))return;
+
+	for (const auto& e :fs::recursive_directory_iterator(root))
+	{
+		if (!e.is_regular_file() || e.path().extension() != ".fbx") continue;
+		std::string name = e.path().stem().string();
+		if (name == "X Bot") continue;
+		m_motionList.push_back({ name,e.path().generic_string() });
+	}
+	std::sort(m_motionList.begin(), m_motionList.end(), [](const MotionEntry& a, const MotionEntry& b) {return a.name < b.name; });
+
+}
+
+// 名前からモーションを取得。未ロードなら一覧のパスから読み込む
+aiAnimation* FightScene::ensureMotionLoaded(const std::string& name)
+{
+	if (!m_motions.Contains(name))
+	{
+		auto it = std::find_if(m_motionList.begin(), m_motionList.end(),
+			[&](const MotionEntry& m) { return m.name == name; });
+		if (it == m_motionList.end()) return nullptr;
+		if (!m_motions.LoadAnimation(it->path, name)) return nullptr;
+	}
+	return m_motions.GetAnimation(name);
+}
+
+// 総キー数（全チャンネルの最大キー数）→ 終了判定に使う
+int FightScene::countFrames(const aiAnimation* a)
+{
+	int n = 0;
+	for (unsigned int c = 0; c < a->mNumChannels; ++c)
+		n = std::max(n, (int)a->mChannels[c]->mNumRotationKeys);
+	return n;
+}
+
+// 先頭から再生を始める。loop=false なら終了後に構えへ戻る
+bool FightScene::playMotion(const std::string& name, bool loop,
+	int beginFrame, int endFrame, float speedScale)
+{
+	aiAnimation* a = ensureMotionLoaded(name);
+	if (!a || !m_p1AnimMesh) return false;
+
+	m_p1Current = a;
+	m_p1CurrentName = name;
+	m_p1CurrentFrames = countFrames(a);
+
+	// 再生範囲を決める（endFrame が負なら末尾まで）
+	const int last = std::max(m_p1CurrentFrames - 1, 0);
+	m_p1FrameBegin = std::clamp(beginFrame, 0, last);
+	m_p1FrameEnd   = (endFrame < 0) ? last : std::clamp(endFrame, m_p1FrameBegin, last);
+	m_p1SpeedScale = std::max(speedScale, 0.01f);
+
+	m_p1Loop = loop;
+	m_p1AnimFrame = (float)m_p1FrameBegin;
+	m_p1RootValid = false;	// モーションを切り替えた瞬間に飛ばないよう、差分を取り直す
+	m_p1AnimMesh->SetCurentAnimation(a);
+	return true;
+}
+
+// ボーン2点を囲む長方形を1つ描く。2D格闘ゲームと同じく、判定は戦う平面（XY）だけで考える。
+// 奥行き方向の位置と厚みは捨てて planeZ 上に平らに置くので、カメラを回しても形が変わらない。
+void FightScene::drawBoneBox(const Vector3& a, const Vector3& b, float pad, float planeZ, const Color& col)
+{
+	if (!m_hitBox) return;
+
+	// 板として見えるだけの最低限の厚み。判定には使わない
+	constexpr float planeHalfZ = 1.0f;
+
+	const Vector3 p(pad, pad, 0.0f);
+	const Vector3 mn = Vector3::Min(a, b) - p;
+	const Vector3 mx = Vector3::Max(a, b) + p;
+
+	m_hitBox->SetSize(mx.x - mn.x, mx.y - mn.y, planeHalfZ * 2.0f);
+	m_hitBox->Draw(Matrix4x4::CreateTranslation(
+		Vector3((mn.x + mx.x) * 0.5f, (mn.y + mx.y) * 0.5f, planeZ)), col);
+}
+
+// やられ判定（段階3：形の確認用。当たり判定はまだ行わない）
+void FightScene::drawHurtboxes(const CAnimationMeshBlender* mesh,
+	const Matrix4x4& world, float scale, const Color& col)
+{
+	if (!mesh) return;
+
+	// 体幹・頭・両腕・両脚を10個の箱で覆う。pad は箱の厚みの半分
+	struct Pair { const char* from; const char* to; float pad; };
+	static const Pair table[] = {
+		{ "mixamorig:Hips",         "mixamorig:Spine2",       18.0f },
+		{ "mixamorig:Neck",         "mixamorig:Head",         11.0f },
+		{ "mixamorig:RightArm",     "mixamorig:RightForeArm",  8.0f },
+		{ "mixamorig:RightForeArm", "mixamorig:RightHand",     7.0f },
+		{ "mixamorig:LeftArm",      "mixamorig:LeftForeArm",   8.0f },
+		{ "mixamorig:LeftForeArm",  "mixamorig:LeftHand",      7.0f },
+		{ "mixamorig:RightUpLeg",   "mixamorig:RightLeg",     11.0f },
+		{ "mixamorig:RightLeg",     "mixamorig:RightFoot",     9.0f },
+		{ "mixamorig:LeftUpLeg",    "mixamorig:LeftLeg",      11.0f },
+		{ "mixamorig:LeftLeg",      "mixamorig:LeftFoot",      9.0f },
+	};
+
+	const float planeZ = world.Translation().z;	// このキャラが戦っている平面
+
+	for (const Pair& p : table)
+	{
+		Vector3 a, b;
+		if (!mesh->GetBonePosition(p.from, a)) continue;
+		if (!mesh->GetBonePosition(p.to,   b)) continue;
+
+		// モデル空間 → ワールド（描画と同じ行列を通す）
+		drawBoneBox(Vector3::Transform(a, world), Vector3::Transform(b, world),
+			p.pad * scale, planeZ, col);
+	}
+}
+
+// 押し合い判定。キャラの足元を基準にした縦長の箱を1個だけ置く。
+// やられ判定と違ってアニメに追従させない（技を出すたびに押し合いが変わると挙動が不安定になるため）
+void FightScene::drawPushbox(const CAnimationMeshBlender* mesh,
+	const Matrix4x4& world, float scale, const Color& col)
+{
+	if (!mesh) return;
+
+	Vector3 head;
+	if (!mesh->GetBonePosition("mixamorig:Head", head)) return;
+	head = Vector3::Transform(head, world);
+
+	const Vector3 base = world.Translation();	// 原点が足元なのでそのまま地面の高さ
+	const float   half = 26.0f * scale;			// 横幅の半分
+	const float   top  = base.y + (head.y - base.y) + 14.0f * scale;
+
+	drawBoneBox(Vector3(base.x, base.y, base.z), Vector3(base.x, top, base.z),
+		half, base.z, col);
+}
+
+// プレイヤー2 のモーションを先頭から再生する（常にループ）
+bool FightScene::playMotionP2(const std::string& name)
+{
+	aiAnimation* a = ensureMotionLoaded(name);	// キャッシュは P1 と共有
+	if (!a || !m_p2AnimMesh) return false;
+
+	m_p2Current       = a;
+	m_p2CurrentFrames = countFrames(a);
+	m_p2AnimFrame     = 0.0f;
+	m_p2AnimMesh->SetCurentAnimation(a);
+	return true;
+}
+
+// 「モデル」タブ内：Player1 のモーション選択（Begin/End は呼ばない）
+void FightScene::drawMotionUI()
+{
+	ImGui::SeparatorText("プレイヤー1 モーション###P1 Motion");
+
+	if (m_motionList.empty())
+	{
+		ImGui::TextDisabled("assets/motion に FBX がありません");
+		return;
+	}
+	m_motionSelect = std::clamp(m_motionSelect, 0, (int)m_motionList.size() - 1);
+
+	// 一覧から選ぶ（未ロードのものは印を付ける）
+	if (ImGui::BeginCombo("モーション##motion", m_motionList[m_motionSelect].name.c_str()))
+	{
+		for (int i = 0; i < (int)m_motionList.size(); ++i)
+		{
+			const bool loaded = m_motions.Contains(m_motionList[i].name);
+			std::string label = m_motionList[i].name + (loaded ? "" : "  (未読込)");
+			if (ImGui::Selectable(label.c_str(), i == m_motionSelect)) m_motionSelect = i;
+			if (i == m_motionSelect) ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	const std::string selName = m_motionList[m_motionSelect].name;
+
+	ImGui::Checkbox("ループ##motion loop", &m_motionSelectLoop);
+	ImGui::SameLine();
+	if (ImGui::Button("再生##play motion")) playMotion(selName, m_motionSelectLoop);
+
+	// 選んだモーションを役割に割り当てる
+	if (ImGui::Button("構えに設定##set idle")) { m_p1IdleName = selName; playMotion(m_p1IdleName, true); }
+	ImGui::SameLine();
+	if (ImGui::Button("技（J キー）に設定##set attack")) m_p1AttackName = selName;
+
+	// 歩行の確認用。ルート移動は止めてあるのでその場で足踏みする
+	ImGui::SeparatorText("歩行の確認###Walk check");
+	if (ImGui::Button("前進##walk fwd"))  playMotion("sword and shield walk", true);
+	ImGui::SameLine();
+	if (ImGui::Button("後退##walk back")) playMotion("sword and shield walk (2)", true);
+	ImGui::SameLine();
+	if (ImGui::Button("構えへ戻す##back to idle")) playMotion(m_p1IdleName, true);
+
+	// ステップ：歩行・走行のループサイクルの先頭だけを切り出して1回だけ再生する
+	// 再生範囲を狭めるほど歩幅が小さくなる
+	ImGui::SeparatorText("ステップ###Step");
+	if (ImGui::Button("前ステップ##step fwd"))
+		playMotion("sword and shield walk", false,
+			m_stepFwdRange[0], m_stepFwdRange[1], m_stepFwdSpeed);
+	ImGui::SameLine();
+	if (ImGui::Button("バックステップ##step back"))
+		playMotion("sword and shield run (2)", false,
+			m_stepBackRange[0], m_stepBackRange[1], m_stepBackSpeed);
+
+	ImGui::DragInt2("前 範囲（歩幅）##step fwd range", m_stepFwdRange, 0.2f, 0, 65);
+	ImGui::SliderFloat("前 速度##step fwd speed", &m_stepFwdSpeed, 0.5f, 4.0f, "%.1f 倍");
+	ImGui::DragInt2("後 範囲（歩幅）##step back range", m_stepBackRange, 0.2f, 0, 32);
+	ImGui::SliderFloat("後 速度##step back speed", &m_stepBackSpeed, 0.5f, 4.0f, "%.1f 倍");
+
+	// ルートモーションによる移動（アニメの歩幅ぶんだけ実際に動く）
+	ImGui::SeparatorText("移動###Locomotion");
+	ImGui::Checkbox("アニメの歩幅で移動する##apply root motion", &m_p1ApplyRootMotion);
+	ImGui::SameLine();
+	if (ImGui::Button("位置を戻す##reset pos")) { m_p1Pos = Vector3(-150, -100, 0); m_p1RootValid = false; }
+	ImGui::Text("プレイヤー1 の位置: (%.0f, %.0f, %.0f)", m_p1Pos.x, m_p1Pos.y, m_p1Pos.z);
+
+	ImGui::Text("構え: %s", m_p1IdleName.c_str());
+	ImGui::Text("技　: %s", m_p1AttackName.c_str());
+
+	ImGui::SliderFloat("再生速度（キー/秒）##anim fps", &m_animFps, 1.0f, 60.0f);
+
+	if (m_p1Current)
+		ImGui::Text("再生中: %s  %d （%d〜%d / 全%d）  %.1f倍  %s",
+			m_p1CurrentName.c_str(), (int)m_p1AnimFrame,
+			m_p1FrameBegin, m_p1FrameEnd, m_p1CurrentFrames,
+			m_p1SpeedScale, m_p1Loop ? "(ループ)" : "(1回)");
+}
 
 // フォルダを走査して一覧のキャッシュを更新する。
 // 毎フレーム走査すると無駄なので、選択が変わった時とボタンを押した時だけ呼ぶ。

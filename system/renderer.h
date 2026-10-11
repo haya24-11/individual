@@ -39,9 +39,10 @@ struct BONE
     std::string bonename;          ///< ボーン名
     std::string meshname;          ///< メッシュ名
     std::string armaturename;      ///< アーマチュア名
-    Matrix4x4 Matrix{};            ///< 親子関係を考慮した行列
+    Matrix4x4 Matrix{};            ///< 親子関係を考慮した行列（スキニング用）
     Matrix4x4 AnimationMatrix{};   ///< 自分の変形のみを考慮した行列
     Matrix4x4 OffsetMatrix{};      ///< ボーンオフセット行列
+    Matrix4x4 GlobalMatrix{};      ///< 親子を考慮したボーン自身の姿勢（当たり判定用）
     int idx=0;                     ///< 配列中のインデックス
     std::vector<WEIGHT> weights;   ///< このボーンが影響を与える頂点とウェイト値のリスト
 };

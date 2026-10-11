@@ -18,7 +18,6 @@
 #include "FreeFlyCamera.h"
 #include "SplineCamera.h"
 #include "FightingCamera.h"
-#include "CameraRecorder.h"
 
 class FightScene : public IScene
 {
@@ -64,8 +63,7 @@ private:
 	SplineCamera   m_splineCam;						// 曲線カメラ
 	FightingCamera m_fightCam;						// 格ゲー基本カメラ
 
-	// カメラワークの録画・再生／手動フリー操作（メイン画面）
-	CameraRecorder m_recorder;						// テイク録画・再生
+	// 手動フリー操作（メイン画面）
 	FreeFlyCamera  m_manualFly;						// 手動フリー操作（メイン・DirectInput）
 	bool m_manualCam     = false;					// 手動でメインカメラを飛ばす
 	bool m_prevManualCam = false;					// 立ち上がり検出
@@ -88,7 +86,7 @@ private:
 	std::string m_meshid{};		// player1 の表示メッシュID
 	std::string m_meshid2{};	// player2 の表示メッシュID
 	int m_p1Select = 14;			// Player1 のコンボ選択index（初期表示: suzu.pmx）
-	int m_p2Select = 0;			// Player2 のコンボ選択index
+	int m_p2Select = 14;			// Player2 のコンボ選択index（P1 と同じ X Bot.fbx）
 	float m_p1Scale = 1.0f;		// Player1(suzu/PMX) 専用スケール。MMDは約20単位なので約9倍でX Bot相当
 
 	// ---- カメラワーク ライブラリ（ライブラリタブ）----
@@ -115,7 +113,7 @@ private:
 
 	// 各プレイヤーの配置（向かい合わせ。値は実機で微調整）
 	Vector3 m_p1Pos{ -150, -100, 0 };	// player1 は左（原点が足元→地面Y=-100に接地）
-	Vector3 m_p2Pos{  150, 0, 0 };	// player2 は右
+	Vector3 m_p2Pos{  150, -100, 0 };	// player2 は右（原点が足元→地面Y=-100に接地）
 	float   m_p1FaceY = -PI / 2.0f;	// 相手(+X方向)を向く ※モデルの正面軸により要調整
 	float   m_p2FaceY =  PI / 2.0f;	// 相手(-X方向)を向く ※同上
 
@@ -138,13 +136,87 @@ private:
 	float m_gizmoPickThresh = 8.0f;	// 軸ドラッグの当たり判定しきい値（ワールド単位）
 
 	// Player1 アニメーション（アッパーカット試作）
-	std::unique_ptr<CAnimationMeshBlender> m_p1AnimMesh;	// X Bot スキンメッシュ
-	std::unique_ptr<CAnimationData>        m_uppercutData;	// モーションFBX保持
-	BoneCombMatrix m_p1BoneComb;		// ボーン行列定数バッファ(b5)
-	float m_p1AnimFrame  = 0.0f;		// 再生フレーム
-	bool  m_p1Attacking  = false;		// 攻撃モーション再生中か
-	int   m_uppercutFrames = 0;			// モーションの総キー数
-	float m_animFps = 30.0f;			// 再生速度（キー/秒）
+	//std::unique_ptr<CAnimationMeshBlender> m_p1AnimMesh;	// X Bot スキンメッシュ
+	//std::unique_ptr<CAnimationData>        m_uppercutData;	// モーションFBX保持
+	//BoneCombMatrix m_p1BoneComb;		// ボーン行列定数バッstファ(b5)
+	//float m_p1AnimFrame  = 0.0f;		// 再生フレーム
+	//bool  m_p1Attacking  = false;		// 攻撃モーション再生中か
+	//int   m_uppercutFrames = 0;			// モーションの総キー数
+	//float m_animFps = 30.0f;			// 再生速度（キー/秒）
+
+	std::unique_ptr<CAnimationMeshBlender>m_p1AnimMesh;
+	CAnimationData m_motions;
+	BoneCombMatrix m_p1BoneComb;
+
+	struct MotionEntry { std::string name; std::string path; };
+	std::vector<MotionEntry>m_motionList;
+	int			m_motionSelect = 0;
+	bool		m_motionSelectLoop = true;
+	std::string m_p1IdleName  = "sword and shield idle";
+	std::string m_p1AttackName ="sword and shield slash";
+
+	aiAnimation* m_p1Current = nullptr;
+	std::string m_p1CurrentName;
+	int m_p1CurrentFrames = 0;
+	bool m_p1Loop = true;
+	float m_p1AnimFrame = 0.0f;
+	float m_animFps = 30.0f;
+
+	// 再生範囲と速度倍率。ステップのように「先頭だけを速く」再生するために使う
+	int   m_p1FrameBegin = 0;		// 再生開始フレーム
+	int   m_p1FrameEnd   = 0;		// 再生終了フレーム（ここで折り返す／終わる）
+	float m_p1SpeedScale = 1.0f;	// このモーション固有の速度倍率
+
+	// ステップの調整値。範囲が歩幅、倍率がキビキビ感になる
+	// 前は walk（66フレームで1サイクル＝2歩／1フレーム約2.5進む）を素材にして脚の振りを小さく保つ。
+	// run は1フレーム約7進むため、同じ長さでも歩幅が3倍近くなりダッシュに見える
+	int   m_stepFwdRange[2]  = { 0, 16 };	// 前ステップ（walk）
+	float m_stepFwdSpeed     = 2.5f;
+	int   m_stepBackRange[2] = { 0, 16 };	// バックステップ（run (2)）
+	float m_stepBackSpeed    = 2.0f;
+
+	// プレイヤー2 アニメーション。P1 と同じ仕組みで構えをループ再生する
+	// モーションの実体は m_motions（P1 と共有のキャッシュ）から借りる
+	std::unique_ptr<CAnimationMeshBlender> m_p2AnimMesh;
+	BoneCombMatrix m_p2BoneComb;
+	aiAnimation*   m_p2Current = nullptr;
+	std::string    m_p2IdleName = "sword and shield idle";
+	int            m_p2CurrentFrames = 0;
+	float          m_p2AnimFrame = 0.0f;
+
+	bool playMotionP2(const std::string& name);
+
+	// --- 当たり判定の可視化（形を出すだけ。判定そのものはまだ行わない）---
+	bool m_showHitbox = true;		// 既定で表示（デバッグタブのチェックで消せる）
+	std::unique_ptr<Box> m_hitBox;			// 描画用に使い回す。サイズは毎回設定する
+	float m_hitboxAlpha = 1.0f;				// 線の濃さ
+
+	// ボーン2点を囲む長方形を1つ描く（pad は厚みの半分、planeZ は戦う平面の奥行き）
+	// 2D格闘として扱うため、箱の奥行きは持たせず planeZ 上に平らに置く
+	void drawBoneBox(const Vector3& a, const Vector3& b, float pad, float planeZ, const Color& col);
+
+	// やられ判定（緑）。world は描画に使うのと同じ行列、scale はその拡大率
+	void drawHurtboxes(const CAnimationMeshBlender* mesh,
+		const Matrix4x4& world, float scale, const Color& col);
+
+	// 押し合い判定（青）。足元から頭まで1個。アニメには追従させない
+	void drawPushbox(const CAnimationMeshBlender* mesh,
+		const Matrix4x4& world, float scale, const Color& col);
+
+	// ルートモーションによる移動。アニメが進んだぶんだけ m_p1Pos を動かすので足が滑らない
+	bool  m_p1ApplyRootMotion = true;
+	bool  m_p1RootValid  = false;	// 前フレームのルート位置を持っているか
+	float m_p1RootPrevX  = 0.0f;
+	float m_p1RootPrevZ  = 0.0f;
+
+	void scanMotionFolder();
+	aiAnimation* ensureMotionLoaded(const std::string& name);
+
+	// beginFrame / endFrame を省くと全体を再生する（endFrame = -1 で末尾まで）
+	bool playMotion(const std::string& name, bool loop,
+		int beginFrame = 0, int endFrame = -1, float speedScale = 1.0f);
+	static int countFrames(const aiAnimation* a);
+	void drawMotionUI();
 
 };
 

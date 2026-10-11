@@ -29,7 +29,7 @@ void SplineCamera::Init()
 	m_pointMarker  = std::make_unique<Sphere>(12.0f);	// 制御点マーカー（緑）
 }
 
-// u（連続パラメータ）位置のカメラ座標を Catmull-Rom で評価
+// u（連続パラメータ）位置のカメラ座標を求める（補間方法は m_interp で切り替え）
 Vector3 SplineCamera::Eval(float u) const
 {
 	int n = (int)m_points.size();
@@ -43,15 +43,23 @@ Vector3 SplineCamera::Eval(float u) const
 		return std::clamp(k, 0, n - 1);			// 開曲線：端をクランプ
 	};
 
-	const Vector3& p0 = m_points[idx(seg - 1)];
 	const Vector3& p1 = m_points[idx(seg)];
 	const Vector3& p2 = m_points[idx(seg + 1)];
+
+	// 補間なし：区間の間は始点に留まり、次の制御点へ瞬間移動する
+	if (m_interp == Interp::None) return p1;
+
+	// 直線：制御点どうしを直線で結ぶ
+	if (m_interp == Interp::Linear) return Vector3::Lerp(p1, p2, t);
+
+	// 曲線（Catmull-Rom）：前後1点ずつを加えた4点で評価
+	const Vector3& p0 = m_points[idx(seg - 1)];
 	const Vector3& p3 = m_points[idx(seg + 2)];
 
 	return Vector3::CatmullRom(p0, p1, p2, p3, t);
 }
 
-// u位置の実効速度倍率を求める（隣接4点をCatmull-Romで補間＝加速度も連続で繋ぎ目が分からない）
+// u位置の実効速度倍率を求める（補間方法は m_interp に従う）
 float SplineCamera::SpeedAt(float u) const
 {
 	int n = (int)m_points.size();
@@ -65,10 +73,17 @@ float SplineCamera::SpeedAt(float u) const
 		return std::clamp(k, 0, n - 1);
 	};
 
-	// 位置カーブ(Eval)と同じ4点ステンシル。スカラー速度を x に詰めてCatmull-Rom補間する。
-	float s0 = m_speeds[idx(seg - 1)];
 	float s1 = m_speeds[idx(seg)];
 	float s2 = m_speeds[idx(seg + 1)];
+
+	// 補間なし：区間ごとに一定
+	if (m_interp == Interp::None)   return std::max(s1, 0.05f);
+
+	// 直線：隣の値へ線形に変化（制御点で加速度が折れる）
+	if (m_interp == Interp::Linear) return std::max(s1 + (s2 - s1) * t, 0.05f);
+
+	// 位置カーブ(Eval)と同じ4点ステンシル。スカラー速度を x に詰めてCatmull-Rom補間する。
+	float s0 = m_speeds[idx(seg - 1)];
 	float s3 = m_speeds[idx(seg + 2)];
 
 	Vector3 r = Vector3::CatmullRom(
@@ -78,7 +93,7 @@ float SplineCamera::SpeedAt(float u) const
 	return std::max(r.x, 0.05f);
 }
 
-// u位置の roll[度] を求める（速度と同じ4点ステンシルをCatmull-Rom補間。roll は負もあり得るのでクランプ無し）
+// u位置の roll[度] を求める（補間方法は m_interp に従う。roll は負もあり得るのでクランプ無し）
 float SplineCamera::RollAt(float u) const
 {
 	int n = (int)m_points.size();
@@ -92,15 +107,39 @@ float SplineCamera::RollAt(float u) const
 		return std::clamp(k, 0, n - 1);
 	};
 
-	float r0 = m_rolls[idx(seg - 1)];
 	float r1 = m_rolls[idx(seg)];
 	float r2 = m_rolls[idx(seg + 1)];
+
+	if (m_interp == Interp::None)   return r1;					// 区間ごとに一定
+	if (m_interp == Interp::Linear) return r1 + (r2 - r1) * t;	// 線形
+
+	float r0 = m_rolls[idx(seg - 1)];
 	float r3 = m_rolls[idx(seg + 2)];
 
 	Vector3 r = Vector3::CatmullRom(
 		Vector3(r0, 0, 0), Vector3(r1, 0, 0), Vector3(r2, 0, 0), Vector3(r3, 0, 0), t);
 
 	return r.x;	// 度
+}
+
+// 可視化専用の評価。補間なしのときは経路が点だけになって見えないので、直線でつないで返す。
+// 再生位置そのものには使わない（そちらは Eval を使う）。
+Vector3 SplineCamera::EvalForDraw(float u) const
+{
+	if (m_interp != Interp::None) return Eval(u);
+
+	int n = (int)m_points.size();
+	if (n < 4) return m_lookat;
+
+	int   seg = (int)floorf(u);
+	float t   = u - seg;
+
+	auto idx = [&](int k) -> int {
+		if (m_loop) return ((k % n) + n) % n;
+		return std::clamp(k, 0, n - 1);
+	};
+
+	return Vector3::Lerp(m_points[idx(seg)], m_points[idx(seg + 1)], t);
 }
 
 // 弧長テーブルを構築する
@@ -158,9 +197,31 @@ float SplineCamera::ArcLengthToU(float s) const
 	return uMax * sampleIndex / (float)M;
 }
 
+// 曲線パラメータ u から距離（弧長）へ変換する（ArcLengthToU の逆）
+// 弧長パラメータ化を切ったときに、表示と終端判定用の距離を求めるのに使う。
+float SplineCamera::ArcLengthAtU(float u) const
+{
+	int M = (int)m_arc.size() - 1;
+	if (M < 1) return 0.0f;
+
+	float uMax = (float)M / (float)m_samplesPerSeg;	// BuildArcTable と一致
+	if (uMax <= 1e-6f) return 0.0f;
+
+	// u をテーブルの添字に直し、サンプル間は線形補間する
+	float sampleIndex = std::clamp(u / uMax * (float)M, 0.0f, (float)M);
+	int   j    = std::min((int)sampleIndex, M - 1);
+	float frac = sampleIndex - (float)j;
+
+	return m_arc[j] + (m_arc[j + 1] - m_arc[j]) * frac;
+}
+
 void SplineCamera::Update(float dt, Camera& cam)
 {
-	if (!m_active || m_points.size() < 4) return;
+	if (!m_active || m_points.size() < 4)
+	{
+		m_measValid = false;	// 止まっている間の差分は測らない
+		return;
+	}
 
 	// 弧長テーブルを毎フレーム再構築（ギズモで制御点を編集中でも追従させるため）
 	BuildArcTable();
@@ -170,28 +231,72 @@ void SplineCamera::Update(float dt, Camera& cam)
 		// 退化ガード（全制御点がほぼ同一など）
 		cam.SetPosition(Eval(m_t));
 		cam.SetLookat(m_lookat);
+		m_measValid = false;
 		return;
 	}
 
-	// マスター速度[ワールド単位/秒] × 現在位置の速度倍率（前フレームの u で評価）
-	float worldSpeed = m_speed * SpeedAt(m_t);
-	m_dist += worldSpeed * dt;	// 進行を「距離」で加算
-
-	if (m_loop)
-	{
-		while (m_dist >= m_totalLen) m_dist -= m_totalLen;	// 距離でループ
-	}
-	else if (m_dist > m_totalLen)
-	{
-		m_dist = m_totalLen;	// 端で停止
-		m_active = false;
-	}
-
 	m_rolls.resize(m_points.size(), 0.0f);	// サイズ同期（保険）
-	m_t = ArcLengthToU(m_dist);	// 距離 → u（弧長パラメータ化の核心）
+
+	// このフレームで出したい速度。ON / OFF どちらも同じ式で比べる
+	const float targetSpeed = m_speed * SpeedAt(m_t);
+
+	if (m_useArcLength)
+	{
+		// --- 弧長パラメータ化 ON：距離で進めて u に翻訳する（等速） ---
+		// マスター速度[ワールド単位/秒] × 現在位置の速度倍率（前フレームの u で評価）
+		m_dist += targetSpeed * dt;	// 進行を「距離」で加算
+
+		if (m_loop)
+		{
+			while (m_dist >= m_totalLen) m_dist -= m_totalLen;	// 距離でループ
+		}
+		else if (m_dist > m_totalLen)
+		{
+			m_dist = m_totalLen;	// 端で停止
+			m_active = false;
+		}
+
+		m_t = ArcLengthToU(m_dist);	// 距離 → u（弧長パラメータ化の核心）
+	}
+	else
+	{
+		// --- 弧長パラメータ化 OFF：u を直接進める（区間ごとに速度がばらつく） ---
+		// 比較しやすいよう、1周にかかる時間は ON のときと揃える
+		const float uMax   = (float)(m_loop ? m_points.size() : m_points.size() - 1);
+		const float lapSec = m_totalLen / std::max(m_speed, 1e-3f);	// ON のときの1周の秒数
+		m_t += (uMax / std::max(lapSec, 1e-3f)) * SpeedAt(m_t) * dt;
+
+		if (m_loop)
+		{
+			while (m_t >= uMax) m_t -= uMax;	// u でループ
+		}
+		else if (m_t > uMax)
+		{
+			m_t = uMax;		// 端で停止
+			m_active = false;
+		}
+
+		m_dist = ArcLengthAtU(m_t);	// 表示と終端判定のために距離も求めておく
+	}
+
+	Vector3 pos = Eval(m_t);
+
+	// --- 等速の確認：実際にカメラが動いた距離 ÷ 経過時間 ---
+	// 1フレームの移動は数単位なので、直線距離と曲線に沿った距離の差は無視できる
+	if (m_measValid && dt > 1e-6f)
+	{
+		m_measSpeed  = (pos - m_measPrevPos).Length() / dt;
+		m_measTarget = targetSpeed;
+
+		const float ratio = (targetSpeed > 1e-3f) ? m_measSpeed / targetSpeed : 0.0f;
+		m_speedHist[m_speedHistPos] = ratio;
+		m_speedHistPos   = (m_speedHistPos + 1) % kSpeedHistory;
+		m_speedHistCount = std::min(m_speedHistCount + 1, kSpeedHistory);
+	}
+	m_measPrevPos = pos;
+	m_measValid   = true;
 
 	// 前方軸まわりに world-up を roll だけ回してダッチアングルを作る
-	Vector3 pos = Eval(m_t);
 	Vector3 fwd = m_lookat - pos;
 	Vector3 up(0, 1, 0);
 	if (fwd.LengthSquared() > 1e-8f) {
@@ -215,10 +320,10 @@ void SplineCamera::DrawVisualization()
 	int   samples = (int)(uMax * 24);
 
 	// 経路（黄色線）
-	Vector3 prev = Eval(0);
+	Vector3 prev = EvalForDraw(0);
 	SetLineWidth(2);
 	for (int i = 1; i <= samples; ++i) {
-		Vector3 cur = Eval(uMax * i / samples);
+		Vector3 cur = EvalForDraw(uMax * i / samples);
 		Vector3 dir = cur - prev;
 		LineDrawerDraw(dir.Length(), prev, dir, Color(1, 1, 0, 1));
 		prev = cur;
@@ -301,10 +406,10 @@ void SplineCamera::DrawEditCanvas(const char* id, int axisH, int axisV, bool all
 		int   n    = (int)m_points.size();
 		float uMax = m_loop ? (float)n : (float)(n - 1);
 		int   samples = 128;
-		Vector3 prev = Eval(0);
+		Vector3 prev = EvalForDraw(0);
 		for (int i = 1; i <= samples; ++i)
 		{
-			Vector3 cur = Eval(uMax * i / samples);
+			Vector3 cur = EvalForDraw(uMax * i / samples);
 			ImVec2 a = worldToScreen(comp(prev, axisH), comp(prev, axisV));
 			ImVec2 b = worldToScreen(comp(cur, axisH), comp(cur, axisV));
 			dl->AddLine(a, b, IM_COL32(230, 220, 40, 255), 2.0f);
@@ -387,7 +492,29 @@ void SplineCamera::DrawPlaybackUI()
 	ImGui::SameLine();
 	ImGui::Checkbox("経路を表示##Show Path", &m_showPath);
 
+	// 補間方法。曲線に戻したいときは「曲線（Catmull-Rom）」を選ぶ
+	const char* interpNames[] = { "曲線（Catmull-Rom）", "直線", "なし（点で飛ぶ）" };
+	int interp = (int)m_interp;
+	if (ImGui::Combo("補間##Interp", &interp, interpNames, IM_ARRAYSIZE(interpNames)))
+	{
+		m_interp = (Interp)interp;
+		BuildArcTable();	// 経路の長さが変わるので作り直す
+		ResetSpeedMeasure();
+	}
+
+	// 弧長パラメータ化の ON / OFF。OFF は u を直接進める（比較用）
+	if (ImGui::Checkbox("弧長パラメータ化（等速）##Arc length", &m_useArcLength))
+	{
+		// 切り替えた瞬間に位置が飛ばないよう、進行量を合わせる
+		if (m_useArcLength) m_dist = ArcLengthAtU(m_t);
+		ResetSpeedMeasure();	// 前の設定の記録が混ざらないように
+	}
+
 	ImGui::Text("パラメータ = %.2f   全長 = %.0f   移動距離 = %.0f", m_t, m_totalLen, m_dist);
+	if (!m_useArcLength)
+		ImGui::TextDisabled("弧長パラメータ化 OFF：区間ごとに速度がばらつきます");
+
+	DrawSpeedMeasureUI();
 
 	ImGui::DragFloat3("注視点##Lookat", &m_lookat.x, 1.0f);
 
@@ -644,6 +771,7 @@ bool SplineCamera::RestoreFrom(const CameraTake& take, const Vector3& origin)
 	m_speedDrag		 = -1;
 
 	BuildArcTable();
+	ResetSpeedMeasure();	// 別の経路に変わるので、前の記録は捨てる
 	return true;
 
 }
@@ -657,4 +785,63 @@ void SplineCamera::Play()
 	m_dist = 0.0f;
 	m_t = 0.0f;
 	m_active = true;
+	ResetSpeedMeasure();
+}
+
+// 計測をやり直す。巻き戻しや設定の切り替えで、前の記録や位置の飛びが混ざらないようにする
+void SplineCamera::ResetSpeedMeasure()
+{
+	m_speedHistPos   = 0;
+	m_speedHistCount = 0;
+	m_measValid  = false;
+	m_measSpeed  = 0.0f;
+	m_measTarget = 0.0f;
+}
+
+// 等速になっているかを数値とグラフで見せる
+void SplineCamera::DrawSpeedMeasureUI()
+{
+	if (!ImGui::CollapsingHeader("等速の確認（デバッグ）##Speed check", ImGuiTreeNodeFlags_DefaultOpen))
+		return;
+
+	if (m_speedHistCount == 0)
+	{
+		ImGui::TextDisabled("再生すると計測が始まります");
+		return;
+	}
+
+	// 履歴から 最小・最大・平均 を出す（並び順は関係ないので先頭から舐める）
+	float mn = m_speedHist[0], mx = m_speedHist[0], sum = 0.0f;
+	for (int i = 0; i < m_speedHistCount; ++i)
+	{
+		const float v = m_speedHist[i];
+		mn = std::min(mn, v);
+		mx = std::max(mx, v);
+		sum += v;
+	}
+	const float avg    = sum / (float)m_speedHistCount;
+	const float spread = (mx - mn) * 100.0f;	// ばらつき[%]。1.00 からの振れ幅の合計
+
+	ImGui::Text("目標速度 %7.1f   実測速度 %7.1f  （単位/秒）", m_measTarget, m_measSpeed);
+	ImGui::Text("目標との比  最小 %.3f   最大 %.3f   平均 %.3f", mn, mx, avg);
+
+	// ばらつきが小さければ等速と判定する（弧長テーブルの分割による誤差を見込んで 2%）
+	if (spread < 2.0f)
+		ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "ばらつき %.2f %%  → 等速です", spread);
+	else
+		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "ばらつき %.1f %%  → 速度が変わっています", spread);
+
+	// 比の推移。1.0 の横一直線になれば等速。溜まりきったらリングの古い側から並べる
+	const int offset = (m_speedHistCount == kSpeedHistory) ? m_speedHistPos : 0;
+	char overlay[32];
+	snprintf(overlay, sizeof(overlay), "比 %.3f", m_measTarget > 1e-3f ? m_measSpeed / m_measTarget : 0.0f);
+	ImGui::PlotLines("##ratio", m_speedHist, m_speedHistCount, offset,
+		overlay, 0.0f, 2.0f, ImVec2(-1.0f, 80.0f));
+	ImGui::TextDisabled("グラフの中央の高さが 1.0（目標どおり）。上下 0.0 〜 2.0");
+
+	// 弧長テーブルの細かさ。粗いとサンプル間の直線補間の誤差でわずかに速度が揺れる
+	if (ImGui::SliderInt("弧長テーブルの分割数##Samples per seg", &m_samplesPerSeg, 4, 256))
+		ResetSpeedMeasure();
+
+	if (ImGui::Button("計測をリセット##Reset measure")) ResetSpeedMeasure();
 }

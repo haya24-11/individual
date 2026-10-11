@@ -13,6 +13,10 @@ struct CameraTake;
 class SplineCamera
 {
 public:
+	// 位置・速度・ロールの補間方法。
+	// 曲線のコードは消さずにモードで切り替えるので、いつでも元に戻せる。
+	enum class Interp { CatmullRom, Linear, None };
+
 	void Init();						// 既定の制御点セット＋マーカー生成
 	void ResetDefault();				// 既定4点・速度・進行量をリセット
 	void Update(float dt, Camera& cam);	// active時：距離を進めて t を求め、cam に反映
@@ -42,11 +46,15 @@ public:
 	float   RollAt(float u) const;		// u位置の roll[度]（隣接4点をCatmull-Rom補間）
 	void    BuildArcTable();			// 弧長テーブル構築
 	float   ArcLengthToU(float s) const;// 距離→u 逆引き
+	float   ArcLengthAtU(float u) const;// u→距離（ArcLengthToU の逆）
 
 private:
 	// 平面(axisH, axisV)=(0:X,1:Y,2:Z) を1枚のキャンバスとして描画・編集する
 	// allowAddRemove: このビューで空クリック追加・右クリック削除を許可するか
 	void DrawEditCanvas(const char* id, int axisH, int axisV, bool allowAddRemove);
+
+	// 可視化専用。補間なしのときも経路が見えるよう、直線でつないで返す
+	Vector3 EvalForDraw(float u) const;
 
 	std::vector<Vector3> m_points;		// 制御点
 	std::vector<float>   m_speeds;		// 制御点ごとの速度倍率
@@ -56,19 +64,36 @@ private:
 	bool  m_active   = false;			// 再生中か
 	bool  m_loop     = true;			// 経路をループ（閉曲線）
 	bool  m_showPath = true;			// 経路を可視化
+	Interp m_interp  = Interp::CatmullRom;	// 補間方法（比較したいときは Linear / None に切り替え）
+	bool  m_useArcLength = true;		// 弧長パラメータ化。OFF で u を直接進める（速度がばらつく）
 	float m_t     = 0.0f;				// 進行パラメータ（u）
 	float m_speed = 300.0f;				// マスター速度（ワールド単位/秒）
 	float m_dist  = 0.0f;				// 進行距離アキュムレータ
 
 	std::vector<float> m_arc;			// 累積距離テーブル
 	float m_totalLen = 0.0f;			// 経路の総距離
-	int   m_samplesPerSeg = 32;			// 1区間の分割数
+	int   m_samplesPerSeg = 128;		// 1区間の分割数（32 だと速度が±2%ほど揺れる）
 
 	// ImGui 2Dキャンバス編集用
 	float m_editViewHalf = 600.0f;		// キャンバスに映すワールド半径（±600）
 	int   m_canvasDrag   = -1;			// ドラッグ中の制御点index（-1=なし）
 	int   m_canvasDragView = -1;		// ドラッグ中キャンバスの縦軸(axisV)。どちらの面がドラッグ中か区別する
 	int   m_speedDrag    = -1;			// 速度グラフでドラッグ中の制御点index（-1=なし）
+
+	// --- 等速の確認（デバッグ計測）---
+	// 毎フレーム「実際に動いた距離 ÷ 経過時間」を測り、目標速度との比を記録する。
+	// 弧長パラメータ化が効いていれば比は常に 1.00 付近に張り付く
+	static constexpr int kSpeedHistory = 240;	// 履歴の長さ（60FPSで約4秒）
+	float   m_speedHist[kSpeedHistory] = {};	// 実測速度 ÷ 目標速度 のリングバッファ
+	int     m_speedHistPos   = 0;				// 次に書き込む位置
+	int     m_speedHistCount = 0;				// 溜まっている個数
+	Vector3 m_measPrevPos{};					// 前フレームのカメラ位置
+	bool    m_measValid  = false;				// 前フレームの位置を持っているか
+	float   m_measSpeed  = 0.0f;				// 直近の実測速度（単位/秒）
+	float   m_measTarget = 0.0f;				// 直近の目標速度（単位/秒）
+
+	void ResetSpeedMeasure();					// 計測をやり直す（設定を切り替えたとき）
+	void DrawSpeedMeasureUI();					// 計測結果の表示
 
 	std::unique_ptr<Sphere> m_marker;		// 現在地点（赤）
 	std::unique_ptr<Sphere> m_lookatMarker;	// 注視点（青）
