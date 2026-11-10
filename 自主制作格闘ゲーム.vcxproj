@@ -152,6 +152,7 @@
     <ClInclude Include="Inputmanager.h" />
     <ClInclude Include="Json.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="scene\DepthOfField.h" />
     <ClInclude Include="scene\FightScene.h" />
     <ClInclude Include="scene\FreeFlyCamera.h" />
     <ClInclude Include="scene\SplineCamera.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scene\DepthOfField.cpp" />
     <ClCompile Include="scene\FightScene.cpp" />
     <ClCompile Include="scene\FreeFlyCamera.cpp" />
     <ClCompile Include="scene\SplineCamera.cpp" />
@@ -277,6 +279,9 @@
     <FxCompile Include="shader\common.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shader\dof.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\GeometryShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

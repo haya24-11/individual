@@ -92,6 +92,19 @@ struct LIGHT
 };
 
 /**
+ * @struct RIMLIGHT
+ * @brief リムライト（輪郭光）の情報。シェーダーの b7 に送る
+ */
+struct RIMLIGHT
+{
+    Color RimColor{ 1.0f, 0.9f, 0.7f, 1.0f };   ///< 縁の色
+    float Power = 3.0f;                     ///< 大きいほど縁が細くなる
+    float Intensity = 0.8f;                 ///< 明るさ
+    BOOL  Enable = TRUE;                    ///< 使うかどうか
+    float Dummy = 0.0f;                     ///< パディング（16バイト境界に揃える）
+};
+
+/**
  * @struct SUBSET
  * @brief メッシュのサブセット（マテリアル毎）情報を保持する構造体
  */
@@ -149,6 +162,7 @@ private:
     static ComPtr<ID3D11Buffer> m_ProjectionBuffer;
     static ComPtr<ID3D11Buffer> m_MaterialBuffer;
     static ComPtr<ID3D11Buffer> m_LightBuffer;
+    static ComPtr<ID3D11Buffer> m_RimLightBuffer;
 
     static ComPtr<ID3D11DepthStencilState> m_DepthStateEnable;
     static ComPtr<ID3D11DepthStencilState> m_DepthStateDisable;
@@ -157,6 +171,7 @@ private:
     static ComPtr<ID3D11BlendState> m_BlendStateATC;
 
     static LIGHT m_Light;
+    static RIMLIGHT m_RimLight;
 public:
     static void Init();
     static void Dispose();
@@ -182,4 +197,7 @@ public:
     static void SetFillMode(D3D11_FILL_MODE FillMode);
 
     static LIGHT GetLight();
+
+    static void SetRimLight(const RIMLIGHT& Rim);
+    static RIMLIGHT GetRimLight() { return m_RimLight; }
 };

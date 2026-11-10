@@ -35,6 +35,8 @@ ComPtr<ID3D11BlendState> Renderer::m_BlendState[MAX_BLENDSTATE];
 ComPtr<ID3D11BlendState> Renderer::m_BlendStateATC;
 
 LIGHT Renderer::m_Light;
+ComPtr<ID3D11Buffer> Renderer::m_RimLightBuffer;
+RIMLIGHT Renderer::m_RimLight;
 
 //------------------------------------------------------------------------------
 // Renderer クラスの各関数の実装
@@ -217,6 +219,11 @@ void Renderer::Init()
     light.Diffuse = Color(1.5f, 1.5f, 1.5f, 1.0f);
     SetLight(light);
 
+    // --- リムライト（b7）---
+    bufferDesc.ByteWidth = sizeof(RIMLIGHT);
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_RimLightBuffer.GetAddressOf());
+    SetRimLight(RIMLIGHT{});
+
     // --- マテリアル初期化 ---
     MATERIAL material{};
     material.Diffuse = Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -386,6 +393,17 @@ void Renderer::SetLight(LIGHT Light)
     m_DeviceContext->VSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
     m_DeviceContext->PSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
     m_Light = Light;
+}
+
+/**
+ * @brief リムライト情報をセットします（頂点シェーダーの b7）
+ * @param Rim リムライト情報
+ */
+void Renderer::SetRimLight(const RIMLIGHT& Rim)
+{
+    m_DeviceContext->UpdateSubresource(m_RimLightBuffer.Get(), 0, nullptr, &Rim, 0, 0);
+    m_DeviceContext->VSSetConstantBuffers(7, 1, m_RimLightBuffer.GetAddressOf());
+    m_RimLight = Rim;
 }
 
 /**

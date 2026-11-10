@@ -257,6 +257,42 @@ void FightScene::drawMainToolsUI()
 	ImGui::SetNextWindowSize(ImVec2(520, 720), ImGuiCond_FirstUseEver);
 	ImGui::Begin("カメラワーク ツール###Main Tools");
 
+	// ツールのウィンドウが画面からはみ出さないようにする。
+	// 前回の位置（imgui.ini）が画面の端や外だと、タイトルバーが少し見えるだけで
+	// 「消えた」ように見えるため、ウィンドウ全体をモニターの作業領域（タスクバーを除く）に収める。
+	// マウスで動かしている最中に押し戻すと操作しにくいので、ボタンを離している間だけ行う
+	{
+		const ImGuiPlatformIO& pio = ImGui::GetPlatformIO();
+		if (!pio.Monitors.empty() && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			const ImVec2 pos  = ImGui::GetWindowPos();
+			const ImVec2 size = ImGui::GetWindowSize();
+
+			// ウィンドウの中心が乗っているモニターに収める（どれにも乗っていなければメインモニター）
+			const ImVec2 center(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
+			const ImGuiPlatformMonitor* mon = &pio.Monitors[0];
+			for (const ImGuiPlatformMonitor& m : pio.Monitors)
+			{
+				if (center.x >= m.WorkPos.x && center.x < m.WorkPos.x + m.WorkSize.x &&
+					center.y >= m.WorkPos.y && center.y < m.WorkPos.y + m.WorkSize.y)
+				{
+					mon = &m;
+					break;
+				}
+			}
+
+			// 画面より大きければ縮める
+			const ImVec2 fit(std::min(size.x, mon->WorkSize.x), std::min(size.y, mon->WorkSize.y));
+			if (fit.x != size.x || fit.y != size.y) ImGui::SetWindowSize(fit);
+
+			// はみ出していれば内側へ押し戻す
+			const ImVec2 np(
+				std::clamp(pos.x, mon->WorkPos.x, mon->WorkPos.x + mon->WorkSize.x - fit.x),
+				std::clamp(pos.y, mon->WorkPos.y, mon->WorkPos.y + mon->WorkSize.y - fit.y));
+			if (np.x != pos.x || np.y != pos.y) ImGui::SetWindowPos(np);
+		}
+	}
+
 	if (ImGui::BeginTabBar("##MainTabs"))
 	{
 		// ---------------- カメラ ----------------
@@ -328,6 +364,25 @@ void FightScene::drawMainToolsUI()
 			ImGui::Checkbox("当たり判定を表示##Show hitbox", &m_showHitbox);
 			ImGui::SliderFloat("線の濃さ##Hitbox alpha", &m_hitboxAlpha, 0.05f, 1.0f, "%.2f");
 			ImGui::TextDisabled("緑＝やられ判定　青＝押し合い判定　（まだ判定は行っていません）");
+			ImGui::Separator();
+			ImGui::SliderFloat("壁の奥行き##Wall Z", &m_wallZ, 100.0f, 1000.0f, "%.0f");
+			ImGui::Separator();
+
+			// リムライト（キャラの輪郭光）。値を変えたらその場でシェーダーへ送り直す
+			{
+				RIMLIGHT rim = Renderer::GetRimLight();
+				bool enable  = rim.Enable != FALSE;
+				bool changed = false;
+				changed |= ImGui::Checkbox("リムライト##Rim enable", &enable);
+				changed |= ImGui::ColorEdit3("縁の色##Rim color", &rim.RimColor.x);
+				changed |= ImGui::SliderFloat("縁の細さ##Rim power", &rim.Power, 0.5f, 8.0f, "%.1f");
+				changed |= ImGui::SliderFloat("縁の明るさ##Rim intensity", &rim.Intensity, 0.0f, 3.0f, "%.2f");
+				if (changed)
+				{
+					rim.Enable = enable ? TRUE : FALSE;
+					Renderer::SetRimLight(rim);
+				}
+			}
 			ImGui::Separator();
 			debugRubikCubeLocalRotation();
 			ImGui::EndTabItem();
@@ -773,6 +828,16 @@ void FightScene::drawSceneGeometry()
 		Renderer::DisableCulling(true);		// カリングON（通常）に戻す
 	}
 
+	// 奥の壁。板ポリはもともと縦向き（XY平面）なので回転なしで立つ。
+	// 中心の高さを「地面 + 高さの半分」にして、下端を地面にぴったり付ける
+	if (m_wall) {
+		Renderer::DisableCulling(false);	// 裏側に回り込んでも見えるよう両面
+		const float floorY = -100.0f;
+		m_wall->Draw(Vector3(1, 1, 1), Vector3(0, 0, 0),
+			Vector3(0, floorY + m_wall->GetHeight() * 0.5f, m_wallZ));
+		Renderer::DisableCulling(true);
+	}
+
 	// 当たり判定の可視化（デバッグタブで ON にしたときだけ）
 	// 枠線だけ・深度テスト無しで最後に描くことで、常に全部が手前に出る
 	if (m_showHitbox)
@@ -933,6 +998,13 @@ void FightScene::init()
 		Vector2(0, 0), Vector2(tile, 0), Vector2(0, tile), Vector2(tile, tile)
 	};
 	m_sprite = std::make_unique<CSprite>(2000, 2000, "assets/texture/floortile.png", grounduv);
+
+	// 奥の壁：地面と同じテクスチャ。タイル1枚の大きさを地面と揃える（2000/10 = 200 単位）
+	// 横2000・高さ1000 なので、横10枚・縦5枚
+	std::array<Vector2, 4> walluv = {
+		Vector2(0, 0), Vector2(tile, 0), Vector2(0, tile * 0.5f), Vector2(tile, tile * 0.5f)
+	};
+	m_wall = std::make_unique<CSprite>(2000, 1000, "assets/texture/floortile.png", walluv);
 
 
 	// スプラインカメラ：既定の制御点・マーカーを生成

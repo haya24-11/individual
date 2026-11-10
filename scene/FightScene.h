@@ -56,6 +56,10 @@ private:
 	// 板ポリ（テクスチャ付き矩形ポリゴン）
 	std::unique_ptr<CSprite> m_sprite;
 
+	// 奥の壁（地面と同じ床タイル）。キャラの奥側（+Z）に立てる
+	std::unique_ptr<CSprite> m_wall;
+	float m_wallZ = 600.0f;		// 壁の奥行き位置（キャラは Z=0 に立っている）
+
 	// カメラ（メイン: 格ゲー基本⇔スプライン。Free-flyはデバッグ用の別ビュー）
 	enum class CamMode { Fighting, Spline };
 	CamMode        m_camMode = CamMode::Fighting;	// 既定は基本カメラ
