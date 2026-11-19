@@ -258,6 +258,15 @@
     <ClInclude Include="scene\DepthOfField.h">
       <Filter>ソース ファイル\scene</Filter>
     </ClInclude>
+    <ClInclude Include="scene\MotionScene.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\MoveData.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\Hurtbox.h">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -417,6 +426,15 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="scene\DepthOfField.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\MotionScene.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\MoveData.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\Hurtbox.cpp">
       <Filter>ソース ファイル\scene</Filter>
     </ClCompile>
   </ItemGroup>

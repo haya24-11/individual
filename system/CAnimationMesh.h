@@ -27,11 +27,18 @@ protected:
 	// ルート（Hips）の水平移動を無視するか。true でその場再生になる
 	bool m_LockRootXZ = false;
 
+	// 姿勢の上乗せ（モーション編集の FK 用）。ボーン名 → そのボーン自身の向きで足す回転。
+	// nullptr なら何もしない（対戦画面ではいつも nullptr）
+	const std::unordered_map<std::string, Quaternion>* m_PoseOffsets = nullptr;
+
 	// ローカルポーズ生成
 	void BuildLocalPoseMap(
 		const aiAnimation* animationdata,
 		int& CurrentFrame,
 		std::unordered_map<std::string, SRTQ>& localposemap);
+
+	// ローカルポーズに上乗せの回転をかける
+	void ApplyPoseOffsets(std::unordered_map<std::string, SRTQ>& localposemap) const;
 
 public:
 	void SetCurentAnimation(aiAnimation* currentanimation);
@@ -46,6 +53,12 @@ public:
 	// ボーンのモデル空間での位置。当たり判定カプセルの芯に使う。
 	// Update() を呼んだ後の姿勢を返すので、毎フレーム引き直すこと。
 	bool GetBonePosition(const std::string& bonename, Vector3& out) const;
+
+	// ボーンのモデル空間での行列（向き＋位置）。FK で関節を回すときの軸に使う
+	bool GetBoneGlobalMatrix(const std::string& bonename, Matrix4x4& out) const;
+
+	// 姿勢の上乗せを設定する。渡したマップは Update のたびに読むので、呼び出し側で持ち続けること
+	void SetPoseOffsets(const std::unordered_map<std::string, Quaternion>* offsets) { m_PoseOffsets = offsets; }
 
 	void Load(std::string filename, std::string texturedirectory = "");
 

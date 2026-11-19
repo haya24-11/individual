@@ -77,6 +77,9 @@ void CAnimationMeshBlender::UpdateBlended(BoneCombMatrix& bonecombarray, int& Cu
     std::unordered_map<std::string, SRTQ> blendedlocalpose;
     BlendLocalPose(localposefrom, localposeto, m_blendrate, blendedlocalpose);
 
+    // モーション編集で足した回転（ブレンドした後にかける）
+    ApplyPoseOffsets(blendedlocalpose);
+
     // 2)　グローバルポーズを生成する
     for (auto& [bonename, srtq] : blendedlocalpose) {
         // ノード名からボーン辞書を使ってassimpのボーン情報を取得

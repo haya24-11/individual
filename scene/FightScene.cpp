@@ -22,6 +22,8 @@
 #include	<string_view>
 #include	"../CameraTake.h"
 #include	"../CameraLibrary.h"
+#include	"../system/scenemanager.h"
+#include	"Hurtbox.h"
 
 namespace {
 
@@ -293,6 +295,9 @@ void FightScene::drawMainToolsUI()
 		}
 	}
 
+	// モーション編集シーンへ。切り替えは次のフレームの頭で行われる
+	if (ImGui::Button("モーション編集へ →##to motion")) SceneManager::RequestScene("MotionScene");
+
 	if (ImGui::BeginTabBar("##MainTabs"))
 	{
 		// ---------------- カメラ ----------------
@@ -319,6 +324,11 @@ void FightScene::drawMainToolsUI()
 				ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				m_fightCam.DrawUI();
+			}
+
+			if (ImGui::CollapsingHeader("被写界深度（DOF）##DOF", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				m_dof.DrawUI();
 			}
 
 			ImGui::EndTabItem();
@@ -739,9 +749,25 @@ void FightScene::update(uint64_t deltatime)
 
 void FightScene::draw(uint64_t deltatime)
 {
-	// メインパス（従来どおり main RT へ）
+	// オートフォーカス：2人の中間（胸の高さ）にピントを合わせる。
+	// 深度バッファが持つのは「カメラの正面方向の奥行き」なので、直線距離ではなく視線方向の成分を使う
+	if (m_dof.IsAutoFocus())
+	{
+		const Vector3 eye = m_camera.GetPosition();
+		Vector3       fwd = m_camera.GetLookat() - eye;
+		const Vector3 target = (m_p1Pos + m_p2Pos) * 0.5f + Vector3(0.0f, 120.0f, 0.0f);
+		if (fwd.LengthSquared() > 1e-6f)
+		{
+			fwd.Normalize();
+			m_dof.SetFocusDistance(std::max((target - eye).Dot(fwd), 1.0f));
+		}
+	}
+
+	// メインパス。DOF が ON ならオフスクリーンに描いてから、ぼかして画面へ出す
 	m_camera.Draw();
+	m_dof.BeginScene();
 	drawSceneGeometry();
+	m_dof.EndScene();
 
 	// デバッグ第2ビュー（開いている時だけ free-fly 視点でオフスクリーンへ再描画）
 	if (m_debugViewOpen && m_dbgRTV) renderDebugView();
@@ -940,6 +966,9 @@ void FightScene::init()
 	// デバッグ第2ビュー用オフスクリーンRTを生成
 	createDebugTarget();
 
+	//被写界深度
+	m_dof.Init((UINT)Application::GetWidth(), (UINT)Application::GetHeight());
+
 
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
@@ -1011,9 +1040,10 @@ void FightScene::init()
 	m_splineCam.Init();
 
 	// 全機能を1つのウィンドウにまとめて登録する（タブ＋折りたたみ）
+	// this を渡すと、このシーンが表示中のときだけ描かれる（モーション編集シーンへ移ると隠れる）
 	DebugUI::RedistDebugFunction([this]() {
 		drawMainToolsUI();
-		});
+		}, this);
 
 	// デバッグ第2ビュー窓（free-fly視点のオフスクリーンをImGuiに表示）
 	DebugUI::RedistDebugFunction([this]() {
@@ -1034,7 +1064,7 @@ void FightScene::init()
 		bool active = ImGui::IsWindowFocused() || ImGui::IsWindowHovered();
 		m_freeCam.UpdateImGui(m_debugCam, active);
 		ImGui::End();
-		});
+		}, this);
 
 	// 軸ギズモ（矢印＝円柱の軸＋円錐の先端）
 	m_gizmoShaft = std::make_unique<Cylinder>(m_gizmoShaftRad, m_gizmoShaftLen);
@@ -1138,34 +1168,23 @@ void FightScene::drawBoneBox(const Vector3& a, const Vector3& b, float pad, floa
 void FightScene::drawHurtboxes(const CAnimationMeshBlender* mesh,
 	const Matrix4x4& world, float scale, const Color& col)
 {
-	if (!mesh) return;
+	if (!mesh || !m_hitBox) return;
 
-	// 体幹・頭・両腕・両脚を10個の箱で覆う。pad は箱の厚みの半分
-	struct Pair { const char* from; const char* to; float pad; };
-	static const Pair table[] = {
-		{ "mixamorig:Hips",         "mixamorig:Spine2",       18.0f },
-		{ "mixamorig:Neck",         "mixamorig:Head",         11.0f },
-		{ "mixamorig:RightArm",     "mixamorig:RightForeArm",  8.0f },
-		{ "mixamorig:RightForeArm", "mixamorig:RightHand",     7.0f },
-		{ "mixamorig:LeftArm",      "mixamorig:LeftForeArm",   8.0f },
-		{ "mixamorig:LeftForeArm",  "mixamorig:LeftHand",      7.0f },
-		{ "mixamorig:RightUpLeg",   "mixamorig:RightLeg",     11.0f },
-		{ "mixamorig:RightLeg",     "mixamorig:RightFoot",     9.0f },
-		{ "mixamorig:LeftUpLeg",    "mixamorig:LeftLeg",      11.0f },
-		{ "mixamorig:LeftLeg",      "mixamorig:LeftFoot",      9.0f },
-	};
-
+	// 体幹・頭・両腕・両脚を覆う箱。形はモーション編集で変えられる（HurtboxConfig.json）
 	const float planeZ = world.Translation().z;	// このキャラが戦っている平面
+	const float facing = Hurtbox::FacingOf(world);	// 向きで「前方へのずれ」の向きが変わる
 
-	for (const Pair& p : table)
+	for (const HurtboxDef& d : Hurtbox::Defs())
 	{
 		Vector3 a, b;
-		if (!mesh->GetBonePosition(p.from, a)) continue;
-		if (!mesh->GetBonePosition(p.to,   b)) continue;
+		if (!mesh->GetBonePosition(d.from, a)) continue;
+		if (!mesh->GetBonePosition(d.to,   b)) continue;
 
 		// モデル空間 → ワールド（描画と同じ行列を通す）
-		drawBoneBox(Vector3::Transform(a, world), Vector3::Transform(b, world),
-			p.pad * scale, planeZ, col);
+		const HurtRect r = Hurtbox::Compute(d, Vector3::Transform(a, world), Vector3::Transform(b, world), scale, facing);
+
+		m_hitBox->SetSize(std::max(r.w(), 0.1f), std::max(r.h(), 0.1f), 2.0f);	// 厚みは板として見えるだけ
+		m_hitBox->Draw(Matrix4x4::CreateTranslation(Vector3(r.cx(), r.cy(), planeZ)), col);
 	}
 }
 

@@ -1,7 +1,8 @@
 #include "DebugUI.h"
 #include "renderer.h"	// サブウィンドウ描画時の RTV 退避/復帰用
 
-std::vector<std::function<void(void)>> DebugUI::m_debugfunction;
+std::vector<DebugUI::Entry> DebugUI::m_debugfunction;
+const void* DebugUI::m_activeOwner = nullptr;
 
 void DebugUI::Init(ID3D11Device* device, ID3D11DeviceContext* context) 
 {
@@ -56,8 +57,8 @@ void DebugUI::DisposeUI() {
 }
 
 // �f�o�b�O�\���֐��̓o�^
-void DebugUI::RedistDebugFunction(std::function<void(void)> f) {
-    m_debugfunction.push_back(std::move(f));
+void DebugUI::RedistDebugFunction(std::function<void(void)> f, const void* owner) {
+    m_debugfunction.push_back({ owner, std::move(f) });
 }
 
 void DebugUI::Render() {
@@ -74,9 +75,11 @@ void DebugUI::Render() {
     ImGui::End();
 
     // �f�o�b�O�֐��̎��s
-    for (auto& f : m_debugfunction)
+    // 持ち主のあるものは、そのシーンが今のシーンのときだけ描く
+    for (auto& e : m_debugfunction)
     {
-        f();
+        if (e.owner && e.owner != m_activeOwner) continue;
+        e.func();
     }
 
     // �t���[���̃����_�����O������

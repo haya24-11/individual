@@ -53,6 +53,33 @@ bool CAnimationMesh::GetBonePosition(const std::string& bonename, Vector3& out) 
 	return true;
 }
 
+// ボーンのモデル空間での行列を返す
+bool CAnimationMesh::GetBoneGlobalMatrix(const std::string& bonename, Matrix4x4& out) const
+{
+	auto it = m_BoneDictionary.find(bonename);
+	if (it == m_BoneDictionary.end()) return false;
+
+	out = it->second.GlobalMatrix;
+	return true;
+}
+
+// 上乗せの回転をかける。回転 = 上乗せ × 素材 なので、上乗せはボーン自身の向きの中で回る
+// （行ベクトルの決まりでは、先に掛けた回転が先に効く）
+void CAnimationMesh::ApplyPoseOffsets(std::unordered_map<std::string, SRTQ>& localposemap) const
+{
+	if (m_PoseOffsets == nullptr) return;
+
+	for (const auto& [bonename, offset] : *m_PoseOffsets)
+	{
+		auto it = localposemap.find(bonename);
+		if (it == localposemap.end()) continue;
+
+		Quaternion q = offset * it->second.quat;
+		q.Normalize();
+		it->second.quat = q;
+	}
+}
+
 void CAnimationMesh::Draw()
 {
 	// メッシュ描画
@@ -193,6 +220,9 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray,int& CurrentFrame)
 		m_CurrentAnimation,
 		CurrentFrame,
 		localpose);
+
+	// モーション編集で足した回転
+	ApplyPoseOffsets(localpose);
 
 	// localpose の中身を 1 件ずつ取り出す
 	for (auto& pair : localpose) {

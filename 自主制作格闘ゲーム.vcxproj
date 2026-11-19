@@ -153,6 +153,9 @@
     <ClInclude Include="Json.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="scene\DepthOfField.h" />
+    <ClInclude Include="scene\MotionScene.h" />
+    <ClInclude Include="scene\MoveData.h" />
+    <ClInclude Include="scene\Hurtbox.h" />
     <ClInclude Include="scene\FightScene.h" />
     <ClInclude Include="scene\FreeFlyCamera.h" />
     <ClInclude Include="scene\SplineCamera.h" />
@@ -229,6 +232,9 @@
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="scene\DepthOfField.cpp" />
+    <ClCompile Include="scene\MotionScene.cpp" />
+    <ClCompile Include="scene\MoveData.cpp" />
+    <ClCompile Include="scene\Hurtbox.cpp" />
     <ClCompile Include="scene\FightScene.cpp" />
     <ClCompile Include="scene\FreeFlyCamera.cpp" />
     <ClCompile Include="scene\SplineCamera.cpp" />

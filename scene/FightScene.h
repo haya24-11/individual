@@ -18,6 +18,7 @@
 #include "FreeFlyCamera.h"
 #include "SplineCamera.h"
 #include "FightingCamera.h"
+#include "DepthOfField.h"
 
 class FightScene : public IScene
 {
@@ -66,6 +67,8 @@ private:
 	FreeFlyCamera  m_freeCam;						// デバッグ第2ビューを操作する
 	SplineCamera   m_splineCam;						// 曲線カメラ
 	FightingCamera m_fightCam;						// 格ゲー基本カメラ
+	DepthOfField   m_dof;							//被写界深度（ポストエフェクト）
+
 
 	// 手動フリー操作（メイン画面）
 	FreeFlyCamera  m_manualFly;						// 手動フリー操作（メイン・DirectInput）
